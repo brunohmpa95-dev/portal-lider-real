@@ -71,7 +71,7 @@ const PremiumPropertyCard = ({ property }: PremiumPropertyCardProps) => (
         </div>
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
 export default PremiumPropertyCard;
