@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Bed, Bath, Car, Maximize2, ArrowRight, MessageCircle } from 'lucide-react';
 import { Property } from '@/data/types';
 import { formatPrice } from '@/data/properties';
