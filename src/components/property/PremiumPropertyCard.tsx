@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Bed, Bath, Car, Maximize2, ArrowRight, MessageCircle } from 'lucide-react';
-import { Property, formatPrice } from '@/data/properties';
+import { Property } from '@/data/types';
+import { formatPrice } from '@/data/properties';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { COMPANY } from '@/data/constants';
