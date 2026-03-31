@@ -17,7 +17,7 @@ const Header = () => {
   const location = useLocation();
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto flex items-center justify-between px-4 h-20">
         <Link to="/" className="flex items-center" aria-label="Página inicial">
           <img src={logoImg} alt="Líder Imóveis Itaúna" className="h-16 md:h-[72px] w-auto" />
