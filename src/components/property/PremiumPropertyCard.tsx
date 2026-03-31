@@ -12,7 +12,13 @@ interface PremiumPropertyCardProps {
 }
 
 const PremiumPropertyCard = ({ property }: PremiumPropertyCardProps) => (
-  <div className="bg-card rounded-lg border border-border overflow-hidden">
+  <motion.div
+    className="bg-card rounded-lg border border-border overflow-hidden"
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5 }}
+  >
     <div className="grid md:grid-cols-2 gap-0">
       <div className="relative aspect-[4/3] md:aspect-auto overflow-hidden">
         <img
