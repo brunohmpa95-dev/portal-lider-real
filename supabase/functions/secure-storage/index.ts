@@ -259,7 +259,7 @@ Deno.serve(async (req) => {
 
         if (error) return jsonResponse({ error: "Erro ao gerar URL" }, 500);
 
-        await auditLog(serviceClient, userId, "file_download", { bucket, path });
+        await auditLog(serviceClient, userId, "file_download", { bucket, path }, ipAddress, userAgent);
         return jsonResponse({ url: data.signedUrl, expiresIn: 300 });
       }
 
@@ -300,7 +300,7 @@ Deno.serve(async (req) => {
 
       if (error) return jsonResponse({ error: "Erro ao gerar URL" }, 500);
 
-      await auditLog(serviceClient, userId, "file_download", { bucket, path });
+      await auditLog(serviceClient, userId, "file_download", { bucket, path }, ipAddress, userAgent);
       return jsonResponse({ url: data.signedUrl, expiresIn: 60 });
     }
 
@@ -328,7 +328,7 @@ Deno.serve(async (req) => {
       const { error } = await serviceClient.storage.from(bucket).remove([path]);
       if (error) return jsonResponse({ error: "Falha ao excluir: " + error.message }, 500);
 
-      await auditLog(serviceClient, userId, "file_delete", { bucket, path });
+      await auditLog(serviceClient, userId, "file_delete", { bucket, path }, ipAddress, userAgent);
       return jsonResponse({ success: true });
     }
 
