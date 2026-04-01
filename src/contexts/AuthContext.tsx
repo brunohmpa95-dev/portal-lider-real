@@ -106,14 +106,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: safeErrorMessage(error) };
+    if (error) {
+      // Log failed login attempt (don't include email in metadata for security)
+      await supabase.from('audit_log').insert({
+        user_id: null,
+        action: 'login_failed',
+        resource: 'auth',
+        result: 'denied',
+        metadata: { reason: 'invalid_credentials' },
+      }).then(() => {}, () => {});
+      return { error: safeErrorMessage(error) };
+    }
     const { data: { user: u } } = await supabase.auth.getUser();
     if (u) {
       await supabase.from('audit_log').insert({
         user_id: u.id,
         action: 'login',
+        resource: 'auth',
+        result: 'success',
         metadata: { method: 'password' },
-      });
+      }).then(() => {}, () => {});
     }
     return { error: null };
   };
@@ -132,7 +144,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    const currentUserId = user?.id;
     await supabase.auth.signOut();
+    if (currentUserId) {
+      await supabase.from('audit_log').insert({
+        user_id: currentUserId,
+        action: 'logout',
+        resource: 'auth',
+        result: 'success',
+        metadata: { scope: 'local' },
+      }).then(() => {}, () => {});
+    }
     setUser(null);
     setSession(null);
     setRoles([]);
@@ -140,7 +162,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOutAllSessions = async () => {
+    const currentUserId = user?.id;
     await supabase.auth.signOut({ scope: 'global' });
+    if (currentUserId) {
+      await supabase.from('audit_log').insert({
+        user_id: currentUserId,
+        action: 'logout',
+        resource: 'auth',
+        result: 'success',
+        metadata: { scope: 'global' },
+      }).then(() => {}, () => {});
+    }
     setUser(null);
     setSession(null);
     setRoles([]);

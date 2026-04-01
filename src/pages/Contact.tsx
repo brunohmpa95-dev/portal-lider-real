@@ -5,17 +5,42 @@ import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Phone, Mail, MapPin, Clock, Loader2 } from 'lucide-react';
 import { COMPANY, DEPARTMENTS } from '@/data/constants';
-import { FormStatus } from '@/data/types';
+import { submitForm } from '@/lib/form-submit';
+import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 const Contact = () => {
-  const [status, setStatus] = useState<FormStatus>('idle');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus('submitting');
-    setTimeout(() => setStatus('success'), 1500);
+    if (!consent) {
+      toast({ title: "Consentimento necessário", description: "Você precisa concordar com a política de privacidade.", variant: "destructive" });
+      return;
+    }
+    setIsSubmitting(true);
+
+    const fd = new FormData(e.currentTarget);
+    try {
+      await submitForm('contact', {
+        name: fd.get('name'),
+        email: fd.get('email'),
+        phone: fd.get('phone'),
+        subject: fd.get('subject'),
+        message: fd.get('message'),
+      });
+      setSuccess(true);
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -23,26 +48,24 @@ const Contact = () => {
       <PageHead title="Contato" description="Entre em contato com a Líder Imóveis Itaúna. Atendimento personalizado para compra, venda e locação de imóveis." />
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label: 'Contato' }]} />
-
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-10">Fale Conosco</h1>
 
         <div className="grid lg:grid-cols-2 gap-12 pb-16">
-          {/* Form */}
           <div>
-            {status === 'success' ? (
+            {success ? (
               <div className="bg-accent rounded-lg p-8 text-center">
                 <h3 className="text-xl font-semibold text-foreground mb-2">Mensagem enviada!</h3>
                 <p className="text-muted-foreground">Retornaremos em breve.</p>
-                <Button className="mt-6" onClick={() => setStatus('idle')}>Enviar outra mensagem</Button>
+                <Button className="mt-6" onClick={() => setSuccess(false)}>Enviar outra mensagem</Button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
-                <Input placeholder="Nome completo" required />
+                <Input name="name" placeholder="Nome completo" required minLength={2} maxLength={100} />
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <Input placeholder="E-mail" type="email" required />
-                  <Input placeholder="Telefone" />
+                  <Input name="email" placeholder="E-mail" type="email" required maxLength={255} />
+                  <Input name="phone" placeholder="Telefone" maxLength={20} />
                 </div>
-                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" aria-label="Assunto">
+                <select name="subject" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" aria-label="Assunto">
                   <option value="">Selecione o assunto</option>
                   <option value="compra">Compra de imóvel</option>
                   <option value="venda">Venda de imóvel</option>
@@ -50,15 +73,22 @@ const Contact = () => {
                   <option value="financeiro">Financeiro</option>
                   <option value="outro">Outro</option>
                 </select>
-                <Textarea placeholder="Sua mensagem" rows={5} required />
-                <Button type="submit" className="w-full" disabled={status === 'submitting'}>
-                  {status === 'submitting' ? 'Enviando...' : 'Enviar mensagem'}
+                <Textarea name="message" placeholder="Sua mensagem" rows={5} required minLength={10} maxLength={2000} />
+
+                <div className="flex items-start gap-2">
+                  <Checkbox id="consent-contact" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
+                  <label htmlFor="consent-contact" className="text-xs text-muted-foreground leading-tight">
+                    Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link> e autorizo o tratamento dos meus dados para fins de atendimento.
+                  </label>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Enviar mensagem'}
                 </Button>
               </form>
             )}
           </div>
 
-          {/* Info */}
           <div className="space-y-8">
             <div>
               <h2 className="font-sans text-lg font-semibold text-foreground mb-4">Informações</h2>
@@ -69,7 +99,6 @@ const Contact = () => {
                 <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{COMPANY.hours}</p>
               </div>
             </div>
-
             <div>
               <h2 className="font-sans text-lg font-semibold text-foreground mb-4">Contatos por Departamento</h2>
               <div className="space-y-4">

@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
@@ -8,17 +8,21 @@ import PropertyCard from '@/components/property/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { getPropertyById, properties, formatPrice } from '@/data/properties';
 import { COMPANY } from '@/data/constants';
-import { FormStatus } from '@/data/types';
+import { submitForm } from '@/lib/form-submit';
+import { useToast } from '@/hooks/use-toast';
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const property = getPropertyById(id || '');
   const [imgIdx, setImgIdx] = useState(0);
-  const [formStatus, setFormStatus] = useState<FormStatus>('idle');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const { toast } = useToast();
 
   if (!property) {
     return (
@@ -33,10 +37,29 @@ const PropertyDetail = () => {
 
   const similar = properties.filter(p => p.id !== property.id && p.purpose === property.purpose && p.type === property.type).slice(0, 3);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormStatus('submitting');
-    setTimeout(() => setFormStatus('success'), 1500);
+    if (!consent) {
+      toast({ title: "Consentimento necessário", description: "Você precisa concordar com a política de privacidade.", variant: "destructive" });
+      return;
+    }
+    setIsSubmitting(true);
+    const fd = new FormData(e.currentTarget);
+
+    try {
+      await submitForm('property_lead', {
+        name: fd.get('name'),
+        email: fd.get('email'),
+        phone: fd.get('phone'),
+        message: fd.get('message'),
+        property_id: property.id,
+      });
+      setFormSuccess(true);
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -83,7 +106,6 @@ const PropertyDetail = () => {
             <p className="flex items-center gap-1.5 text-muted-foreground mb-4"><MapPin className="h-4 w-4" />{property.neighborhood} · {property.city} - {property.state}</p>
             <p className="text-primary text-3xl font-semibold mb-6">{formatPrice(property.price, property.purpose)}</p>
 
-            {/* Attributes */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
               {property.bedrooms > 0 && <div className="bg-secondary rounded-lg p-4 text-center"><Bed className="h-5 w-5 mx-auto mb-1 text-primary" /><p className="font-semibold text-foreground">{property.bedrooms}</p><p className="text-xs text-muted-foreground">Quartos</p></div>}
               {property.suites > 0 && <div className="bg-secondary rounded-lg p-4 text-center"><Bed className="h-5 w-5 mx-auto mb-1 text-primary" /><p className="font-semibold text-foreground">{property.suites}</p><p className="text-xs text-muted-foreground">Suítes</p></div>}
@@ -108,28 +130,34 @@ const PropertyDetail = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {/* Contact form */}
               <div className="bg-card border border-border rounded-lg p-6">
                 <h3 className="font-sans font-semibold text-foreground mb-4">Tenho interesse neste imóvel</h3>
-                {formStatus === 'success' ? (
+                {formSuccess ? (
                   <div className="text-center py-6">
                     <p className="text-primary font-semibold mb-2">Mensagem enviada!</p>
                     <p className="text-sm text-muted-foreground">Em breve nossa equipe entrará em contato.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-3">
-                    <Input placeholder="Seu nome" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                    <Input placeholder="E-mail" type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-                    <Input placeholder="Telefone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-                    <Textarea placeholder="Mensagem" rows={3} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
-                    <Button type="submit" className="w-full" disabled={formStatus === 'submitting'}>
-                      {formStatus === 'submitting' ? 'Enviando...' : 'Enviar mensagem'}
+                    <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} />
+                    <Input name="email" placeholder="E-mail" type="email" required maxLength={255} />
+                    <Input name="phone" placeholder="Telefone" maxLength={20} />
+                    <Textarea name="message" placeholder="Mensagem" rows={3} maxLength={1000} />
+
+                    <div className="flex items-start gap-2">
+                      <Checkbox id="consent-lead" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
+                      <label htmlFor="consent-lead" className="text-[11px] text-muted-foreground leading-tight">
+                        Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link>.
+                      </label>
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Enviar mensagem'}
                     </Button>
                   </form>
                 )}
               </div>
 
-              {/* WhatsApp CTA */}
               <a
                 href={`${COMPANY.whatsappLink}?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.code} - ${property.title}`)}`}
                 target="_blank"
@@ -142,7 +170,6 @@ const PropertyDetail = () => {
           </div>
         </div>
 
-        {/* Similar */}
         {similar.length > 0 && (
           <section className="mb-16">
             <h2 className="text-2xl font-display font-semibold text-foreground mb-6">Imóveis Semelhantes</h2>
