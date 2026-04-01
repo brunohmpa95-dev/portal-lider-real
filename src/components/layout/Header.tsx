@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Home as HomeIcon } from 'lucide-react';
+import { Menu, X, User, Home as HomeIcon, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import logoImg from '@/assets/logo-transparent.png';
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, profile, signOut } = useAuth();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
@@ -46,11 +48,25 @@ const Header = () => {
               <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
             </Button>
           </Link>
-          <Link to="/area-do-cliente">
-            <Button size="sm" className="gap-1.5">
-              <User className="h-4 w-4" /> Área do Cliente
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <Link to="/area-do-cliente">
+                <Button size="sm" variant="outline" className="gap-1.5">
+                  <User className="h-4 w-4" />
+                  {profile?.full_name?.split(' ')[0] || 'Minha conta'}
+                </Button>
+              </Link>
+              <Button size="sm" variant="ghost" className="gap-1.5" onClick={() => signOut()}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Link to="/login">
+              <Button size="sm" className="gap-1.5">
+                <LogIn className="h-4 w-4" /> Entrar
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -87,11 +103,28 @@ const Header = () => {
                 <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
               </Button>
             </Link>
-            <Link to="/area-do-cliente" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full gap-1.5 justify-center mt-1">
-                <User className="h-4 w-4" /> Área do Cliente
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/area-do-cliente" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" className="w-full gap-1.5 justify-center mt-1">
+                    <User className="h-4 w-4" /> Minha conta
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="w-full gap-1.5 justify-center mt-1"
+                  onClick={() => { signOut(); setMobileOpen(false); }}
+                >
+                  <LogOut className="h-4 w-4" /> Sair
+                </Button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setMobileOpen(false)}>
+                <Button className="w-full gap-1.5 justify-center mt-1">
+                  <LogIn className="h-4 w-4" /> Entrar
+                </Button>
+              </Link>
+            )}
           </nav>
         </div>
       )}
