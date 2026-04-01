@@ -1,98 +1,30 @@
 
 
-## Plano — Portal Imobiliário Líder Imóveis Itaúna
+## Plano — Hero com imagem de fundo e overlay escuro
 
-### Identidade Visual
-- **Cores**: Verde marca (#5B9A2D / #7BC043), branco (#FFFFFF), cinza escuro (#1A1A1A), cinza médio (#6B7280), cinza claro (#F5F5F5)
-- **Logo**: usar o arquivo transparente (`full_margin_transparent_customcolor.png`) no header
-- **Tipografia**: Inter (corpo) + fonte display sofisticada para títulos
-- **Estilo**: clean, premium regional, bastante respiro, fundo claro, fotos grandes
+### O que muda
+A seção Hero da Home atualmente usa um gradiente suave (`bg-gradient-to-b from-secondary to-background`). Será substituída por uma imagem de fundo de alta qualidade com overlay escuro semi-transparente, tornando o texto branco e o bloco de busca mais impactante.
 
----
+### Implementação
 
-### Estrutura de Páginas (11 páginas + detalhe do imóvel)
+**1. Imagem de fundo**
+- Usar uma imagem de paisagem urbana/imobiliária de alta qualidade via URL externa (Unsplash) como `background-image` inline no `<section>` do Hero.
+- Aplicar `bg-cover bg-center bg-no-repeat` para preenchimento responsivo.
 
-**Layout global (componentes reutilizáveis):**
-- **Topbar**: CRECI, telefone, redes sociais
-- **Header**: logo, menu (Comprar, Alugar, Sobre, Anuncie, Contato), botão "Área do Cliente", menu mobile hamburger
-- **Footer**: horário, links institucionais, contatos por departamento, endereço, redes sociais, links para área do cliente/documentos/ouvidoria
-- **Botão flutuante WhatsApp** (mobile e desktop)
+**2. Overlay escuro**
+- Adicionar um `<div>` absoluto com `bg-black/60` (60% opacidade) cobrindo toda a seção, criando contraste para o texto.
 
----
+**3. Ajuste de cores do texto**
+- Título: `text-white` (em vez de `text-foreground`)
+- Subtítulo: `text-white/80` (em vez de `text-muted-foreground`)
+- O SearchBar mantém seu fundo branco/card, destacando-se sobre o overlay.
 
-#### 1. HOME
-- **Hero** com busca avançada: comprar/alugar, tipo, bairro, quartos, valor min/max, código, botão "Buscar"
-- **Bloco de atalhos do sistema**: "Área do Cliente", "Envie seu imóvel", "Fale com Locação", "Fale com Vendas", "Solicite Atendimento"
-- **Super Destaque**: 1 imóvel premium com imagem ampla, atributos e CTAs
-- **Imóveis em destaque — Venda**: grid/carrossel de cards
-- **Imóveis em destaque — Locação**: mesmo padrão
-- **Bloco institucional**: resumo + CTA para "Sobre"
-- **Bloco captação**: CTA para proprietários anunciarem
+**4. Altura e padding**
+- Aumentar o padding vertical para `py-24 md:py-36` para dar mais presença visual à seção.
 
-#### 2. COMPRAR & 3. ALUGAR
-- Filtros laterais/topo (tipo, bairro, quartos, preço, código)
-- Grid de cards de imóveis com badges (Novo, Destaque)
-- Ordenação, contagem de resultados, paginação
-- Dados mockados prontos para substituição por API
+### Arquivo alterado
+- `src/pages/Index.tsx` — apenas a seção Hero (linhas ~33-55)
 
-#### 4. DETALHE DO IMÓVEL
-- Galeria de imagens, preço, código, localização
-- Atributos (quartos, suítes, banheiros, vagas, área)
-- Descrição completa
-- Formulário de interesse + botão WhatsApp
-- Imóveis semelhantes
-
-#### 5. SOBRE
-- História da empresa, missão/valores, equipe, CRECI, foto da fachada mockada
-
-#### 6. ANUNCIE SEU IMÓVEL
-- Formulário completo (nome, telefone, e-mail, tipo, endereço, descrição)
-- Estados de sucesso/erro
-
-#### 7. CONTATO
-- Formulário de contato + mapa + contatos por departamento (locação, vendas, financeiro)
-
-#### 8. ÁREA DO CLIENTE (hub de transição)
-- Design de "portal" — visual diferenciado
-- Título forte + texto explicativo
-- Botões: "Entrar no Sistema", "Acessar Documentos", "Solicitar Suporte", "Atendimento Financeiro", "Atendimento Locação"
-- Links apontam para `#` (prontos para URLs externas)
-
-#### 9. DOCUMENTOS
-- Lista de documentos úteis com links para download/sistema externo
-
-#### 10. OUVIDORIA
-- Formulário de ouvidoria com campos específicos
-
-#### 11. TRABALHE CONOSCO
-- Formulário de candidatura (nome, cargo, telefone, currículo)
-
-#### 12. POLÍTICA DE PRIVACIDADE
-- Texto legal padrão LGPD
-
----
-
-### Dados Mockados
-- ~12 imóveis fictícios realistas (casas, aptos, terrenos em Itaúna-MG) com bairros reais
-- Contatos setorizados fictícios (locação, vendas, financeiro, ouvidoria)
-- Horário de funcionamento, endereço fictício em Itaúna
-
-### Preparação para Integração
-- Dados centralizados em arquivos de mock (`/data/`) facilmente substituíveis por chamadas API
-- Componentes com props tipadas (TypeScript)
-- Estados de loading, vazio e erro em listagens
-- Formulários com estrutura de submit pronta para conectar a backend
-- Links do sistema principal como constantes configuráveis
-
-### Componentes Reutilizáveis
-TopBar, Header, Footer, MobileMenu, PropertyCard, PremiumPropertyCard, SearchBar, FilterSidebar, PropertyGrid, SystemShortcutsGrid, InstitutionalBlock, CTABlock, ContactByDepartment, StandardForm, Breadcrumbs, Pagination, StatusBadge, WhatsAppButton
-
-### Responsividade
-- Mobile-first com breakpoints adequados
-- Menu hamburger, cards empilhados, CTAs grandes no mobile
-
-### SEO & Acessibilidade
-- Títulos e meta descriptions por página via react-helmet
-- Headings semânticos (h1-h3)
-- Alt text em imagens, labels nos formulários, contraste adequado
+### Resultado visual
+- Seção hero com foto imobiliária de fundo, overlay escuro, texto branco grande, barra de busca com fundo claro flutuando sobre a imagem.
 
