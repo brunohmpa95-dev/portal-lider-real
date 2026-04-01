@@ -107,6 +107,13 @@ const Header = () => {
               </Link>
             ))}
             <hr className="my-2 border-border" />
+            {showAdminLink && (
+              <Link to="/admin" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full gap-1.5 justify-center">
+                  <Settings className="h-4 w-4" /> Área Administrativa
+                </Button>
+              </Link>
+            )}
             <Link to="/anuncie" onClick={() => setMobileOpen(false)}>
               <Button variant="outline" className="w-full gap-1.5 justify-center">
                 <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
