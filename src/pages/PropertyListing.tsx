@@ -41,7 +41,7 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label }]} />
 
-        <h1 className="text-3xl font-display font-bold text-foreground mb-6">
+        <h1 className="text-3xl font-sans font-bold text-foreground mb-6">
           Imóveis para {label}
         </h1>
 

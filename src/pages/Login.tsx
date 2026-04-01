@@ -59,7 +59,7 @@ const Login = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <LogIn className="h-10 w-10 text-primary mx-auto mb-4" />
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">
+            <h1 className="text-2xl md:text-3xl font-sans font-bold text-foreground mb-2">
               Entrar na sua conta
             </h1>
             <p className="text-muted-foreground text-sm">

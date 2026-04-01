@@ -48,7 +48,7 @@ const Contact = () => {
       <PageHead title="Contato" description="Entre em contato com a Líder Imóveis Itaúna. Atendimento personalizado para compra, venda e locação de imóveis." />
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label: 'Contato' }]} />
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-10">Fale Conosco</h1>
+        <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-10">Fale Conosco</h1>
 
         <div className="grid lg:grid-cols-2 gap-12 pb-16">
           <div>

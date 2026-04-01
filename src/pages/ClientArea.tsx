@@ -27,7 +27,7 @@ const ClientArea = () => {
           <div className="bg-card border border-border rounded-lg p-6 mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-display font-bold text-foreground mb-1">
+                <h1 className="text-2xl font-sans font-bold text-foreground mb-1">
                   Olá, {profile?.full_name?.split(' ')[0] || 'Cliente'}
                 </h1>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>

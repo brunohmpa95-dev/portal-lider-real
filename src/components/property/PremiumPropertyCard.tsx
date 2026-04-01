@@ -33,7 +33,7 @@ const PremiumPropertyCard = ({ property }: PremiumPropertyCardProps) => (
       </div>
       <div className="p-6 md:p-8 flex flex-col justify-center">
         <p className="text-xs text-muted-foreground font-mono mb-2">{property.code}</p>
-        <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-2">
+        <h2 className="font-sans text-2xl md:text-3xl font-semibold text-foreground mb-2">
           {property.title}
         </h2>
         <p className="text-muted-foreground text-sm mb-4">

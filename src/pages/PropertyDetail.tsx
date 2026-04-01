@@ -28,7 +28,7 @@ const PropertyDetail = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-display font-bold mb-4">Imóvel não encontrado</h1>
+          <h1 className="text-2xl font-sans font-bold mb-4">Imóvel não encontrado</h1>
           <Link to="/comprar"><Button variant="outline" className="gap-2"><ArrowLeft className="h-4 w-4" /> Voltar</Button></Link>
         </div>
       </Layout>
@@ -102,7 +102,7 @@ const PropertyDetail = () => {
               </div>
             )}
 
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">{property.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-sans font-bold text-foreground mb-2">{property.title}</h1>
             <p className="flex items-center gap-1.5 text-muted-foreground mb-4"><MapPin className="h-4 w-4" />{property.neighborhood} · {property.city} - {property.state}</p>
             <p className="text-primary text-3xl font-semibold mb-6">{formatPrice(property.price, property.purpose)}</p>
 
@@ -172,7 +172,7 @@ const PropertyDetail = () => {
 
         {similar.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-2xl font-display font-semibold text-foreground mb-6">Imóveis Semelhantes</h2>
+            <h2 className="text-2xl font-sans font-semibold text-foreground mb-6">Imóveis Semelhantes</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {similar.map(p => <PropertyCard key={p.id} property={p} />)}
             </div>
