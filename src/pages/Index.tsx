@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { User, Building2, Phone, HandshakeIcon, Headphones, ArrowRight, Shield } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
+import heroBg from '@/assets/hero-bg.jpg';
 import AnimatedSection from '@/components/shared/AnimatedSection';
 import SearchBar from '@/components/property/SearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
