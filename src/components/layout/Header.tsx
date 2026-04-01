@@ -45,6 +45,13 @@ const Header = () => {
         </nav>
 
         <div className="hidden lg:flex items-center gap-2">
+          {showAdminLink && (
+            <Link to="/admin">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Settings className="h-4 w-4" /> Admin
+              </Button>
+            </Link>
+          )}
           <Link to="/anuncie">
             <Button variant="outline" size="sm" className="gap-1.5">
               <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
