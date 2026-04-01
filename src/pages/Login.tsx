@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import Layout from '@/components/layout/Layout';
@@ -14,7 +14,7 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/area-do-cliente';
@@ -25,11 +25,20 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If already authenticated, redirect
-  if (isAuthenticated) {
-    navigate(from, { replace: true });
-    return null;
-  }
+  // Handle post-login MFA redirect
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (mfaRequired && !mfaVerified) {
+      if (!mfaEnrolled) {
+        navigate('/mfa/setup', { state: { from: { pathname: from } }, replace: true });
+      } else {
+        navigate('/mfa/verify', { state: { from: { pathname: from } }, replace: true });
+      }
+    } else {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, mfaRequired, mfaVerified, mfaEnrolled, from, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +56,8 @@ const Login = () => {
 
     if (result.error) {
       setError(result.error);
-    } else {
-      navigate(from, { replace: true });
     }
+    // Navigation is handled by the useEffect above after auth state updates
   };
 
   return (

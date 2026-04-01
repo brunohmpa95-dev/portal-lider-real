@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
-import { type AppRole, type AuthState, hasPermission as checkPerm, hasAnyRole as checkAnyRoles } from '@/lib/auth-types';
+import type { User, Session, AuthenticatorAssuranceLevels } from '@supabase/supabase-js';
+import { type AppRole, type AuthState, MFA_REQUIRED_ROLES, hasPermission as checkPerm, hasAnyRole as checkAnyRoles } from '@/lib/auth-types';
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -11,9 +11,16 @@ interface AuthContextValue extends AuthState {
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updatePassword: (password: string) => Promise<{ error: string | null }>;
   refreshRoles: () => Promise<void>;
+  refreshMfaStatus: () => Promise<void>;
   hasPermission: (permissionKey: string) => boolean;
   hasRole: (role: AppRole) => boolean;
   hasAnyRole: (roles: AppRole[]) => boolean;
+  /** Whether the current user needs MFA but hasn't completed it this session */
+  mfaRequired: boolean;
+  /** Whether the user has achieved AAL2 (TOTP verified) this session */
+  mfaVerified: boolean;
+  /** Whether the user has enrolled a TOTP factor */
+  mfaEnrolled: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -45,6 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<AuthState['profile']>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // MFA state
+  const [mfaVerified, setMfaVerified] = useState(false);
+  const [mfaEnrolled, setMfaEnrolled] = useState(false);
+
   const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data } = await supabase
@@ -67,9 +78,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const checkMfaStatus = useCallback(async () => {
+    try {
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      setMfaVerified(aalData?.currentLevel === 'aal2');
+
+      const { data: factorsData } = await supabase.auth.mfa.listFactors();
+      const verifiedFactors = (factorsData?.totp || []).filter((f) => f.status === 'verified');
+      setMfaEnrolled(verifiedFactors.length > 0);
+    } catch {
+      setMfaVerified(false);
+      setMfaEnrolled(false);
+    }
+  }, []);
+
   const refreshRoles = useCallback(async () => {
     await fetchRoles();
   }, [fetchRoles]);
+
+  const refreshMfaStatus = useCallback(async () => {
+    await checkMfaStatus();
+  }, [checkMfaStatus]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -81,11 +110,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             await fetchProfile(newSession.user.id);
             await fetchRoles();
+            await checkMfaStatus();
             setIsLoading(false);
           }, 0);
         } else {
           setProfile(null);
           setRoles([]);
+          setMfaVerified(false);
+          setMfaEnrolled(false);
           setIsLoading(false);
         }
       }
@@ -97,25 +129,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (existingSession?.user) {
         fetchProfile(existingSession.user.id);
         fetchRoles();
+        checkMfaStatus();
       }
       setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile, fetchRoles]);
+  }, [fetchProfile, fetchRoles, checkMfaStatus]);
 
-  // Fire-and-forget audit logging via edge function.
-  // tokenOverride: pass a captured token for cases where session is about to be destroyed (logout).
+  // Compute whether MFA is required for this user
+  const mfaRequired = (() => {
+    // Profile-level flag
+    if (profile?.mfa_required) return true;
+    // Role-based requirement
+    return roles.some((r) => MFA_REQUIRED_ROLES.includes(r));
+  })();
+
+  // Fire-and-forget audit logging
   const logAuthEvent = (action: string, result: string, metadata?: Record<string, unknown>, tokenOverride?: string) => {
     try {
       const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/form-submit`;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-      // Use override token if provided, otherwise try current session
       const getToken = tokenOverride
         ? Promise.resolve(tokenOverride)
         : supabase.auth.getSession().then(({ data: { session: s } }) => s?.access_token || null);
-
       getToken.then((token) => {
         if (token) headers['Authorization'] = `Bearer ${token}`;
         fetch(url, {
@@ -151,7 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // Capture token BEFORE destroying the session
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     const token = currentSession?.access_token;
     await supabase.auth.signOut();
@@ -160,10 +196,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setRoles([]);
     setProfile(null);
+    setMfaVerified(false);
+    setMfaEnrolled(false);
   };
 
   const signOutAllSessions = async () => {
-    // Capture token BEFORE destroying the session
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     const token = currentSession?.access_token;
     await supabase.auth.signOut({ scope: 'global' });
@@ -172,6 +209,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setRoles([]);
     setProfile(null);
+    setMfaVerified(false);
+    setMfaEnrolled(false);
   };
 
   const resetPassword = async (email: string) => {
@@ -216,9 +255,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         updatePassword: updatePasswordFn,
         refreshRoles,
+        refreshMfaStatus,
         hasPermission: permissionCheck,
         hasRole: roleCheck,
         hasAnyRole: anyRoleCheck,
+        mfaRequired,
+        mfaVerified,
+        mfaEnrolled,
       }}
     >
       {children}

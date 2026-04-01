@@ -11,6 +11,8 @@ interface ProtectedRouteProps {
   requiredPermission?: string;
   /** Custom fallback when unauthorized (default: redirect to login) */
   fallbackPath?: string;
+  /** Whether this route requires MFA verification (default: auto-detect from roles) */
+  requireMfa?: boolean;
 }
 
 const ProtectedRoute = ({
@@ -18,8 +20,12 @@ const ProtectedRoute = ({
   requiredRoles = [],
   requiredPermission,
   fallbackPath = '/login',
+  requireMfa,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, roles, hasPermission, hasAnyRole, profile } = useAuth();
+  const {
+    isAuthenticated, isLoading, roles, hasPermission, hasAnyRole, profile,
+    mfaRequired, mfaVerified, mfaEnrolled,
+  } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -47,6 +53,17 @@ const ProtectedRoute = ({
         </div>
       </div>
     );
+  }
+
+  // MFA enforcement
+  const needsMfa = requireMfa !== undefined ? requireMfa : mfaRequired;
+  if (needsMfa && !mfaVerified) {
+    if (!mfaEnrolled) {
+      // User needs to set up MFA first
+      return <Navigate to="/mfa/setup" state={{ from: location }} replace />;
+    }
+    // User has TOTP enrolled but hasn't verified this session
+    return <Navigate to="/mfa/verify" state={{ from: location }} replace />;
   }
 
   // Role check

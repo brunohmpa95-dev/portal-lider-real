@@ -23,6 +23,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AccessDenied from "./pages/AccessDenied";
 import NotFound from "./pages/NotFound";
+import MfaSetup from "./pages/MfaSetup";
+import MfaVerify from "./pages/MfaVerify";
 
 // Admin
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -69,6 +71,10 @@ const App = () => (
               <Route path="/recuperar-senha" element={<ForgotPassword />} />
               <Route path="/redefinir-senha" element={<ResetPassword />} />
               <Route path="/acesso-negado" element={<AccessDenied />} />
+
+              {/* MFA routes */}
+              <Route path="/mfa/setup" element={<MfaSetup />} />
+              <Route path="/mfa/verify" element={<MfaVerify />} />
 
               {/* Protected client routes */}
               <Route
