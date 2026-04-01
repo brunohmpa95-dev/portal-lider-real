@@ -123,13 +123,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       if (existingSession?.user) {
-        fetchProfile(existingSession.user.id);
-        fetchRoles();
-        checkMfaStatus();
+        await Promise.all([
+          fetchProfile(existingSession.user.id),
+          fetchRoles(),
+          checkMfaStatus(),
+        ]);
       }
       setIsLoading(false);
     });
