@@ -1,9 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { corsHeaders } from "npm:@supabase/supabase-js@2.49.4/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -17,9 +21,9 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Client with user's token for auth verification
-    const supabaseUser = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
@@ -31,13 +35,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Service role client for role operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
-    // GET: check own roles
     if (req.method === "GET" && action === "my-roles") {
       const { data: roles } = await supabaseAdmin
         .from("user_roles")
@@ -50,7 +52,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // GET: check permission
     if (req.method === "GET" && action === "check-role") {
       const role = url.searchParams.get("role");
       if (!role) {
@@ -73,9 +74,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // POST: assign role (superadmin only)
     if (req.method === "POST" && action === "assign-role") {
-      // Verify caller is superadmin
       const { data: callerRole } = await supabaseAdmin
         .from("user_roles")
         .select("id")
@@ -101,7 +100,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Validate role value
       const validRoles = ["cliente", "corretor", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
       if (!validRoles.includes(targetRole)) {
         return new Response(
@@ -125,7 +123,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Audit log
       await supabaseAdmin.from("audit_log").insert({
         user_id: user.id,
         action: "role_assigned",
@@ -140,7 +137,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // DELETE: remove role (superadmin only)
     if (req.method === "DELETE" && action === "remove-role") {
       const { data: callerRole } = await supabaseAdmin
         .from("user_roles")
@@ -173,7 +169,6 @@ Deno.serve(async (req) => {
         .eq("user_id", targetUserId)
         .eq("role", targetRole);
 
-      // Audit log
       await supabaseAdmin.from("audit_log").insert({
         user_id: user.id,
         action: "role_removed",
