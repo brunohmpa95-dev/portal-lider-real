@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Home as HomeIcon, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, User, Home as HomeIcon, LogIn, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { ADMIN_ACCESS_ROLES } from '@/lib/admin-nav';
 import logoImg from '@/assets/logo-transparent.png';
 
 const navItems = [
