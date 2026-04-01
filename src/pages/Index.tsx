@@ -30,18 +30,22 @@ const Index = () => {
       <PageHead title="Início" description="Líder Imóveis Itaúna - Os melhores imóveis para comprar e alugar em Itaúna e região. Confiança e tradição no mercado imobiliário." />
 
       {/* Hero */}
-      <section className="relative bg-gradient-to-b from-secondary to-background py-16 md:py-24">
-        <div className="container mx-auto px-4">
+      <section
+        className="relative bg-cover bg-center bg-no-repeat py-24 md:py-36"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             className="text-center mb-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
-            <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
               Encontre o imóvel ideal<br className="hidden md:block" /> em Itaúna e região
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-white/80 text-lg max-w-2xl mx-auto">
               Compra, venda e locação com a confiança de quem conhece cada bairro da cidade.
             </p>
           </motion.div>
