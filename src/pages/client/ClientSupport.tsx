@@ -13,7 +13,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-const CATEGORIES = ['Financeiro', 'Documentação', 'Manutenção', 'Vistoria', 'Outros'];
+const CATEGORIES = [
+  { value: 'financeiro', label: 'Financeiro' },
+  { value: 'manutencao', label: 'Manutenção' },
+  { value: 'contrato', label: 'Documentação / Contrato' },
+  { value: 'vistoria', label: 'Vistoria' },
+  { value: 'geral', label: 'Outros' },
+];
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   open: { label: 'Aberta', variant: 'default' },
@@ -69,7 +75,8 @@ const ClientSupport = () => {
     });
 
     if (error) {
-      toast.error('Erro ao enviar. Tente novamente.');
+      console.error('[Support] Insert error:', error.message, error.code, error.details, error.hint);
+      toast.error(`Erro ao enviar: ${error.message}`);
     } else {
       toast.success('Solicitação enviada com sucesso!');
       setSubject('');
@@ -144,7 +151,7 @@ const ClientSupport = () => {
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
