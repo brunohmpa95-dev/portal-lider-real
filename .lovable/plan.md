@@ -1,30 +1,22 @@
 
 
-## Plano — Hero com imagem de fundo e overlay escuro
+## Change: Global background from white to light gray (#f3f4f6)
 
-### O que muda
-A seção Hero da Home atualmente usa um gradiente suave (`bg-gradient-to-b from-secondary to-background`). Será substituída por uma imagem de fundo de alta qualidade com overlay escuro semi-transparente, tornando o texto branco e o bloco de busca mais impactante.
+**#f3f4f6 in HSL** ≈ `220 14% 96%`
 
-### Implementação
+### What changes
 
-**1. Imagem de fundo**
-- Usar uma imagem de paisagem urbana/imobiliária de alta qualidade via URL externa (Unsplash) como `background-image` inline no `<section>` do Hero.
-- Aplicar `bg-cover bg-center bg-no-repeat` para preenchimento responsivo.
+**1 file: `src/index.css`**
 
-**2. Overlay escuro**
-- Adicionar um `<div>` absoluto com `bg-black/60` (60% opacidade) cobrindo toda a seção, criando contraste para o texto.
+- Change `--background: 0 0% 100%` → `--background: 220 14% 96%` (the HSL equivalent of #f3f4f6)
+- Keep `--card: 0 0% 100%` as-is (white cards preserved)
+- Keep `--popover`, `--sidebar-background`, `--surface-elevated` white/near-white for contrast
+- Verify `--secondary` (currently `0 0% 96%`) — bump slightly to `0 0% 100%` so secondary sections (which use `bg-secondary/50`) remain visibly white against the new gray background
 
-**3. Ajuste de cores do texto**
-- Título: `text-white` (em vez de `text-foreground`)
-- Subtítulo: `text-white/80` (em vez de `text-muted-foreground`)
-- O SearchBar mantém seu fundo branco/card, destacando-se sobre o overlay.
+This single CSS variable change propagates everywhere `bg-background` is used (body, layout, pages), while cards, header, popovers, and dialogs stay white.
 
-**4. Altura e padding**
-- Aumentar o padding vertical para `py-24 md:py-36` para dar mais presença visual à seção.
+### Review for "washed out" sections
 
-### Arquivo alterado
-- `src/pages/Index.tsx` — apenas a seção Hero (linhas ~33-55)
-
-### Resultado visual
-- Seção hero com foto imobiliária de fundo, overlay escuro, texto branco grande, barra de busca com fundo claro flutuando sobre a imagem.
+- The `bg-secondary/50` sections (Featured for Sale, Institutional) currently resolve to ~96% lightness at 50% opacity over white. Over the new gray background they'll blend more. Fix: change `--secondary` to `0 0% 100%` so those alternating sections read as white bands against gray.
+- The `--surface-sunken` variable (used in client area) is already `0 0% 97%` — close to the new background. Change to `220 14% 93%` so it remains visibly darker than the main background.
 
