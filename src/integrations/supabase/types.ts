@@ -285,6 +285,41 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_interactions: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          interaction_type: string
+          lead_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          lead_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          lead_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "property_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_submissions: {
         Row: {
           address: string | null
@@ -345,6 +380,39 @@ export type Database = {
           purpose?: string | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -434,12 +502,15 @@ export type Database = {
           bedrooms: number
           city: string
           code: string
+          condominium_fee: number | null
           created_at: string
           created_by: string | null
           description: string | null
           features: string[] | null
           id: string
           images: string[] | null
+          internal_notes: string | null
+          iptu: number | null
           is_featured: boolean
           is_new: boolean
           is_super_featured: boolean
@@ -447,6 +518,7 @@ export type Database = {
           parking_spots: number
           price: number
           purpose: string
+          responsible_agent: string | null
           state: string
           status: string
           suites: number
@@ -461,12 +533,15 @@ export type Database = {
           bedrooms?: number
           city?: string
           code: string
+          condominium_fee?: number | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           features?: string[] | null
           id?: string
           images?: string[] | null
+          internal_notes?: string | null
+          iptu?: number | null
           is_featured?: boolean
           is_new?: boolean
           is_super_featured?: boolean
@@ -474,6 +549,7 @@ export type Database = {
           parking_spots?: number
           price?: number
           purpose: string
+          responsible_agent?: string | null
           state?: string
           status?: string
           suites?: number
@@ -488,12 +564,15 @@ export type Database = {
           bedrooms?: number
           city?: string
           code?: string
+          condominium_fee?: number | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           features?: string[] | null
           id?: string
           images?: string[] | null
+          internal_notes?: string | null
+          iptu?: number | null
           is_featured?: boolean
           is_new?: boolean
           is_super_featured?: boolean
@@ -501,6 +580,7 @@ export type Database = {
           parking_spots?: number
           price?: number
           purpose?: string
+          responsible_agent?: string | null
           state?: string
           status?: string
           suites?: number
@@ -515,39 +595,51 @@ export type Database = {
           assigned_to: string | null
           created_at: string
           email: string
+          funnel_stage: string
           id: string
+          internal_notes: string | null
           message: string | null
           name: string
           phone: string | null
+          priority: string
           property_id: string | null
           source: string | null
           status: string
+          tags: string[] | null
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
           created_at?: string
           email: string
+          funnel_stage?: string
           id?: string
+          internal_notes?: string | null
           message?: string | null
           name: string
           phone?: string | null
+          priority?: string
           property_id?: string | null
           source?: string | null
           status?: string
+          tags?: string[] | null
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
           created_at?: string
           email?: string
+          funnel_stage?: string
           id?: string
+          internal_notes?: string | null
           message?: string | null
           name?: string
           phone?: string | null
+          priority?: string
           property_id?: string | null
           source?: string | null
           status?: string
+          tags?: string[] | null
           updated_at?: string
         }
         Relationships: [
@@ -628,6 +720,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visits: {
+        Row: {
+          agent_id: string
+          created_at: string
+          created_by: string | null
+          duration_minutes: number | null
+          id: string
+          lead_id: string | null
+          notes: string | null
+          property_id: string | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          property_id?: string | null
+          scheduled_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          property_id?: string | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "property_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

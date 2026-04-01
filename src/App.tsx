@@ -24,6 +24,22 @@ import ResetPassword from "./pages/ResetPassword";
 import AccessDenied from "./pages/AccessDenied";
 import NotFound from "./pages/NotFound";
 
+// Admin
+import AdminLayout from "@/components/admin/AdminLayout";
+import Dashboard from "@/pages/admin/Dashboard";
+import LeadsList from "@/pages/admin/LeadsList";
+import LeadForm from "@/pages/admin/LeadForm";
+import LeadDetail from "@/pages/admin/LeadDetail";
+import PropertiesList from "@/pages/admin/PropertiesList";
+import PropertyForm from "@/pages/admin/PropertyForm";
+import Agenda from "@/pages/admin/Agenda";
+import Team from "@/pages/admin/Team";
+import Partners from "@/pages/admin/Partners";
+import Reports from "@/pages/admin/Reports";
+import Settings from "@/pages/admin/Settings";
+import AdminProfile from "@/pages/admin/AdminProfile";
+import Notifications from "@/pages/admin/Notifications";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -54,7 +70,7 @@ const App = () => (
               <Route path="/redefinir-senha" element={<ResetPassword />} />
               <Route path="/acesso-negado" element={<AccessDenied />} />
 
-              {/* Protected routes — require authentication */}
+              {/* Protected client routes */}
               <Route
                 path="/area-do-cliente"
                 element={
@@ -71,6 +87,25 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="leads" element={<LeadsList />} />
+                <Route path="leads/new" element={<LeadForm />} />
+                <Route path="leads/:id" element={<LeadDetail />} />
+                <Route path="properties" element={<PropertiesList />} />
+                <Route path="properties/new" element={<PropertyForm />} />
+                <Route path="properties/:id" element={<PropertyForm />} />
+                <Route path="properties/:id/edit" element={<PropertyForm />} />
+                <Route path="agenda" element={<Agenda />} />
+                <Route path="team" element={<Team />} />
+                <Route path="partners" element={<Partners />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<AdminProfile />} />
+                <Route path="notifications" element={<Notifications />} />
+              </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>
