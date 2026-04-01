@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
-import type { AppRole, AuthState } from '@/lib/auth-types';
+import { type AppRole, type AuthState, hasPermission as checkPerm, hasAnyRole as checkAnyRoles } from '@/lib/auth-types';
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -18,7 +18,6 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Safe error messages — never expose internals
 function safeErrorMessage(error: any): string {
   const msg = error?.message?.toLowerCase() || '';
   if (msg.includes('invalid login') || msg.includes('invalid email') || msg.includes('invalid password')) {
@@ -72,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchRoles();
   }, [fetchRoles]);
 
-  // Set up auth listener BEFORE checking session
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
@@ -80,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          // Defer to avoid deadlock with Supabase client
           setTimeout(async () => {
             await fetchProfile(newSession.user.id);
             await fetchRoles();
@@ -94,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Then check existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
@@ -111,7 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: safeErrorMessage(error) };
-    // Log login action
     const { data: { user: u } } = await supabase.auth.getUser();
     if (u) {
       await supabase.from('audit_log').insert({
@@ -156,28 +151,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/redefinir-senha`,
     });
-    // Always return success to prevent email enumeration
     if (error) console.error('Reset password error (hidden from user)');
     return { error: null };
   };
 
-  const updatePassword = async (password: string) => {
+  const updatePasswordFn = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { error: safeErrorMessage(error) };
     return { error: null };
   };
 
-  const checkPermission = useCallback((permissionKey: string): boolean => {
-    const { hasPermission: hp } = require('@/lib/auth-types');
-    return hp(roles, permissionKey);
+  const permissionCheck = useCallback((permissionKey: string): boolean => {
+    return checkPerm(roles, permissionKey);
   }, [roles]);
 
-  const checkRole = useCallback((role: AppRole): boolean => {
+  const roleCheck = useCallback((role: AppRole): boolean => {
     return roles.includes(role);
   }, [roles]);
 
-  const checkAnyRole = useCallback((requiredRoles: AppRole[]): boolean => {
-    return roles.some(r => requiredRoles.includes(r));
+  const anyRoleCheck = useCallback((requiredRoles: AppRole[]): boolean => {
+    return checkAnyRoles(roles, requiredRoles);
   }, [roles]);
 
   return (
@@ -194,11 +187,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         signOutAllSessions,
         resetPassword,
-        updatePassword,
+        updatePassword: updatePasswordFn,
         refreshRoles,
-        hasPermission: checkPermission,
-        hasRole: checkRole,
-        hasAnyRole: checkAnyRole,
+        hasPermission: permissionCheck,
+        hasRole: roleCheck,
+        hasAnyRole: anyRoleCheck,
       }}
     >
       {children}
