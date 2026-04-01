@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Headphones, MessageSquare, Clock, CheckCircle, Loader2 } from 'lucide-react';
 import ClientLayout from '@/components/client/ClientLayout';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ const ClientSupport = () => {
   const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     if (!user) return;
     setFetching(true);
     const { data, error } = await supabase
@@ -43,9 +43,9 @@ const ClientSupport = () => {
 
     if (!error && data) setTickets(data);
     setFetching(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchTickets(); }, [user]);
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
   const counts = {
     open: tickets.filter(t => t.status === 'open').length,
