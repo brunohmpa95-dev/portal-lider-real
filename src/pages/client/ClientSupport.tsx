@@ -13,7 +13,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-const CATEGORIES = ['Financeiro', 'Documentação', 'Manutenção', 'Vistoria', 'Outros'];
+const CATEGORIES = [
+  { value: 'financeiro', label: 'Financeiro' },
+  { value: 'manutencao', label: 'Manutenção' },
+  { value: 'contrato', label: 'Documentação / Contrato' },
+  { value: 'vistoria', label: 'Vistoria' },
+  { value: 'geral', label: 'Outros' },
+];
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   open: { label: 'Aberta', variant: 'default' },
