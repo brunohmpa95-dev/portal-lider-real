@@ -104,18 +104,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchProfile, fetchRoles]);
 
-  const logAuthEvent = async (action: string, result: string, metadata?: Record<string, unknown>) => {
+  // Fire-and-forget audit logging via edge function.
+  // tokenOverride: pass a captured token for cases where session is about to be destroyed (logout).
+  const logAuthEvent = (action: string, result: string, metadata?: Record<string, unknown>, tokenOverride?: string) => {
     try {
       const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/form-submit`;
-      const { data: { session: s } } = await supabase.auth.getSession();
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (s?.access_token) headers['Authorization'] = `Bearer ${s.access_token}`;
-      await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ form_type: 'audit_event', action, result, metadata }),
-      });
-    } catch { /* don't block auth flow */ }
+
+      // Use override token if provided, otherwise try current session
+      const getToken = tokenOverride
+        ? Promise.resolve(tokenOverride)
+        : supabase.auth.getSession().then(({ data: { session: s } }) => s?.access_token || null);
+
+      getToken.then((token) => {
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ form_type: 'audit_event', action, result, metadata }),
+        }).catch(() => {});
+      }).catch(() => {});
+    } catch { /* never block auth flow */ }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -142,9 +151,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const currentUserId = user?.id;
+    // Capture token BEFORE destroying the session
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const token = currentSession?.access_token;
     await supabase.auth.signOut();
-    if (currentUserId) logAuthEvent('logout', 'success', { scope: 'local' });
+    if (token) logAuthEvent('logout', 'success', { scope: 'local' }, token);
     setUser(null);
     setSession(null);
     setRoles([]);
@@ -152,9 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOutAllSessions = async () => {
-    const currentUserId = user?.id;
+    // Capture token BEFORE destroying the session
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const token = currentSession?.access_token;
     await supabase.auth.signOut({ scope: 'global' });
-    if (currentUserId) logAuthEvent('logout', 'success', { scope: 'global' });
+    if (token) logAuthEvent('logout', 'success', { scope: 'global' }, token);
     setUser(null);
     setSession(null);
     setRoles([]);
