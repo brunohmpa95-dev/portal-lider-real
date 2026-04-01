@@ -14,7 +14,7 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { signIn, isAuthenticated, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
+  const { signIn, isAuthenticated, isLoading, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/area-do-cliente';

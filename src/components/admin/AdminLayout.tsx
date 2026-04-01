@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ADMIN_ACCESS_ROLES, ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
+import { ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
 import {
   SidebarProvider,
   Sidebar,
@@ -28,7 +27,6 @@ import {
 import { Bell, LogOut, ChevronRight, Search, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
 
 function AdminSidebarContent() {
   const { roles, profile } = useAuth();
