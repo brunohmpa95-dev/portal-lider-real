@@ -85,15 +85,21 @@ async function auditLog(
   serviceClient: ReturnType<typeof createClient>,
   userId: string | null,
   action: string,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  ipAddress?: string,
+  userAgent?: string
 ) {
   try {
     await serviceClient.from("audit_log").insert({
       user_id: userId,
       action,
+      resource: "storage",
+      result: "success",
       metadata,
       target_type: "storage",
       target_id: metadata.bucket as string,
+      ip_address: ipAddress || null,
+      user_agent: userAgent || null,
     });
   } catch {
     // Don't fail the request if audit logging fails
