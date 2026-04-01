@@ -320,6 +320,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Campos obrigatórios: bucket, path" }, 400);
       }
 
+      // Path traversal protection
+      if (path.includes("..") || path.startsWith("/")) {
+        return jsonResponse({ error: "Caminho inválido" }, 400);
+      }
+
       if (!userId) {
         return jsonResponse({ error: "Autenticação necessária" }, 401);
       }
