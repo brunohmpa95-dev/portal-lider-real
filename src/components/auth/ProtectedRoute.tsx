@@ -3,10 +3,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { AppRole } from '@/lib/auth-types';
 import { Loader2 } from 'lucide-react';
 
+type RouteRole = AppRole | 'admin';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   /** Require any of these roles. Empty = just authenticated. */
-  requiredRoles?: AppRole[];
+  requiredRoles?: RouteRole[];
   /** Require a specific permission key from the matrix. */
   requiredPermission?: string;
   /** Custom fallback when unauthorized (default: redirect to login) */
@@ -14,6 +16,10 @@ interface ProtectedRouteProps {
   /** Whether this route requires MFA verification (default: auto-detect from roles) */
   requireMfa?: boolean;
 }
+
+const normalizeRouteRole = (role: RouteRole): AppRole => {
+  return role === 'admin' ? 'administrativo' : role;
+};
 
 const ProtectedRoute = ({
   children,
@@ -23,10 +29,18 @@ const ProtectedRoute = ({
   requireMfa,
 }: ProtectedRouteProps) => {
   const {
-    isAuthenticated, isLoading, roles, hasPermission, hasAnyRole, profile,
-    mfaRequired, mfaVerified, mfaEnrolled,
+    isAuthenticated,
+    isLoading,
+    roles,
+    hasPermission,
+    hasAnyRole,
+    profile,
+    mfaRequired,
+    mfaVerified,
+    mfaEnrolled,
   } = useAuth();
   const location = useLocation();
+  const normalizedRequiredRoles = requiredRoles.map(normalizeRouteRole);
 
   if (isLoading) {
     return (
@@ -36,13 +50,13 @@ const ProtectedRoute = ({
     );
   }
 
-  // Not authenticated → login
   if (!isAuthenticated) {
+    console.warn('[ProtectedRoute] unauthenticated redirect', { path: location.pathname, fallbackPath });
     return <Navigate to={fallbackPath} state={{ from: location }} replace />;
   }
 
-  // Account deactivated
   if (profile && !profile.is_active) {
+    console.warn('[ProtectedRoute] blocked inactive account', { path: location.pathname });
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center max-w-md p-8">
@@ -55,24 +69,37 @@ const ProtectedRoute = ({
     );
   }
 
-  // MFA enforcement
   const needsMfa = requireMfa !== undefined ? requireMfa : mfaRequired;
   if (needsMfa && !mfaVerified) {
+    console.warn('[ProtectedRoute] redirecting to MFA', {
+      path: location.pathname,
+      mfaEnrolled,
+      roles,
+    });
+
     if (!mfaEnrolled) {
-      // User needs to set up MFA first
       return <Navigate to="/mfa/setup" state={{ from: location }} replace />;
     }
-    // User has TOTP enrolled but hasn't verified this session
+
     return <Navigate to="/mfa/verify" state={{ from: location }} replace />;
   }
 
-  // Role check
-  if (requiredRoles.length > 0 && !hasAnyRole(requiredRoles)) {
+  if (normalizedRequiredRoles.length > 0 && !hasAnyRole(normalizedRequiredRoles)) {
+    console.warn('[ProtectedRoute] access denied by role', {
+      path: location.pathname,
+      requiredRoles,
+      normalizedRequiredRoles,
+      currentRoles: roles,
+    });
     return <Navigate to="/acesso-negado" replace />;
   }
 
-  // Permission check
   if (requiredPermission && !hasPermission(requiredPermission)) {
+    console.warn('[ProtectedRoute] access denied by permission', {
+      path: location.pathname,
+      requiredPermission,
+      currentRoles: roles,
+    });
     return <Navigate to="/acesso-negado" replace />;
   }
 

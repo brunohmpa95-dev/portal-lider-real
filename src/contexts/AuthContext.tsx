@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User, Session, AuthenticatorAssuranceLevels } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
 import { type AppRole, type AuthState, MFA_REQUIRED_ROLES, hasPermission as checkPerm, hasAnyRole as checkAnyRoles } from '@/lib/auth-types';
 
 interface AuthContextValue extends AuthState {
@@ -24,6 +24,8 @@ interface AuthContextValue extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AUTH_TIMEOUT_MS = 5000;
+const EMPTY_MFA_STATE = { verified: false, enrolled: false };
 
 function safeErrorMessage(error: any): string {
   const msg = error?.message?.toLowerCase() || '';
@@ -45,6 +47,37 @@ function safeErrorMessage(error: any): string {
   return 'Ocorreu um erro. Tente novamente.';
 }
 
+function withTimeoutFallback<T>(label: string, task: () => Promise<T>, fallback: T): Promise<T> {
+  console.log(`[Auth] ${label}:start`);
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      console.warn(`[Auth] ${label}:timeout`, { timeoutMs: AUTH_TIMEOUT_MS });
+      resolve(fallback);
+    }, AUTH_TIMEOUT_MS);
+
+    task()
+      .then((result) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        console.log(`[Auth] ${label}:success`);
+        resolve(result);
+      })
+      .catch((error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        console.error(`[Auth] ${label}:error`, error);
+        resolve(fallback);
+      });
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -52,118 +85,218 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<AuthState['profile']>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // MFA state
   const [mfaVerified, setMfaVerified] = useState(false);
   const [mfaEnrolled, setMfaEnrolled] = useState(false);
+  const syncRunRef = useRef(0);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('full_name, phone, avatar_url, is_active, mfa_required')
-        .eq('user_id', userId)
-        .single();
-      setProfile(data || null);
-    } catch {
-      setProfile(null);
-    }
+  const resetDerivedAuthState = useCallback(() => {
+    console.log('[Auth] resetDerivedAuthState');
+    setProfile(null);
+    setRoles([]);
+    setMfaVerified(false);
+    setMfaEnrolled(false);
   }, []);
 
-  const fetchRoles = useCallback(async () => {
-    try {
-      const { data } = await supabase.rpc('get_my_roles');
-      setRoles((data as AppRole[]) || []);
-    } catch {
-      setRoles([]);
+  const loadProfile = useCallback(async (userId: string): Promise<AuthState['profile']> => {
+    console.log('[Auth] loadProfile:request', { userId });
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('full_name, phone, avatar_url, is_active, mfa_required')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('[Auth] loadProfile:error', error);
+      return null;
     }
+
+    console.log('[Auth] loadProfile:success', { userId, found: !!data });
+    return data || null;
   }, []);
 
-  const checkMfaStatus = useCallback(async () => {
-    try {
-      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      setMfaVerified(aalData?.currentLevel === 'aal2');
+  const loadRoles = useCallback(async (): Promise<AppRole[]> => {
+    console.log('[Auth] loadRoles:request');
+    const { data, error } = await supabase.rpc('get_my_roles');
 
-      const { data: factorsData } = await supabase.auth.mfa.listFactors();
-      const verifiedFactors = (factorsData?.totp || []).filter((f) => f.status === 'verified');
-      setMfaEnrolled(verifiedFactors.length > 0);
-    } catch {
-      setMfaVerified(false);
-      setMfaEnrolled(false);
+    if (error) {
+      console.error('[Auth] loadRoles:error', error);
+      return [];
     }
+
+    const nextRoles = (data as AppRole[]) || [];
+    console.log('[Auth] loadRoles:success', { roles: nextRoles });
+    return nextRoles;
   }, []);
 
-  const refreshRoles = useCallback(async () => {
-    await fetchRoles();
-  }, [fetchRoles]);
+  const loadMfaStatus = useCallback(async () => {
+    console.log('[Auth] loadMfaStatus:request');
 
-  const refreshMfaStatus = useCallback(async () => {
-    await checkMfaStatus();
-  }, [checkMfaStatus]);
+    const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError) {
+      console.error('[Auth] loadMfaStatus:aalError', aalError);
+      return EMPTY_MFA_STATE;
+    }
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
+    const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+    if (factorsError) {
+      console.error('[Auth] loadMfaStatus:factorsError', factorsError);
+      return EMPTY_MFA_STATE;
+    }
 
-        if (newSession?.user) {
-          await Promise.all([
-            fetchProfile(newSession.user.id),
-            fetchRoles(),
-            checkMfaStatus(),
-          ]);
-          setIsLoading(false);
-        } else {
-          setProfile(null);
-          setRoles([]);
-          setMfaVerified(false);
-          setMfaEnrolled(false);
-          setIsLoading(false);
-        }
-      }
-    );
+    const verifiedFactors = (factorsData?.totp || []).filter((factor) => factor.status === 'verified');
+    const nextState = {
+      verified: aalData?.currentLevel === 'aal2',
+      enrolled: verifiedFactors.length > 0,
+    };
 
-    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-      if (existingSession?.user) {
-        await Promise.all([
-          fetchProfile(existingSession.user.id),
-          fetchRoles(),
-          checkMfaStatus(),
-        ]);
-      }
-      setIsLoading(false);
+    console.log('[Auth] loadMfaStatus:success', {
+      currentLevel: aalData?.currentLevel ?? null,
+      nextLevel: aalData?.nextLevel ?? null,
+      ...nextState,
     });
 
-    return () => subscription.unsubscribe();
-  }, [fetchProfile, fetchRoles, checkMfaStatus]);
+    return nextState;
+  }, []);
 
-  // Compute whether MFA is required for this user
+  const syncAuthState = useCallback(async (
+    nextSession: Session | null,
+    source: string,
+    options: { blockUi?: boolean } = {},
+  ) => {
+    const runId = ++syncRunRef.current;
+    const blockUi = options.blockUi ?? false;
+
+    if (blockUi) {
+      setIsLoading(true);
+    }
+
+    console.log('[Auth] syncAuthState:start', {
+      source,
+      runId,
+      blockUi,
+      hasSession: !!nextSession,
+      userId: nextSession?.user?.id ?? null,
+    });
+
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (!nextSession?.user) {
+      resetDerivedAuthState();
+      if (syncRunRef.current === runId) {
+        setIsLoading(false);
+      }
+      console.log('[Auth] syncAuthState:done-no-session', { source, runId });
+      return;
+    }
+
+    const userId = nextSession.user.id;
+
+    const [nextProfile, nextRoles, nextMfaState] = await Promise.all([
+      withTimeoutFallback(`loadProfile:${source}`, () => loadProfile(userId), null),
+      withTimeoutFallback(`loadRoles:${source}`, () => loadRoles(), [] as AppRole[]),
+      withTimeoutFallback(`loadMfaStatus:${source}`, () => loadMfaStatus(), EMPTY_MFA_STATE),
+    ]);
+
+    if (syncRunRef.current !== runId) {
+      console.warn('[Auth] syncAuthState:stale-run-ignored', { source, runId, latestRunId: syncRunRef.current });
+      return;
+    }
+
+    setProfile(nextProfile);
+    setRoles(nextRoles);
+    setMfaVerified(nextMfaState.verified);
+    setMfaEnrolled(nextMfaState.enrolled);
+    setIsLoading(false);
+
+    console.log('[Auth] syncAuthState:done', {
+      source,
+      runId,
+      userId,
+      roles: nextRoles,
+      profileLoaded: !!nextProfile,
+      mfaVerified: nextMfaState.verified,
+      mfaEnrolled: nextMfaState.enrolled,
+    });
+  }, [loadMfaStatus, loadProfile, loadRoles, resetDerivedAuthState]);
+
+  const refreshRoles = useCallback(async () => {
+    const nextRoles = await withTimeoutFallback('refreshRoles', () => loadRoles(), [] as AppRole[]);
+    setRoles(nextRoles);
+  }, [loadRoles]);
+
+  const refreshMfaStatus = useCallback(async () => {
+    const nextMfaState = await withTimeoutFallback('refreshMfaStatus', () => loadMfaStatus(), EMPTY_MFA_STATE);
+    setMfaVerified(nextMfaState.verified);
+    setMfaEnrolled(nextMfaState.enrolled);
+  }, [loadMfaStatus]);
+
+  useEffect(() => {
+    let isMounted = true;
+    console.log('[Auth] provider:mount');
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!isMounted) return;
+
+      const blockUi = event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED';
+      console.log('[Auth] onAuthStateChange', {
+        event,
+        blockUi,
+        userId: newSession?.user?.id ?? null,
+      });
+
+      void syncAuthState(newSession, `onAuthStateChange:${event}`, { blockUi });
+    });
+
+    void withTimeoutFallback(
+      'getSession',
+      async () => {
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        return existingSession;
+      },
+      null,
+    ).then((existingSession) => {
+      if (!isMounted) return;
+
+      console.log('[Auth] getSession:resolved', {
+        hasSession: !!existingSession,
+        userId: existingSession?.user?.id ?? null,
+      });
+
+      void syncAuthState(existingSession, 'bootstrap:getSession', { blockUi: true });
+    });
+
+    return () => {
+      isMounted = false;
+      console.log('[Auth] provider:unmount');
+      subscription.unsubscribe();
+    };
+  }, [syncAuthState]);
+
   const mfaRequired = (() => {
-    // Profile-level flag
     if (profile?.mfa_required) return true;
-    // Role-based requirement
-    return roles.some((r) => MFA_REQUIRED_ROLES.includes(r));
+    return roles.some((role) => MFA_REQUIRED_ROLES.includes(role));
   })();
 
-  // Fire-and-forget audit logging
   const logAuthEvent = (action: string, result: string, metadata?: Record<string, unknown>, tokenOverride?: string) => {
     try {
       const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/form-submit`;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       const getToken = tokenOverride
         ? Promise.resolve(tokenOverride)
-        : supabase.auth.getSession().then(({ data: { session: s } }) => s?.access_token || null);
+        : supabase.auth.getSession().then(({ data: { session: currentSession } }) => currentSession?.access_token || null);
+
       getToken.then((token) => {
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (token) headers.Authorization = `Bearer ${token}`;
         fetch(url, {
           method: 'POST',
           headers,
           body: JSON.stringify({ form_type: 'audit_event', action, result, metadata }),
         }).catch(() => {});
       }).catch(() => {});
-    } catch { /* never block auth flow */ }
+    } catch {
+      // never block auth flow
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -196,10 +329,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) logAuthEvent('logout', 'success', { scope: 'local' }, token);
     setUser(null);
     setSession(null);
-    setRoles([]);
-    setProfile(null);
-    setMfaVerified(false);
-    setMfaEnrolled(false);
+    resetDerivedAuthState();
+    setIsLoading(false);
   };
 
   const signOutAllSessions = async () => {
@@ -209,10 +340,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) logAuthEvent('logout', 'success', { scope: 'global' }, token);
     setUser(null);
     setSession(null);
-    setRoles([]);
-    setProfile(null);
-    setMfaVerified(false);
-    setMfaEnrolled(false);
+    resetDerivedAuthState();
+    setIsLoading(false);
   };
 
   const resetPassword = async (email: string) => {

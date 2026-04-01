@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ADMIN_ACCESS_ROLES, ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
+import { ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
 import {
   SidebarProvider,
   Sidebar,
@@ -28,7 +27,6 @@ import {
 import { Bell, LogOut, ChevronRight, Search, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
 
 function AdminSidebarContent() {
   const { roles, profile } = useAuth();
@@ -243,43 +241,6 @@ function getBreadcrumbs(pathname: string) {
 }
 
 export default function AdminLayout() {
-  const { isAuthenticated, isLoading, roles, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    if (!isAuthenticated) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    const hasAccess = roles.some((r) => ADMIN_ACCESS_ROLES.includes(r));
-    if (!hasAccess) {
-      navigate('/acesso-negado', { replace: true });
-      return;
-    }
-
-    // Enforce MFA for sensitive roles
-    if (mfaRequired && !mfaVerified) {
-      if (!mfaEnrolled) {
-        navigate('/mfa/setup', { state: { from: { pathname: '/admin' } }, replace: true });
-      } else {
-        navigate('/mfa/verify', { state: { from: { pathname: '/admin' } }, replace: true });
-      }
-    }
-  }, [isLoading, isAuthenticated, roles, mfaRequired, mfaVerified, mfaEnrolled, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return null;
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-muted/30">

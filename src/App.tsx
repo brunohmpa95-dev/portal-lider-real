@@ -95,7 +95,14 @@ const App = () => (
               />
 
               {/* Admin routes */}
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Dashboard />} />
                 <Route path="leads" element={<LeadsList />} />
                 <Route path="leads/new" element={<LeadForm />} />

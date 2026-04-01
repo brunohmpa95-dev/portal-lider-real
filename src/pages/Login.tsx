@@ -14,7 +14,7 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { signIn, isAuthenticated, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
+  const { signIn, isAuthenticated, isLoading, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/area-do-cliente';
@@ -27,7 +27,7 @@ const Login = () => {
 
   // Handle post-login MFA redirect
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (isLoading || !isAuthenticated) return;
 
     if (mfaRequired && !mfaVerified) {
       if (!mfaEnrolled) {
@@ -38,7 +38,7 @@ const Login = () => {
     } else {
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, mfaRequired, mfaVerified, mfaEnrolled, from, navigate]);
+  }, [isAuthenticated, isLoading, mfaRequired, mfaVerified, mfaEnrolled, from, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
