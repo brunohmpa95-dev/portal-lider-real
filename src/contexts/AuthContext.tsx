@@ -106,14 +106,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: safeErrorMessage(error) };
+    if (error) {
+      // Log failed login attempt (don't include email in metadata for security)
+      await supabase.from('audit_log').insert({
+        user_id: null,
+        action: 'login_failed',
+        resource: 'auth',
+        result: 'denied',
+        metadata: { reason: 'invalid_credentials' },
+      }).then(() => {}, () => {});
+      return { error: safeErrorMessage(error) };
+    }
     const { data: { user: u } } = await supabase.auth.getUser();
     if (u) {
       await supabase.from('audit_log').insert({
         user_id: u.id,
         action: 'login',
+        resource: 'auth',
+        result: 'success',
         metadata: { method: 'password' },
-      });
+      }).then(() => {}, () => {});
     }
     return { error: null };
   };
