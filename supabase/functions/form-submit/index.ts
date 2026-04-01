@@ -337,20 +337,68 @@ Deno.serve(async (req) => {
 
     // ============================================================
     // AUDIT EVENT (auth logging from client — server-side insert)
+    // Strict allowlist: only auth-related events from the client.
+    // Server-side handlers log their own events directly.
     // ============================================================
     if (formType === "audit_event") {
+      // --- Allowlists ---
+      const ALLOWED_ACTIONS = ["login", "login_failed", "logout"] as const;
+      const ALLOWED_RESULTS = ["success", "denied"] as const;
+      const ALLOWED_METADATA_KEYS: Record<string, string[]> = {
+        login:        ["method"],
+        login_failed: ["reason"],
+        logout:       ["scope"],
+      };
+      const ALLOWED_METADATA_VALUES: Record<string, string[]> = {
+        method: ["password"],
+        reason: ["invalid_credentials"],
+        scope:  ["local", "global"],
+      };
+
       const action = sanitizeShort(body.action, 50);
       const result = sanitizeShort(body.result, 20);
-      const metadata = body.metadata && typeof body.metadata === "object" ? body.metadata : {};
 
-      if (!action) return jsonResponse({ error: "Ação obrigatória" }, 400);
+      // Validate action
+      if (!ALLOWED_ACTIONS.includes(action as any)) {
+        return jsonResponse({ error: "Ação não permitida" }, 400);
+      }
+
+      // Validate result
+      if (!ALLOWED_RESULTS.includes(result as any)) {
+        return jsonResponse({ error: "Resultado não permitido" }, 400);
+      }
+
+      // For login_failed: must NOT have a valid user (no auth required)
+      // For login/logout: should have a valid user
+      if (action === "login_failed" && userId) {
+        // Suspicious: failed login shouldn't have a valid token
+        // Log anyway but force user_id to null
+      }
+      if ((action === "login" || action === "logout") && !userId) {
+        // login without user context is suspicious but possible (race condition)
+        // Allow but log with null user_id
+      }
+
+      // Validate and strip metadata
+      const rawMeta = body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata) ? body.metadata : {};
+      const allowedKeys = ALLOWED_METADATA_VALUES ? ALLOWED_METADATA_KEYS[action] || [] : [];
+      const cleanMeta: Record<string, string> = {};
+      for (const key of allowedKeys) {
+        const val = typeof rawMeta[key] === "string" ? sanitizeShort(rawMeta[key], 50) : null;
+        if (val && ALLOWED_METADATA_VALUES[key]?.includes(val)) {
+          cleanMeta[key] = val;
+        }
+      }
+
+      // For login_failed, always force user_id to null regardless of token
+      const effectiveUserId = action === "login_failed" ? null : userId;
 
       await auditLog(serviceClient, {
-        userId,
+        userId: effectiveUserId,
         action,
         resource: "auth",
-        result: result || "success",
-        metadata,
+        result,
+        metadata: cleanMeta,
         ipAddress,
         userAgent,
       });
