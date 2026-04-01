@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
         originalName: file.name,
         size: file.size,
         mimeType: file.type,
-      });
+      }, ipAddress, userAgent);
 
       return jsonResponse({
         path: data.path,
