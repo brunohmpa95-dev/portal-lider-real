@@ -84,7 +84,39 @@ const App = () => (
                 path="/area-do-cliente"
                 element={
                   <ProtectedRoute>
-                    <ClientArea />
+                    <ClientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/documentos"
+                element={
+                  <ProtectedRoute>
+                    <ClientDocuments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/suporte"
+                element={
+                  <ProtectedRoute>
+                    <ClientSupport />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/financeiro"
+                element={
+                  <ProtectedRoute>
+                    <ClientFinancial />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/locacao"
+                element={
+                  <ProtectedRoute>
+                    <ClientRental />
                   </ProtectedRoute>
                 }
               />
@@ -92,7 +124,7 @@ const App = () => (
                 path="/documentos"
                 element={
                   <ProtectedRoute>
-                    <Documents />
+                    <ClientDocuments />
                   </ProtectedRoute>
                 }
               />
