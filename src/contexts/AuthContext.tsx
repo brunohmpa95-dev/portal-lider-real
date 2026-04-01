@@ -107,11 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          setTimeout(async () => {
-            await fetchProfile(newSession.user.id);
-            await fetchRoles();
-            await checkMfaStatus();
-            setIsLoading(false);
+          await Promise.all([
+            fetchProfile(newSession.user.id),
+            fetchRoles(),
+            checkMfaStatus(),
+          ]);
+          setIsLoading(false);
           }, 0);
         } else {
           setProfile(null);
