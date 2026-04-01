@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const formType = body.form_type as string;
 
-    if (!formType || !["contact", "listing", "ombudsman", "career", "property_lead", "support"].includes(formType)) {
+    if (!formType || !["contact", "listing", "ombudsman", "career", "property_lead", "support", "audit_event"].includes(formType)) {
       return jsonResponse({ error: "Tipo de formulário inválido" }, 400);
     }
 
@@ -333,6 +333,28 @@ Deno.serve(async (req) => {
 
       await auditLog(serviceClient, { userId, action: "form_submit", resource: "support_requests", targetId: data.id, result: "success", metadata: { form_type: "support" }, ipAddress, userAgent });
       return jsonResponse({ success: true, message: "Solicitação aberta com sucesso!" });
+    }
+
+    // ============================================================
+    // AUDIT EVENT (auth logging from client — server-side insert)
+    // ============================================================
+    if (formType === "audit_event") {
+      const action = sanitizeShort(body.action, 50);
+      const result = sanitizeShort(body.result, 20);
+      const metadata = body.metadata && typeof body.metadata === "object" ? body.metadata : {};
+
+      if (!action) return jsonResponse({ error: "Ação obrigatória" }, 400);
+
+      await auditLog(serviceClient, {
+        userId,
+        action,
+        resource: "auth",
+        result: result || "success",
+        metadata,
+        ipAddress,
+        userAgent,
+      });
+      return jsonResponse({ success: true });
     }
 
     return jsonResponse({ error: "Formulário não reconhecido" }, 400);
