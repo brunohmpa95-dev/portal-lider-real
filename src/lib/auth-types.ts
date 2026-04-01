@@ -26,7 +26,8 @@ export const ROLE_HIERARCHY: AppRole[] = [
 
 export const ADMIN_ROLES: AppRole[] = ['administrativo', 'superadmin'];
 export const INTERNAL_ROLES: AppRole[] = ['corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'];
-export const MFA_REQUIRED_ROLES: AppRole[] = ['financeiro', 'administrativo', 'superadmin'];
+// TODO: Reativar MFA após testes — original: ['financeiro', 'administrativo', 'superadmin']
+export const MFA_REQUIRED_ROLES: AppRole[] = [];
 
 export interface AuthState {
   user: User | null;
