@@ -112,6 +112,39 @@ export type Database = {
           },
         ]
       }
+      boletos: {
+        Row: {
+          ano: number
+          created_at: string
+          id: string
+          link_boleto: string | null
+          mes: number
+          status: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          id?: string
+          link_boleto?: string | null
+          mes: number
+          status?: string
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          id?: string
+          link_boleto?: string | null
+          mes?: number
+          status?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -239,6 +272,72 @@ export type Database = {
           is_confidential?: boolean
           title?: string
           uploaded_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_requests: {
+        Row: {
+          created_at: string
+          id: string
+          justificativa: string | null
+          periodo: string | null
+          status: string
+          tipo_documento: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          justificativa?: string | null
+          periodo?: string | null
+          status?: string
+          tipo_documento: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          justificativa?: string | null
+          periodo?: string | null
+          status?: string
+          tipo_documento?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inspections: {
+        Row: {
+          created_at: string
+          data_preferencial: string | null
+          id: string
+          observacoes: string | null
+          status: string
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_preferencial?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_preferencial?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -380,6 +479,39 @@ export type Database = {
           purpose?: string | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      maintenance_requests: {
+        Row: {
+          created_at: string
+          descricao: string
+          id: string
+          status: string
+          tipo: string
+          updated_at: string
+          urgencia: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          id?: string
+          status?: string
+          tipo: string
+          updated_at?: string
+          urgencia?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          id?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          urgencia?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -651,6 +783,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rental_inquiries: {
+        Row: {
+          assunto: string
+          created_at: string
+          id: string
+          mensagem: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assunto: string
+          created_at?: string
+          id?: string
+          mensagem: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assunto?: string
+          created_at?: string
+          id?: string
+          mensagem?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       support_requests: {
         Row: {
