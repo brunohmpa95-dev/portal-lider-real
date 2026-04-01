@@ -107,12 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          setTimeout(async () => {
-            await fetchProfile(newSession.user.id);
-            await fetchRoles();
-            await checkMfaStatus();
-            setIsLoading(false);
-          }, 0);
+          await Promise.all([
+            fetchProfile(newSession.user.id),
+            fetchRoles(),
+            checkMfaStatus(),
+          ]);
+          setIsLoading(false);
         } else {
           setProfile(null);
           setRoles([]);
@@ -123,13 +123,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       if (existingSession?.user) {
-        fetchProfile(existingSession.user.id);
-        fetchRoles();
-        checkMfaStatus();
+        await Promise.all([
+          fetchProfile(existingSession.user.id),
+          fetchRoles(),
+          checkMfaStatus(),
+        ]);
       }
       setIsLoading(false);
     });
