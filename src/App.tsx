@@ -23,6 +23,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AccessDenied from "./pages/AccessDenied";
 import NotFound from "./pages/NotFound";
+import MfaSetup from "./pages/MfaSetup";
+import MfaVerify from "./pages/MfaVerify";
 
 // Admin
 import AdminLayout from "@/components/admin/AdminLayout";
