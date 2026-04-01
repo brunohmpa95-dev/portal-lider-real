@@ -43,9 +43,9 @@ const ClientSupport = () => {
 
     if (!error && data) setTickets(data);
     setFetching(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchTickets(); }, [user]);
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
 
   const counts = {
     open: tickets.filter(t => t.status === 'open').length,
