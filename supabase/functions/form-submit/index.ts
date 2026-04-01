@@ -335,6 +335,28 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, message: "Solicitação aberta com sucesso!" });
     }
 
+    // ============================================================
+    // AUDIT EVENT (auth logging from client — server-side insert)
+    // ============================================================
+    if (formType === "audit_event") {
+      const action = sanitizeShort(body.action, 50);
+      const result = sanitizeShort(body.result, 20);
+      const metadata = body.metadata && typeof body.metadata === "object" ? body.metadata : {};
+
+      if (!action) return jsonResponse({ error: "Ação obrigatória" }, 400);
+
+      await auditLog(serviceClient, {
+        userId,
+        action,
+        resource: "auth",
+        result: result || "success",
+        metadata,
+        ipAddress,
+        userAgent,
+      });
+      return jsonResponse({ success: true });
+    }
+
     return jsonResponse({ error: "Formulário não reconhecido" }, 400);
   } catch (err) {
     console.error("form-submit error:", err);
