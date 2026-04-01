@@ -1,1 +1,4 @@
 project_id = "lkjgwzmolatkjupapepm"
+
+[functions.secure-storage]
+verify_jwt = false
