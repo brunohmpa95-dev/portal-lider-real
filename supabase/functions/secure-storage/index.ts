@@ -247,6 +247,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Campos obrigatórios: bucket, path" }, 400);
       }
 
+      // Path traversal protection
+      if (path.includes("..") || path.startsWith("/")) {
+        return jsonResponse({ error: "Caminho inválido" }, 400);
+      }
+
       if (!ALL_BUCKETS.includes(bucket)) {
         return jsonResponse({ error: "Bucket inválido" }, 400);
       }
