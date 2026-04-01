@@ -21,8 +21,11 @@ export type Database = {
           id: string
           ip_address: string | null
           metadata: Json | null
+          resource: string | null
+          result: string | null
           target_id: string | null
           target_type: string | null
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
@@ -31,8 +34,11 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          resource?: string | null
+          result?: string | null
           target_id?: string | null
           target_type?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
@@ -41,8 +47,11 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          resource?: string | null
+          result?: string | null
           target_id?: string | null
           target_type?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: []
