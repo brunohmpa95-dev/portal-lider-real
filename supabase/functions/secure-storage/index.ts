@@ -112,6 +112,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") || "unknown";
+    const userAgent = (req.headers.get("user-agent") || "").slice(0, 500);
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action"); // upload | download | delete
 
