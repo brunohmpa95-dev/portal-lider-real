@@ -12,8 +12,11 @@ import PropertyDetail from "./pages/PropertyDetail";
 import About from "./pages/About";
 import Advertise from "./pages/Advertise";
 import Contact from "./pages/Contact";
-import ClientArea from "./pages/ClientArea";
-import Documents from "./pages/Documents";
+import ClientDashboard from "./pages/client/ClientDashboard";
+import ClientDocuments from "./pages/client/ClientDocuments";
+import ClientSupport from "./pages/client/ClientSupport";
+import ClientFinancial from "./pages/client/ClientFinancial";
+import ClientRental from "./pages/client/ClientRental";
 import Ombudsman from "./pages/Ombudsman";
 import Careers from "./pages/Careers";
 import Privacy from "./pages/Privacy";
@@ -81,7 +84,39 @@ const App = () => (
                 path="/area-do-cliente"
                 element={
                   <ProtectedRoute>
-                    <ClientArea />
+                    <ClientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/documentos"
+                element={
+                  <ProtectedRoute>
+                    <ClientDocuments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/suporte"
+                element={
+                  <ProtectedRoute>
+                    <ClientSupport />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/financeiro"
+                element={
+                  <ProtectedRoute>
+                    <ClientFinancial />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/area-do-cliente/locacao"
+                element={
+                  <ProtectedRoute>
+                    <ClientRental />
                   </ProtectedRoute>
                 }
               />
@@ -89,7 +124,7 @@ const App = () => (
                 path="/documentos"
                 element={
                   <ProtectedRoute>
-                    <Documents />
+                    <ClientDocuments />
                   </ProtectedRoute>
                 }
               />
