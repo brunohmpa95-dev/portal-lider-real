@@ -69,7 +69,8 @@ const ClientSupport = () => {
     });
 
     if (error) {
-      toast.error('Erro ao enviar. Tente novamente.');
+      console.error('[Support] Insert error:', error.message, error.code, error.details, error.hint);
+      toast.error(`Erro ao enviar: ${error.message}`);
     } else {
       toast.success('Solicitação enviada com sucesso!');
       setSubject('');
