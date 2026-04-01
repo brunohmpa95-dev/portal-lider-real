@@ -17,7 +17,8 @@ const navItems = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, profile, signOut } = useAuth();
+  const { isAuthenticated, profile, signOut, hasAnyRole } = useAuth();
+  const showAdminLink = isAuthenticated && hasAnyRole(ADMIN_ACCESS_ROLES);
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
