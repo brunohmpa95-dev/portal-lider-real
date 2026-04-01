@@ -72,6 +72,10 @@ const App = () => (
               <Route path="/redefinir-senha" element={<ResetPassword />} />
               <Route path="/acesso-negado" element={<AccessDenied />} />
 
+              {/* MFA routes */}
+              <Route path="/mfa/setup" element={<MfaSetup />} />
+              <Route path="/mfa/verify" element={<MfaVerify />} />
+
               {/* Protected client routes */}
               <Route
                 path="/area-do-cliente"
