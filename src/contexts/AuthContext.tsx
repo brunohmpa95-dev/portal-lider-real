@@ -113,7 +113,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             checkMfaStatus(),
           ]);
           setIsLoading(false);
-          }, 0);
         } else {
           setProfile(null);
           setRoles([]);
