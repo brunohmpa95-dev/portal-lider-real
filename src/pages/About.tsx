@@ -19,7 +19,7 @@ const About = () => (
       <Breadcrumbs items={[{ label: 'Sobre' }]} />
 
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
+        <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-6">
           Quem somos
         </h1>
 
@@ -36,7 +36,7 @@ const About = () => (
         </div>
 
         {/* Values */}
-        <h2 className="text-2xl font-display font-semibold text-foreground mb-8">Nossos Valores</h2>
+        <h2 className="text-2xl font-sans font-semibold text-foreground mb-8">Nossos Valores</h2>
         <div className="grid sm:grid-cols-2 gap-6 mb-16">
           {values.map(v => (
             <div key={v.title} className="bg-card border border-border rounded-lg p-6">
@@ -50,13 +50,13 @@ const About = () => (
         {/* CRECI */}
         <div className="bg-secondary rounded-lg p-8 text-center mb-16">
           <p className="text-sm text-muted-foreground mb-2">Registro profissional</p>
-          <p className="text-2xl font-display font-bold text-foreground">{COMPANY.creci}</p>
+          <p className="text-2xl font-sans font-bold text-foreground">{COMPANY.creci}</p>
           <p className="text-sm text-muted-foreground mt-2">{COMPANY.address}</p>
         </div>
 
         {/* CTA */}
         <div className="text-center pb-16">
-          <h2 className="text-2xl font-display font-semibold text-foreground mb-4">Fale com a gente</h2>
+          <h2 className="text-2xl font-sans font-semibold text-foreground mb-4">Fale com a gente</h2>
           <p className="text-muted-foreground mb-6">Estamos prontos para ajudar você a encontrar o imóvel ideal.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/contato" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors">

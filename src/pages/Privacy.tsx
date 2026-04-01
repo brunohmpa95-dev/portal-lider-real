@@ -9,7 +9,7 @@ const Privacy = () => (
     <div className="container mx-auto px-4">
       <Breadcrumbs items={[{ label: 'Política de Privacidade' }]} />
       <div className="max-w-3xl mx-auto pb-16 prose prose-sm prose-muted">
-        <h1 className="text-3xl font-display font-bold text-foreground mb-8">Política de Privacidade</h1>
+        <h1 className="text-3xl font-sans font-bold text-foreground mb-8">Política de Privacidade</h1>
 
         <p className="text-muted-foreground leading-relaxed">A <strong>{COMPANY.fullName}</strong>, inscrita sob o {COMPANY.creci}, com sede em {COMPANY.address}, é comprometida com a proteção da privacidade e dos dados pessoais de seus clientes, visitantes e parceiros, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).</p>
 

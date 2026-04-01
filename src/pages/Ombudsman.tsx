@@ -48,7 +48,7 @@ const Ombudsman = () => {
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label: 'Ouvidoria' }]} />
         <div className="max-w-2xl mx-auto pb-16">
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">Ouvidoria</h1>
+          <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-4">Ouvidoria</h1>
           <p className="text-muted-foreground mb-8">
             Este é o nosso canal de ouvidoria. Envie sugestões, reclamações, elogios ou denúncias. Todas as mensagens são tratadas com sigilo e seriedade.
           </p>

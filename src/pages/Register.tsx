@@ -65,7 +65,7 @@ const Register = () => {
         <PageHead title="Conta criada" description="Confirme seu e-mail para acessar a Líder Imóveis." />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto text-center bg-card border border-border rounded-lg p-8">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-4">Verifique seu e-mail</h1>
+            <h1 className="text-2xl font-sans font-bold text-foreground mb-4">Verifique seu e-mail</h1>
             <p className="text-muted-foreground mb-6">
               Enviamos um link de confirmação para <strong>{email}</strong>. Clique no link para ativar sua conta.
             </p>
@@ -85,7 +85,7 @@ const Register = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <UserPlus className="h-10 w-10 text-primary mx-auto mb-4" />
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">
+            <h1 className="text-2xl md:text-3xl font-sans font-bold text-foreground mb-2">
               Criar sua conta
             </h1>
             <p className="text-muted-foreground text-sm">

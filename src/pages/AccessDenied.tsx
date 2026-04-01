@@ -9,7 +9,7 @@ const AccessDenied = () => (
     <PageHead title="Acesso Negado" description="Você não tem permissão para acessar esta página." />
     <div className="container mx-auto px-4 py-24 text-center">
       <ShieldAlert className="h-16 w-16 text-destructive mx-auto mb-6" />
-      <h1 className="text-3xl font-display font-bold text-foreground mb-4">Acesso negado</h1>
+      <h1 className="text-3xl font-sans font-bold text-foreground mb-4">Acesso negado</h1>
       <p className="text-muted-foreground mb-8 max-w-md mx-auto">
         Você não possui permissão para acessar esta página. Se acredita que isso é um erro, entre em contato com o administrador.
       </p>

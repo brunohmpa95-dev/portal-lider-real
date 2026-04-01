@@ -42,7 +42,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
-            <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-sans font-bold text-white mb-4 leading-tight">
               Encontre o imóvel ideal<br className="hidden md:block" /> em Itaúna e região
             </h1>
             <p className="text-white/80 text-lg max-w-2xl mx-auto">
@@ -89,7 +89,7 @@ const Index = () => {
       {superFeatured && (
         <AnimatedSection className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl font-display font-semibold text-foreground mb-8">
+            <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-8">
               Imóvel em Destaque
             </h2>
             <PremiumPropertyCard property={superFeatured} />
@@ -102,7 +102,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <AnimatedSection>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground">
                 Imóveis à Venda
               </h2>
               <Link to="/comprar">
@@ -125,7 +125,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <AnimatedSection>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-foreground">
+              <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground">
                 Imóveis para Locação
               </h2>
               <Link to="/alugar">
@@ -148,7 +148,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-foreground mb-4">
+              <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-4">
                 Tradição e confiança no mercado imobiliário de Itaúna
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
@@ -172,7 +172,7 @@ const Index = () => {
             >
               <div className="bg-card border border-border rounded-xl p-8 text-center max-w-sm">
                 <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-                <p className="text-3xl font-display font-bold text-foreground mb-1">+15 anos</p>
+                <p className="text-3xl font-sans font-bold text-foreground mb-1">+15 anos</p>
                 <p className="text-muted-foreground text-sm">de experiência no mercado</p>
                 <p className="text-xs text-muted-foreground mt-4">{COMPANY.creci}</p>
               </div>
@@ -184,7 +184,7 @@ const Index = () => {
       {/* CTA Capture */}
       <AnimatedSection className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-display font-semibold mb-4">
+          <h2 className="text-2xl md:text-3xl font-sans font-semibold mb-4">
             Tem um imóvel para vender ou alugar?
           </h2>
           <p className="text-primary-foreground/80 max-w-xl mx-auto mb-8 text-lg">

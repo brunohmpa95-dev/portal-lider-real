@@ -60,7 +60,7 @@ const Advertise = () => {
         <div className="max-w-2xl mx-auto pb-16">
           <div className="text-center mb-10">
             <Building2 className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">Anuncie seu Imóvel</h1>
+            <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-4">Anuncie seu Imóvel</h1>
             <p className="text-muted-foreground text-lg">Preencha o formulário abaixo e nossa equipe entrará em contato para avaliar seu imóvel sem compromisso.</p>
           </div>
 
