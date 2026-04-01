@@ -32,7 +32,7 @@ const ClientSupport = () => {
   const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     if (!user) return;
     setFetching(true);
     const { data, error } = await supabase
