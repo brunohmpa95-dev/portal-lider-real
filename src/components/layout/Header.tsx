@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Home as HomeIcon, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, User, Home as HomeIcon, LogIn, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { ADMIN_ACCESS_ROLES } from '@/lib/admin-nav';
 import logoImg from '@/assets/logo-transparent.png';
 
 const navItems = [
@@ -16,7 +17,8 @@ const navItems = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, profile, signOut } = useAuth();
+  const { isAuthenticated, profile, signOut, hasAnyRole } = useAuth();
+  const showAdminLink = isAuthenticated && hasAnyRole(ADMIN_ACCESS_ROLES);
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
@@ -43,6 +45,13 @@ const Header = () => {
         </nav>
 
         <div className="hidden lg:flex items-center gap-2">
+          {showAdminLink && (
+            <Link to="/admin">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Settings className="h-4 w-4" /> Admin
+              </Button>
+            </Link>
+          )}
           <Link to="/anuncie">
             <Button variant="outline" size="sm" className="gap-1.5">
               <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
@@ -98,6 +107,13 @@ const Header = () => {
               </Link>
             ))}
             <hr className="my-2 border-border" />
+            {showAdminLink && (
+              <Link to="/admin" onClick={() => setMobileOpen(false)}>
+                <Button variant="outline" className="w-full gap-1.5 justify-center">
+                  <Settings className="h-4 w-4" /> Área Administrativa
+                </Button>
+              </Link>
+            )}
             <Link to="/anuncie" onClick={() => setMobileOpen(false)}>
               <Button variant="outline" className="w-full gap-1.5 justify-center">
                 <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
