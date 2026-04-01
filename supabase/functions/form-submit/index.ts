@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const formType = body.form_type as string;
 
-    if (!formType || !["contact", "listing", "ombudsman", "career", "property_lead", "support"].includes(formType)) {
+    if (!formType || !["contact", "listing", "ombudsman", "career", "property_lead", "support", "audit_event"].includes(formType)) {
       return jsonResponse({ error: "Tipo de formulário inválido" }, 400);
     }
 
