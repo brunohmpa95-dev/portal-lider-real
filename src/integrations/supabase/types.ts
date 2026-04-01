@@ -47,6 +47,340 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_records: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_status: string
+          record_type: string
+          reference_month: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_status?: string
+          record_type: string
+          reference_month?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_status?: string
+          record_type?: string
+          reference_month?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_records_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          replied_by: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          replied_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          replied_by?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      contracts: {
+        Row: {
+          contract_number: string | null
+          contract_type: string
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          monthly_value: number | null
+          notes: string | null
+          property_id: string | null
+          start_date: string | null
+          status: string
+          total_value: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          contract_number?: string | null
+          contract_type: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_value?: number | null
+          notes?: string | null
+          property_id?: string | null
+          start_date?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          contract_number?: string | null
+          contract_type?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_value?: number | null
+          notes?: string | null
+          property_id?: string | null
+          start_date?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string
+          file_url: string | null
+          id: string
+          is_confidential: boolean
+          title: string
+          uploaded_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type: string
+          file_url?: string | null
+          id?: string
+          is_confidential?: boolean
+          title: string
+          uploaded_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          file_url?: string | null
+          id?: string
+          is_confidential?: boolean
+          title?: string
+          uploaded_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      job_applications: {
+        Row: {
+          applicant_email: string
+          applicant_name: string
+          applicant_phone: string
+          area_of_interest: string
+          created_at: string
+          experience: string | null
+          id: string
+          resume_url: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_email: string
+          applicant_name: string
+          applicant_phone: string
+          area_of_interest: string
+          created_at?: string
+          experience?: string | null
+          id?: string
+          resume_url?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_email?: string
+          applicant_name?: string
+          applicant_phone?: string
+          area_of_interest?: string
+          created_at?: string
+          experience?: string | null
+          id?: string
+          resume_url?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      listing_submissions: {
+        Row: {
+          address: string | null
+          area: number | null
+          asking_price: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string
+          description: string | null
+          evaluated_by: string | null
+          id: string
+          neighborhood: string | null
+          owner_email: string
+          owner_name: string
+          owner_phone: string
+          parking_spots: number | null
+          property_type: string | null
+          purpose: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          area?: number | null
+          asking_price?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          description?: string | null
+          evaluated_by?: string | null
+          id?: string
+          neighborhood?: string | null
+          owner_email: string
+          owner_name: string
+          owner_phone: string
+          parking_spots?: number | null
+          property_type?: string | null
+          purpose?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          area?: number | null
+          asking_price?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          description?: string | null
+          evaluated_by?: string | null
+          id?: string
+          neighborhood?: string | null
+          owner_email?: string
+          owner_name?: string
+          owner_phone?: string
+          parking_spots?: number | null
+          property_type?: string | null
+          purpose?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ombudsman_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          internal_notes: string | null
+          message: string
+          reporter_email: string
+          reporter_name: string
+          reporter_phone: string | null
+          resolved_by: string | null
+          status: string
+          ticket_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          message: string
+          reporter_email: string
+          reporter_name: string
+          reporter_phone?: string | null
+          resolved_by?: string | null
+          status?: string
+          ticket_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          message?: string
+          reporter_email?: string
+          reporter_name?: string
+          reporter_phone?: string | null
+          resolved_by?: string | null
+          status?: string
+          ticket_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -78,6 +412,185 @@ export type Database = {
           is_active?: boolean
           mfa_required?: boolean
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          area: number
+          bathrooms: number
+          bedrooms: number
+          city: string
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          features: string[] | null
+          id: string
+          images: string[] | null
+          is_featured: boolean
+          is_new: boolean
+          is_super_featured: boolean
+          neighborhood: string | null
+          parking_spots: number
+          price: number
+          purpose: string
+          state: string
+          status: string
+          suites: number
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          area?: number
+          bathrooms?: number
+          bedrooms?: number
+          city?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          images?: string[] | null
+          is_featured?: boolean
+          is_new?: boolean
+          is_super_featured?: boolean
+          neighborhood?: string | null
+          parking_spots?: number
+          price?: number
+          purpose: string
+          state?: string
+          status?: string
+          suites?: number
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          area?: number
+          bathrooms?: number
+          bedrooms?: number
+          city?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          images?: string[] | null
+          is_featured?: boolean
+          is_new?: boolean
+          is_super_featured?: boolean
+          neighborhood?: string | null
+          parking_spots?: number
+          price?: number
+          purpose?: string
+          state?: string
+          status?: string
+          suites?: number
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      property_leads: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          phone: string | null
+          property_id: string | null
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          phone?: string | null
+          property_id?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+          property_id?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_requests: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string
+          id: string
+          internal_notes: string | null
+          message: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          message: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          message?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
           updated_at?: string
           user_id?: string
         }
@@ -115,6 +628,13 @@ export type Database = {
       get_my_roles: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
