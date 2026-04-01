@@ -100,6 +100,14 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Validate UUID format
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId)) {
+        return new Response(
+          JSON.stringify({ error: "user_id inválido" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const validRoles = ["cliente", "corretor", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
       if (!validRoles.includes(targetRole)) {
         return new Response(
@@ -159,6 +167,22 @@ Deno.serve(async (req) => {
       if (!targetUserId || !targetRole) {
         return new Response(
           JSON.stringify({ error: "user_id e role são obrigatórios" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Validate UUID format
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId)) {
+        return new Response(
+          JSON.stringify({ error: "user_id inválido" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const validRoles = ["cliente", "corretor", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
+      if (!validRoles.includes(targetRole)) {
+        return new Response(
+          JSON.stringify({ error: "Perfil inválido" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

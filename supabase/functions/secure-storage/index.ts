@@ -85,15 +85,21 @@ async function auditLog(
   serviceClient: ReturnType<typeof createClient>,
   userId: string | null,
   action: string,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  ipAddress?: string,
+  userAgent?: string
 ) {
   try {
     await serviceClient.from("audit_log").insert({
       user_id: userId,
       action,
+      resource: "storage",
+      result: "success",
       metadata,
       target_type: "storage",
       target_id: metadata.bucket as string,
+      ip_address: ipAddress || null,
+      user_agent: userAgent || null,
     });
   } catch {
     // Don't fail the request if audit logging fails
@@ -106,6 +112,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") || "unknown";
+    const userAgent = (req.headers.get("user-agent") || "").slice(0, 500);
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action"); // upload | download | delete
 
@@ -216,7 +226,7 @@ Deno.serve(async (req) => {
         originalName: file.name,
         size: file.size,
         mimeType: file.type,
-      });
+      }, ipAddress, userAgent);
 
       return jsonResponse({
         path: data.path,
@@ -237,6 +247,11 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Campos obrigatórios: bucket, path" }, 400);
       }
 
+      // Path traversal protection
+      if (path.includes("..") || path.startsWith("/")) {
+        return jsonResponse({ error: "Caminho inválido" }, 400);
+      }
+
       if (!ALL_BUCKETS.includes(bucket)) {
         return jsonResponse({ error: "Bucket inválido" }, 400);
       }
@@ -249,7 +264,7 @@ Deno.serve(async (req) => {
 
         if (error) return jsonResponse({ error: "Erro ao gerar URL" }, 500);
 
-        await auditLog(serviceClient, userId, "file_download", { bucket, path });
+        await auditLog(serviceClient, userId, "file_download", { bucket, path }, ipAddress, userAgent);
         return jsonResponse({ url: data.signedUrl, expiresIn: 300 });
       }
 
@@ -290,7 +305,7 @@ Deno.serve(async (req) => {
 
       if (error) return jsonResponse({ error: "Erro ao gerar URL" }, 500);
 
-      await auditLog(serviceClient, userId, "file_download", { bucket, path });
+      await auditLog(serviceClient, userId, "file_download", { bucket, path }, ipAddress, userAgent);
       return jsonResponse({ url: data.signedUrl, expiresIn: 60 });
     }
 
@@ -303,6 +318,11 @@ Deno.serve(async (req) => {
 
       if (!bucket || !path) {
         return jsonResponse({ error: "Campos obrigatórios: bucket, path" }, 400);
+      }
+
+      // Path traversal protection
+      if (path.includes("..") || path.startsWith("/")) {
+        return jsonResponse({ error: "Caminho inválido" }, 400);
       }
 
       if (!userId) {
@@ -318,7 +338,7 @@ Deno.serve(async (req) => {
       const { error } = await serviceClient.storage.from(bucket).remove([path]);
       if (error) return jsonResponse({ error: "Falha ao excluir: " + error.message }, 500);
 
-      await auditLog(serviceClient, userId, "file_delete", { bucket, path });
+      await auditLog(serviceClient, userId, "file_delete", { bucket, path }, ipAddress, userAgent);
       return jsonResponse({ success: true });
     }
 
