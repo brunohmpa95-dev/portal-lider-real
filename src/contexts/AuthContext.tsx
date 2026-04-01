@@ -104,29 +104,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchProfile, fetchRoles]);
 
+  const logAuthEvent = async (action: string, result: string, metadata?: Record<string, unknown>) => {
+    try {
+      const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/form-submit`;
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (s?.access_token) headers['Authorization'] = `Bearer ${s.access_token}`;
+      await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ form_type: 'audit_event', action, result, metadata }),
+      });
+    } catch { /* don't block auth flow */ }
+  };
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      // Log failed login attempt (don't include email in metadata for security)
-      await supabase.from('audit_log').insert({
-        user_id: null,
-        action: 'login_failed',
-        resource: 'auth',
-        result: 'denied',
-        metadata: { reason: 'invalid_credentials' },
-      }).then(() => {}, () => {});
+      logAuthEvent('login_failed', 'denied', { reason: 'invalid_credentials' });
       return { error: safeErrorMessage(error) };
     }
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (u) {
-      await supabase.from('audit_log').insert({
-        user_id: u.id,
-        action: 'login',
-        resource: 'auth',
-        result: 'success',
-        metadata: { method: 'password' },
-      }).then(() => {}, () => {});
-    }
+    logAuthEvent('login', 'success', { method: 'password' });
     return { error: null };
   };
 
