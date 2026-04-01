@@ -243,21 +243,32 @@ function getBreadcrumbs(pathname: string) {
 }
 
 export default function AdminLayout() {
-  const { isAuthenticated, isLoading, roles } = useAuth();
+  const { isAuthenticated, isLoading, roles, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
       navigate('/login', { replace: true });
       return;
     }
-    if (!isLoading && isAuthenticated) {
-      const hasAccess = roles.some((r) => ADMIN_ACCESS_ROLES.includes(r));
-      if (!hasAccess) {
-        navigate('/acesso-negado', { replace: true });
+
+    const hasAccess = roles.some((r) => ADMIN_ACCESS_ROLES.includes(r));
+    if (!hasAccess) {
+      navigate('/acesso-negado', { replace: true });
+      return;
+    }
+
+    // Enforce MFA for sensitive roles
+    if (mfaRequired && !mfaVerified) {
+      if (!mfaEnrolled) {
+        navigate('/mfa/setup', { state: { from: { pathname: '/admin' } }, replace: true });
+      } else {
+        navigate('/mfa/verify', { state: { from: { pathname: '/admin' } }, replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, roles, navigate]);
+  }, [isLoading, isAuthenticated, roles, mfaRequired, mfaVerified, mfaEnrolled, navigate]);
 
   if (isLoading) {
     return (
