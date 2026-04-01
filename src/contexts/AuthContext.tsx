@@ -144,7 +144,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    const currentUserId = user?.id;
     await supabase.auth.signOut();
+    if (currentUserId) {
+      await supabase.from('audit_log').insert({
+        user_id: currentUserId,
+        action: 'logout',
+        resource: 'auth',
+        result: 'success',
+        metadata: { scope: 'local' },
+      }).then(() => {}, () => {});
+    }
     setUser(null);
     setSession(null);
     setRoles([]);
@@ -152,7 +162,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOutAllSessions = async () => {
+    const currentUserId = user?.id;
     await supabase.auth.signOut({ scope: 'global' });
+    if (currentUserId) {
+      await supabase.from('audit_log').insert({
+        user_id: currentUserId,
+        action: 'logout',
+        resource: 'auth',
+        result: 'success',
+        metadata: { scope: 'global' },
+      }).then(() => {}, () => {});
+    }
     setUser(null);
     setSession(null);
     setRoles([]);
