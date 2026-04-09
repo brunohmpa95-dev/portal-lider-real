@@ -1,24 +1,54 @@
 
 
-## Enhanced hover animations for property cards
+## Leads em formato Kanban
 
-### Current state
-- Image: `scale(1.05)` on hover, 500ms
-- Card: `shadow-lg` on hover, 300ms
-- Title: color changes to primary on hover
+Transformar a listagem de leads de tabela para um quadro Kanban, onde cada coluna representa uma etapa do funil (`LEAD_FUNNEL_STAGES`): Novo, Contato, Visita, Proposta, Negociação, Fechado, Perdido.
 
-### Enhancements
+### Design
 
-**1 file: `src/components/property/PropertyCard.tsx`**
+- Scroll horizontal com colunas lado a lado, cada uma com header colorido e contador de leads
+- Cards compactos dentro de cada coluna mostrando: nome, prioridade (badge colorido), origem, telefone e data
+- Drag-and-drop entre colunas para mover leads de etapa (atualiza `funnel_stage` no banco)
+- Clique no card abre o detalhe (`/admin/leads/:id`)
+- Botão de deletar visível para admins
+- Toggle no topo para alternar entre visualização Kanban e Tabela (preserva a tabela existente)
+- Filtros de busca e origem permanecem no topo, aplicáveis a ambas as views
 
-Upgrade the card with layered, premium hover effects using framer-motion's `whileHover`:
+### Cores das colunas
 
-1. **Card lift** — use `motion.div` with `whileHover={{ y: -6 }}` for a subtle float effect, combined with enhanced shadow (`shadow-xl`)
-2. **Image zoom** — increase scale to `1.08` with slower `duration-700` for cinematic feel
-3. **Gradient overlay** — add a subtle dark overlay on the image that fades in on hover (CSS `opacity-0 group-hover:opacity-100`) for depth
-4. **Price highlight** — price bar gets slightly more opaque background on hover (`from-black/70`)
-5. **"Ver detalhes" indicator** — add a small arrow/text that appears on hover at the bottom-right of the image, signaling interactivity
-6. **Border accent** — change border color to `primary/30` on hover for a subtle brand touch
+| Etapa | Cor do header |
+|-------|--------------|
+| Novo | blue-500 |
+| Contato | cyan-500 |
+| Visita | amber-500 |
+| Proposta | purple-500 |
+| Negociação | orange-500 |
+| Fechado | green-500 |
+| Perdido | red-400 |
 
-All transitions use CSS `transition-all duration-300` or framer-motion for smooth, hardware-accelerated animation. No new dependencies needed.
+### Drag-and-drop
+
+Usar HTML5 drag-and-drop nativo (sem dependência extra):
+- `draggable` nos cards
+- `onDragStart` salva lead id + stage de origem
+- `onDragOver` / `onDrop` na coluna destino
+- No drop: atualiza `funnel_stage` via Supabase e atualiza state local com optimistic update
+
+### Responsividade
+
+- Desktop: colunas lado a lado com scroll horizontal
+- Mobile: colunas empilhadas verticalmente com accordions colapsáveis por etapa
+
+### Mudanças
+
+**1 arquivo: `src/pages/admin/LeadsList.tsx`**
+
+- Adicionar state `viewMode: 'kanban' | 'table'` (default: `kanban`)
+- Adicionar toggle buttons (LayoutGrid / List icons) ao lado do título
+- Manter toda a lógica de filtros e busca existente
+- Adicionar função `updateLeadStage(id, newStage)` que faz `supabase.from('property_leads').update({ funnel_stage }).eq('id', id)`
+- Renderizar condicionalmente: se `kanban`, mostrar o board; se `table`, mostrar a tabela atual
+- Board: container `flex overflow-x-auto gap-4` com colunas `min-w-[280px] flex-shrink-0`
+- Cada coluna: header com label + count + cor, scroll vertical interno (`max-h-[calc(100vh-280px)] overflow-y-auto`)
+- Cada card: `Card` com nome, prioridade badge, origem, data, botões de ação
 
