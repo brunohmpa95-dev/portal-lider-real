@@ -1,54 +1,38 @@
 
 
-## Leads em formato Kanban
+## Add metrics summary bar to Leads Kanban
 
-Transformar a listagem de leads de tabela para um quadro Kanban, onde cada coluna representa uma etapa do funil (`LEAD_FUNNEL_STAGES`): Novo, Contato, Visita, Proposta, Negociação, Fechado, Perdido.
+### What it does
+Add a compact stats bar above the Kanban board showing key metrics at a glance: total leads, leads per stage with mini progress indicators, and conversion rate (closed vs total).
 
 ### Design
 
-- Scroll horizontal com colunas lado a lado, cada uma com header colorido e contador de leads
-- Cards compactos dentro de cada coluna mostrando: nome, prioridade (badge colorido), origem, telefone e data
-- Drag-and-drop entre colunas para mover leads de etapa (atualiza `funnel_stage` no banco)
-- Clique no card abre o detalhe (`/admin/leads/:id`)
-- Botão de deletar visível para admins
-- Toggle no topo para alternar entre visualização Kanban e Tabela (preserva a tabela existente)
-- Filtros de busca e origem permanecem no topo, aplicáveis a ambas as views
+A horizontal scrollable row of small metric cards above the filters:
 
-### Cores das colunas
+```text
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│ Total    │ │ Novos    │ │ Fechados │ │ Conversão│
+│   12     │ │    5     │ │    2     │ │  16.7%   │
+└──────────┘ └──────────┘ └──────────┘ └──────────┘
+```
 
-| Etapa | Cor do header |
-|-------|--------------|
-| Novo | blue-500 |
-| Contato | cyan-500 |
-| Visita | amber-500 |
-| Proposta | purple-500 |
-| Negociação | orange-500 |
-| Fechado | green-500 |
-| Perdido | red-400 |
+- **Total leads**: count of all leads (unfiltered)
+- **Per-stage counters**: show count for key stages (new, contact, proposal, closed, lost) with colored dots matching Kanban columns
+- **Conversion rate**: `closed / (total - lost) * 100` percentage
+- **Lost rate**: `lost / total * 100`
+- Responsive: horizontal scroll on mobile, grid on desktop
+- Uses existing `STAGE_COLORS` for consistency
 
-### Drag-and-drop
+### Changes
 
-Usar HTML5 drag-and-drop nativo (sem dependência extra):
-- `draggable` nos cards
-- `onDragStart` salva lead id + stage de origem
-- `onDragOver` / `onDrop` na coluna destino
-- No drop: atualiza `funnel_stage` via Supabase e atualiza state local com optimistic update
+**1 file: `src/pages/admin/LeadsList.tsx`**
 
-### Responsividade
+- Import `TrendingUp`, `TrendingDown`, `Users` from lucide-react
+- Add a `renderMetrics()` function that computes counts from the `leads` array (all leads, not filtered)
+- Render the metrics bar between the title row and the filter card
+- Use a `grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2` layout with small cards showing icon + label + value
+- Metrics shown: Total, Novos, Contato, Proposta, Fechados, Perdidos, Taxa de conversão, Taxa de perda
 
-- Desktop: colunas lado a lado com scroll horizontal
-- Mobile: colunas empilhadas verticalmente com accordions colapsáveis por etapa
-
-### Mudanças
-
-**1 arquivo: `src/pages/admin/LeadsList.tsx`**
-
-- Adicionar state `viewMode: 'kanban' | 'table'` (default: `kanban`)
-- Adicionar toggle buttons (LayoutGrid / List icons) ao lado do título
-- Manter toda a lógica de filtros e busca existente
-- Adicionar função `updateLeadStage(id, newStage)` que faz `supabase.from('property_leads').update({ funnel_stage }).eq('id', id)`
-- Renderizar condicionalmente: se `kanban`, mostrar o board; se `table`, mostrar a tabela atual
-- Board: container `flex overflow-x-auto gap-4` com colunas `min-w-[280px] flex-shrink-0`
-- Cada coluna: header com label + count + cor, scroll vertical interno (`max-h-[calc(100vh-280px)] overflow-y-auto`)
-- Cada card: `Card` com nome, prioridade badge, origem, data, botões de ação
+### About testing the Kanban drag-and-drop
+The Kanban is rendering correctly on mobile with accordion view. Drag-and-drop is desktop-only (HTML5 native). The current viewport is 390px (mobile), so drag is not available — but the code and Supabase update logic are in place and will work on desktop.
 
