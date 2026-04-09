@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Eye, Trash2, Loader2, LayoutGrid, List, Phone, GripVertical } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, Loader2, LayoutGrid, List, Phone, GripVertical, TrendingUp, TrendingDown, Users } from 'lucide-react';
 import { LEAD_FUNNEL_STAGES, LEAD_SOURCE_OPTIONS, LEAD_PRIORITY_OPTIONS } from '@/types/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
