@@ -118,6 +118,42 @@ export default function LeadsList() {
 
   const leadsForStage = (stage: string) => filtered.filter((l) => l.funnel_stage === stage);
 
+  const renderMetrics = () => {
+    const total = leads.length;
+    const newCount = leads.filter((l) => l.funnel_stage === 'new').length;
+    const contactCount = leads.filter((l) => l.funnel_stage === 'contact').length;
+    const proposalCount = leads.filter((l) => l.funnel_stage === 'proposal').length;
+    const closedCount = leads.filter((l) => l.funnel_stage === 'closed').length;
+    const lostCount = leads.filter((l) => l.funnel_stage === 'lost').length;
+    const conversionRate = total - lostCount > 0 ? ((closedCount / (total - lostCount)) * 100).toFixed(1) : '0.0';
+    const lostRate = total > 0 ? ((lostCount / total) * 100).toFixed(1) : '0.0';
+
+    const metrics = [
+      { label: 'Total', value: total, icon: Users, color: 'text-foreground', dot: 'bg-foreground' },
+      { label: 'Novos', value: newCount, icon: Users, color: STAGE_COLORS.new.text, dot: STAGE_COLORS.new.dot },
+      { label: 'Contato', value: contactCount, icon: Users, color: STAGE_COLORS.contact.text, dot: STAGE_COLORS.contact.dot },
+      { label: 'Proposta', value: proposalCount, icon: Users, color: STAGE_COLORS.proposal.text, dot: STAGE_COLORS.proposal.dot },
+      { label: 'Fechados', value: closedCount, icon: TrendingUp, color: STAGE_COLORS.closed.text, dot: STAGE_COLORS.closed.dot },
+      { label: 'Perdidos', value: lostCount, icon: TrendingDown, color: STAGE_COLORS.lost.text, dot: STAGE_COLORS.lost.dot },
+      { label: 'Conversão', value: `${conversionRate}%`, icon: TrendingUp, color: 'text-green-600', dot: 'bg-green-500' },
+      { label: 'Perda', value: `${lostRate}%`, icon: TrendingDown, color: 'text-red-500', dot: 'bg-red-400' },
+    ];
+
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+        {metrics.map((m) => (
+          <div key={m.label} className="bg-card border rounded-lg p-3 flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${m.dot} shrink-0`} />
+            <div className="min-w-0">
+              <p className="text-[10px] text-muted-foreground truncate">{m.label}</p>
+              <p className={`text-sm font-bold ${m.color}`}>{m.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderLeadCard = (lead: any) => {
     const colors = STAGE_COLORS[lead.funnel_stage] || STAGE_COLORS.new;
     return (
