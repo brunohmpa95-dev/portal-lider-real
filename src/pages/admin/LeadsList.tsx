@@ -366,6 +366,8 @@ export default function LeadsList() {
         </Button>
       </div>
 
+      {!loading && renderMetrics()}
+
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-3">
