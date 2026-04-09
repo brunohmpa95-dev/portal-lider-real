@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Building2, Phone, HandshakeIcon, Headphones, ArrowRight, Shield } from 'lucide-react';
+import { User, Building2, Phone, HandshakeIcon, Headphones, ArrowRight, Shield, ExternalLink } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import heroBg from '@/assets/hero-bg.jpg';
