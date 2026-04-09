@@ -143,6 +143,33 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Simulador CAIXA */}
+      <AnimatedSection className="py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-3">
+            Simule seu financiamento
+          </h2>
+          <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+            Use o simulador oficial da CAIXA Econômica Federal para calcular parcelas e condições do seu financiamento imobiliário.
+          </p>
+          <a
+            href="https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-lg text-base font-semibold text-white transition-colors"
+            style={{ backgroundColor: '#005CA9' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#004a8a')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#005CA9')}
+          >
+            <ExternalLink className="h-5 w-5" />
+            Simular financiamento na CAIXA
+          </a>
+          <p className="text-muted-foreground text-sm mt-4">
+            Você será redirecionado para o simulador oficial da CAIXA.
+          </p>
+        </div>
+      </AnimatedSection>
+
       {/* Institutional */}
       <AnimatedSection className="py-16 bg-secondary/50">
         <div className="container mx-auto px-4">
