@@ -1,26 +1,24 @@
 
 
-## Add "Simular financiamento na CAIXA" button to the homepage
+## Enhanced hover animations for property cards
 
-### Placement
-Insert a new section between the "Imóveis para Locação" section and the "Institutional" section on the homepage. This is a natural location — after property listings, before institutional content.
+### Current state
+- Image: `scale(1.05)` on hover, 500ms
+- Card: `shadow-lg` on hover, 300ms
+- Title: color changes to primary on hover
 
-### Design
-- Centered layout with a prominent button styled with the CAIXA blue (`#005CA9`) for brand recognition
-- `ExternalLink` icon from lucide-react beside the button text
-- Small muted disclaimer text below: "Você será redirecionado para o simulador oficial da CAIXA."
-- Wrapped in `AnimatedSection` for consistency with the rest of the page
-- Fully responsive — works on all screen sizes
+### Enhancements
 
-### Changes
+**1 file: `src/components/property/PropertyCard.tsx`**
 
-**1 file: `src/pages/Index.tsx`**
+Upgrade the card with layered, premium hover effects using framer-motion's `whileHover`:
 
-- Import `ExternalLink` from lucide-react
-- Add a new `<AnimatedSection>` block between lines 144 and 146 containing:
-  - A centered container with a styled `<a>` button using `target="_blank"` and `rel="noopener noreferrer"`
-  - Link: `https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso`
-  - Disclaimer text below in `text-muted-foreground text-sm`
+1. **Card lift** — use `motion.div` with `whileHover={{ y: -6 }}` for a subtle float effect, combined with enhanced shadow (`shadow-xl`)
+2. **Image zoom** — increase scale to `1.08` with slower `duration-700` for cinematic feel
+3. **Gradient overlay** — add a subtle dark overlay on the image that fades in on hover (CSS `opacity-0 group-hover:opacity-100`) for depth
+4. **Price highlight** — price bar gets slightly more opaque background on hover (`from-black/70`)
+5. **"Ver detalhes" indicator** — add a small arrow/text that appears on hover at the bottom-right of the image, signaling interactivity
+6. **Border accent** — change border color to `primary/30` on hover for a subtle brand touch
 
-No iframes, no simulator recreation — just a clean external link button.
+All transitions use CSS `transition-all duration-300` or framer-motion for smooth, hardware-accelerated animation. No new dependencies needed.
 
