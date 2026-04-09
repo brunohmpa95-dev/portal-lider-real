@@ -1,22 +1,26 @@
 
 
-## Change: Global background from white to light gray (#f3f4f6)
+## Add "Simular financiamento na CAIXA" button to the homepage
 
-**#f3f4f6 in HSL** ≈ `220 14% 96%`
+### Placement
+Insert a new section between the "Imóveis para Locação" section and the "Institutional" section on the homepage. This is a natural location — after property listings, before institutional content.
 
-### What changes
+### Design
+- Centered layout with a prominent button styled with the CAIXA blue (`#005CA9`) for brand recognition
+- `ExternalLink` icon from lucide-react beside the button text
+- Small muted disclaimer text below: "Você será redirecionado para o simulador oficial da CAIXA."
+- Wrapped in `AnimatedSection` for consistency with the rest of the page
+- Fully responsive — works on all screen sizes
 
-**1 file: `src/index.css`**
+### Changes
 
-- Change `--background: 0 0% 100%` → `--background: 220 14% 96%` (the HSL equivalent of #f3f4f6)
-- Keep `--card: 0 0% 100%` as-is (white cards preserved)
-- Keep `--popover`, `--sidebar-background`, `--surface-elevated` white/near-white for contrast
-- Verify `--secondary` (currently `0 0% 96%`) — bump slightly to `0 0% 100%` so secondary sections (which use `bg-secondary/50`) remain visibly white against the new gray background
+**1 file: `src/pages/Index.tsx`**
 
-This single CSS variable change propagates everywhere `bg-background` is used (body, layout, pages), while cards, header, popovers, and dialogs stay white.
+- Import `ExternalLink` from lucide-react
+- Add a new `<AnimatedSection>` block between lines 144 and 146 containing:
+  - A centered container with a styled `<a>` button using `target="_blank"` and `rel="noopener noreferrer"`
+  - Link: `https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso`
+  - Disclaimer text below in `text-muted-foreground text-sm`
 
-### Review for "washed out" sections
-
-- The `bg-secondary/50` sections (Featured for Sale, Institutional) currently resolve to ~96% lightness at 50% opacity over white. Over the new gray background they'll blend more. Fix: change `--secondary` to `0 0% 100%` so those alternating sections read as white bands against gray.
-- The `--surface-sunken` variable (used in client area) is already `0 0% 97%` — close to the new background. Change to `220 14% 93%` so it remains visibly darker than the main background.
+No iframes, no simulator recreation — just a clean external link button.
 
