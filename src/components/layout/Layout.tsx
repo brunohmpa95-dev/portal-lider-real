@@ -41,6 +41,7 @@ const Layout = ({ children }: LayoutProps) => {
         </AnimatePresence>
         <Footer />
         <WhatsAppButton />
+        <CookieConsent />
       </div>
     </HelmetProvider>
   );
