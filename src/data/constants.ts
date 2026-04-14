@@ -10,7 +10,7 @@ export const COMPANY = {
   city: 'Itaúna',
   state: 'MG',
   hours: 'Seg a Sex: 08h às 18h | Sáb: 08h às 12h',
-  instagram: 'https://instagram.com/liderimoveisitauna',
+  instagram: 'https://www.instagram.com/liderimoveisitaunaa_/',
   facebook: 'https://facebook.com/liderimoveisitauna',
   systemUrl: '#', // URL do sistema principal — substituir quando integrar
   clientAreaUrl: '#',
