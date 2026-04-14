@@ -1,25 +1,24 @@
 
 
-## Adicionar foto do fundador no hero da página inicial
+## Corrigir foto do fundador no hero — recorte e centralização
 
-### O que será feito
-Posicionar a foto do homem (recortada em formato circular ou com bordas arredondadas) no lado esquerdo do hero da página inicial, conforme indicado na região circulada da imagem de referência. O texto e a barra de busca ficam à direita/centro.
+### Problemas identificados
+1. A imagem `hero-founder.png` tem fundo (sala/ambiente) visível — não foi recortada ao redor da pessoa
+2. O conteúdo (título + SearchBar) ficou deslocado para a direita por causa do `md:ml-[30%]`, perdendo a centralização
 
-### Mudanças
+### Solução
 
-**1. Copiar imagem para o projeto**
-- `user-uploads://image.png` → `src/assets/hero-founder.png`
+**1. Recortar a imagem com remoção de fundo**
+- Usar Python (rembg ou PIL) para remover o fundo da imagem `hero-founder.png`, gerando uma versão com transparência (apenas o homem, sem o ambiente atrás)
+- Salvar como PNG com fundo transparente em `src/assets/hero-founder.png`
 
-**2. `src/pages/Index.tsx` — Alterar layout do hero**
-
-- Importar `heroFounder` de `@/assets/hero-founder.png`
-- Reestruturar o conteúdo do hero para um layout `flex`:
-  - **Esquerda**: foto do fundador com recorte arredondado, posicionada na parte inferior do hero (estilo "saindo" do fundo), com leve sombra
-  - **Direita/Centro**: título, subtítulo e SearchBar (mantém como está)
-- No mobile: foto fica oculta ou menor acima do texto
-- A foto será posicionada com `absolute bottom-0 left-0` ou dentro do flex para criar o efeito visual de estar "plantado" no cenário, similar à referência
+**2. Centralizar o conteúdo do hero (`src/pages/Index.tsx`)**
+- Remover o `md:ml-[30%] lg:ml-[25%]` que desloca o conteúdo
+- Manter o título e SearchBar centralizados no container (como era antes)
+- A foto do fundador continua posicionada com `absolute bottom-0 left-[5%]`, sobrepondo o canto esquerdo sem afetar o fluxo do conteúdo central
+- Reduzir ligeiramente a altura da foto para não competir tanto com o texto
 
 ### Arquivos modificados
-- `src/assets/hero-founder.png` (novo)
-- `src/pages/Index.tsx`
+- `src/assets/hero-founder.png` (reprocessado — fundo removido)
+- `src/pages/Index.tsx` (remover margin-left do conteúdo)
 
