@@ -4,6 +4,7 @@ import { User, Building2, Phone, HandshakeIcon, Headphones, ArrowRight, Shield, 
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import heroBg from '@/assets/hero-bg.jpg';
+import heroFounder from '@/assets/hero-founder.png';
 import AnimatedSection from '@/components/shared/AnimatedSection';
 import SearchBar from '@/components/property/SearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
@@ -35,27 +36,42 @@ const Index = () => {
         style={{ backgroundImage: `url(${heroBg})` }}
       >
         <div className="absolute inset-0 bg-black/60" />
+        {/* Founder photo - desktop only */}
+        <motion.div
+          className="hidden md:block absolute bottom-0 left-[5%] z-10"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
+        >
+          <img
+            src={heroFounder}
+            alt="Fundador Líder Imóveis"
+            className="h-[340px] lg:h-[400px] object-contain drop-shadow-2xl"
+          />
+        </motion.div>
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="text-center mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          >
-            <h1 className="text-3xl md:text-5xl font-sans font-bold text-white mb-4 leading-tight">
-              Encontre o imóvel ideal<br className="hidden md:block" /> em Itaúna e região
-            </h1>
-            <p className="text-white/80 text-lg max-w-2xl mx-auto">
-              Compra, venda e locação com a confiança de quem conhece cada bairro da cidade.
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-          >
-            <SearchBar />
-          </motion.div>
+          <div className="md:ml-[30%] lg:ml-[25%]">
+            <motion.div
+              className="text-center mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              <h1 className="text-3xl md:text-5xl font-sans font-bold text-white mb-4 leading-tight">
+                Encontre o imóvel ideal<br className="hidden md:block" /> em Itaúna e região
+              </h1>
+              <p className="text-white/80 text-lg max-w-2xl mx-auto">
+                Compra, venda e locação com a confiança de quem conhece cada bairro da cidade.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+            >
+              <SearchBar />
+            </motion.div>
+          </div>
         </div>
       </section>
 
