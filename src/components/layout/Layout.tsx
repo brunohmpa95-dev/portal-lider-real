@@ -6,6 +6,7 @@ import TopBar from './TopBar';
 import Header from './Header';
 import Footer from './Footer';
 import WhatsAppButton from './WhatsAppButton';
+import CookieConsent from '@/components/shared/CookieConsent';
 
 interface LayoutProps {
   children: ReactNode;
@@ -40,6 +41,7 @@ const Layout = ({ children }: LayoutProps) => {
         </AnimatePresence>
         <Footer />
         <WhatsAppButton />
+        <CookieConsent />
       </div>
     </HelmetProvider>
   );
