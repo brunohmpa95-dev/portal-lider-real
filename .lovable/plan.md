@@ -1,38 +1,53 @@
 
 
-## Add metrics summary bar to Leads Kanban
+## Atualizar página Sobre e dados da empresa
 
-### What it does
-Add a compact stats bar above the Kanban board showing key metrics at a glance: total leads, leads per stage with mini progress indicators, and conversion rate (closed vs total).
+### Resumo
+Atualizar todo o conteúdo da página "Sobre", os dados da empresa em `constants.ts`, e adicionar a foto do fundador com layout lado a lado (foto à esquerda, texto à direita).
 
-### Design
+### Mudanças
 
-A horizontal scrollable row of small metric cards above the filters:
+**1. Copiar foto para o projeto**
+- Copiar `user-uploads://Captura_de_Tela_2026-04-14_às_17.21.22.png` → `src/assets/founder.png`
 
-```text
-┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-│ Total    │ │ Novos    │ │ Fechados │ │ Conversão│
-│   12     │ │    5     │ │    2     │ │  16.7%   │
-└──────────┘ └──────────┘ └──────────┘ └──────────┘
-```
+**2. `src/data/constants.ts` — Atualizar dados reais**
+- CRECI: `CRECI-MG 62.811`
+- phone/whatsapp: `(37) 99194-8675`
+- whatsappLink: `https://wa.me/5537991948675`
+- email: `Liderimoveisitauna@gmail.com`
+- address: `Rua Expedito Alves, 67 - Nova Villa Mozart, Itaúna - MG`
 
-- **Total leads**: count of all leads (unfiltered)
-- **Per-stage counters**: show count for key stages (new, contact, proposal, closed, lost) with colored dots matching Kanban columns
-- **Conversion rate**: `closed / (total - lost) * 100` percentage
-- **Lost rate**: `lost / total * 100`
-- Responsive: horizontal scroll on mobile, grid on desktop
-- Uses existing `STAGE_COLORS` for consistency
+**3. `src/pages/About.tsx` — Reescrever conteúdo completo**
 
-### Changes
+**Hero section com foto:**
+- Layout `flex` com foto à esquerda (imagem circular ou arredondada com sombra) e texto "Quem somos" à direita
+- Foto importada de `@/assets/founder.png`
+- Na versão mobile, foto fica acima do texto
 
-**1 file: `src/pages/admin/LeadsList.tsx`**
+**Texto "Quem somos"** — substituir pelos 3 parágrafos fornecidos pelo usuário:
+1. "A Líder Imóveis Itaúna nasceu de um propósito..."
+2. "Tudo começou com uma paixão genuína..."
+3. "Mesmo em fase inicial, nossa construção é sólida..."
+4. "Nosso sonho é grande..."
+5. "Mais do que vender imóveis, queremos construir relações..."
 
-- Import `TrendingUp`, `TrendingDown`, `Users` from lucide-react
-- Add a `renderMetrics()` function that computes counts from the `leads` array (all leads, not filtered)
-- Render the metrics bar between the title row and the filter card
-- Use a `grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2` layout with small cards showing icon + label + value
-- Metrics shown: Total, Novos, Contato, Proposta, Fechados, Perdidos, Taxa de conversão, Taxa de perda
+**Nossos Valores** — substituir os 4 valores atuais pelos 7 novos:
+1. Clareza acima de tudo — `Eye` icon
+2. O cliente é o centro — `Heart` icon
+3. Proatividade que gera resultado — `Zap` icon
+4. Transparência em cada etapa — `Shield` icon
+5. Agilidade com atenção — `Clock` icon
+6. Servir é um prazer — `HandHeart`/`Smile` icon
+7. Evolução constante — `TrendingUp` icon
 
-### About testing the Kanban drag-and-drop
-The Kanban is rendering correctly on mobile with accordion view. Drag-and-drop is desktop-only (HTML5 native). The current viewport is 390px (mobile), so drag is not available — but the code and Supabase update logic are in place and will work on desktop.
+Cada valor com título e texto descritivo conforme fornecido. Grid `sm:grid-cols-2 lg:grid-cols-3` para acomodar 7 cards.
+
+**CRECI** — manter seção com dados atualizados (puxados de `COMPANY`).
+
+**CTA** — manter como está.
+
+### Arquivos modificados
+- `src/assets/founder.png` (novo)
+- `src/data/constants.ts`
+- `src/pages/About.tsx`
 
