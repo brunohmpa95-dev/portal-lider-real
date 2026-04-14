@@ -50,7 +50,7 @@ const Index = () => {
           />
         </motion.div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="md:ml-[30%] lg:ml-[25%]">
+          <div>
             <motion.div
               className="text-center mb-10"
               initial={{ opacity: 0, y: 20 }}
