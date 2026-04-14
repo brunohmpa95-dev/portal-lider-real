@@ -46,7 +46,7 @@ const Index = () => {
           <img
             src={heroFounder}
             alt="Fundador Líder Imóveis"
-            className="h-[340px] lg:h-[400px] object-contain drop-shadow-2xl"
+            className="h-[420px] lg:h-[500px] object-contain drop-shadow-2xl"
           />
         </motion.div>
         <div className="container mx-auto px-4 relative z-10">
