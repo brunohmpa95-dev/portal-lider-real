@@ -1,43 +1,65 @@
 import { Link } from 'react-router-dom';
-import { Shield, Users, Award, Target } from 'lucide-react';
+import { Eye, Heart, Zap, Shield, Clock, Smile, TrendingUp } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import { COMPANY } from '@/data/constants';
+import founderImg from '@/assets/founder.png';
 
 const values = [
-  { icon: Shield, title: 'Confiança', text: 'Transparência em cada negociação, do primeiro contato à entrega das chaves.' },
-  { icon: Users, title: 'Atendimento Humano', text: 'Equipe dedicada que entende suas necessidades e acompanha cada etapa.' },
-  { icon: Award, title: 'Experiência', text: 'Mais de 15 anos de atuação sólida no mercado imobiliário de Itaúna.' },
-  { icon: Target, title: 'Compromisso', text: 'Foco em resultados concretos para compradores, vendedores e locatários.' },
+  { icon: Eye, title: 'Clareza acima de tudo', text: 'Falamos a verdade, sempre. Sem rodeios, sem promessas irreais, apenas transparência em cada negociação.' },
+  { icon: Heart, title: 'O cliente é o centro', text: 'Cada decisão que tomamos parte de uma pergunta: isso é o melhor para o cliente?' },
+  { icon: Zap, title: 'Proatividade que gera resultado', text: 'Não esperamos acontecer, antecipamos, resolvemos e agimos. Quem planta bem hoje, colhe resultados amanhã.' },
+  { icon: Shield, title: 'Transparência em cada etapa', text: 'Do primeiro contato à entrega das chaves, o cliente sabe exatamente o que está acontecendo — sem dúvidas, sem surpresas.' },
+  { icon: Clock, title: 'Agilidade com atenção', text: 'Resposta rápida, atendimento presente e cuidado em cada detalhe. Tempo é valioso, e a gente respeita isso.' },
+  { icon: Smile, title: 'Servir é um prazer', text: 'Ajudar não é obrigação, é propósito. Trabalhamos com vontade genuína de fazer o bem para cada cliente.' },
+  { icon: TrendingUp, title: 'Evolução constante', text: 'Estamos sempre estudando, inovando e melhorando. O mercado muda e nós evoluímos junto.' },
 ];
 
 const About = () => (
   <Layout>
-    <PageHead title="Sobre" description="Conheça a Líder Imóveis Itaúna. Mais de 15 anos de tradição e confiança no mercado imobiliário de Itaúna - MG." />
+    <PageHead title="Sobre" description="Conheça a Líder Imóveis Itaúna. Transformando a experiência imobiliária com transparência, inovação e compromisso real." />
     <div className="container mx-auto px-4">
       <Breadcrumbs items={[{ label: 'Sobre' }]} />
 
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-6">
-          Quem somos
-        </h1>
+      <div className="max-w-5xl mx-auto">
+        {/* Hero — foto + texto */}
+        <div className="flex flex-col md:flex-row items-center gap-10 mb-16">
+          <div className="md:w-2/5 flex-shrink-0">
+            <img
+              src={founderImg}
+              alt="Fundador da Líder Imóveis"
+              className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-lg mx-auto"
+            />
+          </div>
 
-        <div className="prose prose-lg max-w-none mb-16">
-          <p className="text-muted-foreground leading-relaxed text-lg mb-6">
-            A <strong className="text-foreground">Líder Imóveis</strong> nasceu do desejo de transformar a experiência imobiliária em Itaúna e região. Fundada há mais de 15 anos, nos consolidamos como referência regional em compra, venda e locação de imóveis, sempre priorizando a relação de confiança com nossos clientes.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mb-6">
-            Nossa equipe é formada por profissionais com profundo conhecimento do mercado local, capazes de orientar desde a escolha do bairro ideal até a finalização contratual. Acreditamos que cada pessoa e cada imóvel têm uma história — e nossa missão é conectar essas histórias da melhor forma possível.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mb-6">
-            Fazemos parte de um ecossistema integrado de gestão imobiliária, o que nos permite oferecer agilidade, organização e acompanhamento completo em todas as etapas do processo. Do primeiro contato ao pós-venda, cada detalhe é cuidado com a atenção que você merece.
-          </p>
+          <div className="md:w-3/5">
+            <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-6">
+              Quem somos
+            </h1>
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                A <strong className="text-foreground">Líder Imóveis Itaúna</strong> nasceu de um propósito: transformar a forma como as pessoas vivem a experiência de comprar e vender imóveis.
+              </p>
+              <p>
+                Tudo começou com uma paixão genuína pelo mercado imobiliário, por casas, histórias e pelo impacto que um imóvel certo pode gerar na vida de alguém. Quando surgiu a oportunidade de atuar na área, ficou claro que esse era o caminho.
+              </p>
+              <p>
+                Mesmo em fase inicial, nossa construção é sólida: baseada em estudo constante, inovação e um compromisso real com cada cliente. Em um mercado muitas vezes amador, escolhemos fazer diferente — com profissionalismo, transparência e atenção aos detalhes.
+              </p>
+              <p>
+                Nosso sonho é grande: nos tornar uma imobiliária referência no Brasil, conectando pessoas aos seus imóveis ideais em qualquer lugar do país.
+              </p>
+              <p>
+                Mais do que vender imóveis, queremos construir relações, gerar confiança e entregar experiências que realmente façam sentido para nossos clientes!
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Values */}
         <h2 className="text-2xl font-sans font-semibold text-foreground mb-8">Nossos Valores</h2>
-        <div className="grid sm:grid-cols-2 gap-6 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {values.map(v => (
             <div key={v.title} className="bg-card border border-border rounded-lg p-6">
               <v.icon className="h-8 w-8 text-primary mb-3" />
