@@ -150,7 +150,7 @@ const PropertyDetail = () => {
             {/* Gallery */}
             <div className="relative rounded-lg overflow-hidden mb-6 aspect-[16/10]">
               {property.images.length > 0 ? (
-                <img src={property.images[imgIdx]} alt={property.title} className="w-full h-full object-cover" />
+                <img src={property.images[imgIdx]} alt={property.title} className="w-full h-full object-cover cursor-pointer" onClick={() => openLightbox(imgIdx)} />
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">
                   <p className="text-muted-foreground">Sem fotos disponíveis</p>
@@ -174,7 +174,7 @@ const PropertyDetail = () => {
             {property.images.length > 1 && (
               <div className="flex gap-2 mb-6 overflow-x-auto">
                 {property.images.map((img, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)} className={`shrink-0 w-20 h-16 rounded-md overflow-hidden border-2 transition-colors ${i === imgIdx ? 'border-primary' : 'border-transparent'}`}>
+                  <button key={i} onClick={() => setImgIdx(i)} onDoubleClick={() => openLightbox(i)} className={`shrink-0 w-20 h-16 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${i === imgIdx ? 'border-primary' : 'border-transparent'}`}>
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
