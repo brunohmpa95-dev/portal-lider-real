@@ -47,13 +47,13 @@ const Index = () => {
 
   return (
     <Layout>
-      <PageHead title="Início" description="Líder Imóveis Itaúna - Os melhores imóveis para comprar e alugar em Itaúna e região. Confiança e tradição no mercado imobiliário." />
+      <PageHead title="Início" description="Líder Imóveis Itaúna - Imobiliária moderna em Itaúna e região. Compra, venda e locação de imóveis com atendimento próximo e transparente." />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": ["RealEstateAgent", "LocalBusiness"],
           "name": COMPANY.fullName,
-          "description": "Imobiliária em Itaúna e região. Compra, venda e locação de imóveis com confiança e tradição.",
+          "description": "Imobiliária moderna em Itaúna e região. Compra, venda e locação de imóveis com atendimento próximo e transparente.",
           "url": "https://portal-lider-real.lovable.app",
           "telephone": COMPANY.phone,
           "email": COMPANY.email,
@@ -185,16 +185,16 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-4">Tradição e confiança no mercado imobiliário de Itaúna</h2>
-              <p className="text-muted-foreground leading-relaxed mb-4">Há mais de 15 anos atuando no mercado imobiliário de Itaúna e região, a Líder Imóveis construiu uma reputação sólida baseada na transparência, conhecimento local e atendimento personalizado.</p>
-              <p className="text-muted-foreground leading-relaxed mb-6">Nosso compromisso vai além da intermediação: acompanhamos cada etapa da sua jornada imobiliária com dedicação e expertise.</p>
-              <Link to="/sobre"><Button variant="outline" className="gap-2">Conheça nossa história <ArrowRight className="h-4 w-4" /></Button></Link>
+              <h2 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-4">Uma nova imobiliária em Itaúna, com atendimento próximo e visão moderna</h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">A Líder Imóveis Itaúna nasce com a proposta de oferecer um atendimento mais próximo, transparente e eficiente para quem deseja comprar, vender ou alugar imóveis na região.</p>
+              <p className="text-muted-foreground leading-relaxed mb-6">Unimos agilidade, cuidado em cada etapa e conhecimento do mercado local para tornar sua experiência imobiliária mais simples e segura.</p>
+              <Link to="/sobre"><Button variant="outline" className="gap-2">Conheça nossa proposta <ArrowRight className="h-4 w-4" /></Button></Link>
             </div>
             <motion.div className="flex items-center justify-center" initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}>
               <div className="bg-card border border-border rounded-xl p-8 text-center max-w-sm">
                 <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-                <p className="text-3xl font-sans font-bold text-foreground mb-1">+15 anos</p>
-                <p className="text-muted-foreground text-sm">de experiência no mercado</p>
+                <p className="text-3xl font-sans font-bold text-foreground mb-1">Atendimento próximo</p>
+                <p className="text-muted-foreground text-sm">Suporte personalizado para comprar, vender ou alugar com mais clareza e segurança.</p>
                 <p className="text-xs text-muted-foreground mt-4">{COMPANY.creci}</p>
               </div>
             </motion.div>

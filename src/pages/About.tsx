@@ -18,7 +18,7 @@ const values = [
 
 const About = () => (
   <Layout>
-    <PageHead title="Sobre" description="Conheça a Líder Imóveis Itaúna. Transformando a experiência imobiliária com transparência, inovação e compromisso real." />
+    <PageHead title="Sobre" description="Conheça a Líder Imóveis Itaúna. Imobiliária moderna com atendimento próximo, transparente e comprometida com cada cliente." />
     <div className="container mx-auto px-4">
       <Breadcrumbs items={[{ label: 'Sobre' }]} />
 

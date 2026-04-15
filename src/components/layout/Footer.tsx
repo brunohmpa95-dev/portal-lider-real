@@ -11,7 +11,7 @@ const Footer = () => (
         <div>
           <img src={logoImg} alt="Líder Imóveis" className="h-12 w-auto mb-4 brightness-0 invert" loading="lazy" />
           <p className="text-sm text-primary-foreground/70 mb-4 leading-relaxed">
-            Há mais de 15 anos conectando pessoas aos melhores imóveis de Itaúna e região.
+            Imobiliária moderna em Itaúna e região. Atendimento próximo, transparente e eficiente para comprar, vender ou alugar.
           </p>
           <div className="flex items-center gap-2 text-sm text-primary-foreground/70 mb-2">
             <Clock className="h-4 w-4 shrink-0" />
