@@ -1,11 +1,31 @@
 import InternalPageHeader from '@/components/shared/InternalPageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
+import KPICard from '@/components/shared/KPICard';
+import { Button } from '@/components/ui/button';
+import { Users, Plus, TrendingUp } from 'lucide-react';
 import { mockBrokers } from '@/data/mock-internal';
 
 export default function AdminBrokers() {
+  const active = mockBrokers.filter(b => b.status === 'active');
+  const totalCommission = mockBrokers.reduce((s, b) => s + b.commission, 0);
+
   return (
     <div>
-      <InternalPageHeader title="Corretores Parceiros" subtitle="Gestão de corretores parceiros e desempenho" />
+      <InternalPageHeader
+        title="Corretores Parceiros"
+        subtitle="Gestão de corretores parceiros e desempenho"
+        actions={
+          <Button size="sm" disabled>
+            <Plus className="h-4 w-4 mr-1" /> Novo Corretor
+          </Button>
+        }
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <KPICard title="Ativos" value={active.length} icon={Users} />
+        <KPICard title="Total de leads" value={mockBrokers.reduce((s, b) => s + b.leads, 0)} icon={TrendingUp} />
+        <KPICard title="Comissões acumuladas" value={`R$ ${totalCommission.toLocaleString('pt-BR')}`} icon={TrendingUp} />
+      </div>
 
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -22,7 +42,7 @@ export default function AdminBrokers() {
             </thead>
             <tbody className="divide-y divide-border">
               {mockBrokers.map(b => (
-                <tr key={b.id} className="hover:bg-muted/30 transition-colors">
+                <tr key={b.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
                   <td className="px-4 py-3 font-medium text-foreground">{b.name}</td>
                   <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden sm:table-cell">{b.creci}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{b.region}</td>

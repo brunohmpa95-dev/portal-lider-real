@@ -1,17 +1,31 @@
 import InternalPageHeader from '@/components/shared/InternalPageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Plus, Download } from 'lucide-react';
 import { mockClients } from '@/data/mock-internal';
 
 export default function AdminClients() {
   return (
     <div>
-      <InternalPageHeader title="Gestão de Clientes" subtitle="Cadastro e histórico de clientes" />
+      <InternalPageHeader
+        title="Gestão de Clientes"
+        subtitle={`${mockClients.length} clientes cadastrados`}
+        actions={
+          <Button size="sm" disabled>
+            <Plus className="h-4 w-4 mr-1" /> Novo Cliente
+          </Button>
+        }
+      />
 
-      <div className="mb-4 relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Buscar cliente..." className="pl-9 h-9" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar por nome, CPF ou telefone..." className="pl-9 h-9" />
+        </div>
+        <Button variant="outline" size="sm" disabled>
+          <Download className="h-4 w-4 mr-1" /> Exportar
+        </Button>
       </div>
 
       <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -29,7 +43,7 @@ export default function AdminClients() {
             </thead>
             <tbody className="divide-y divide-border">
               {mockClients.map(c => (
-                <tr key={c.id} className="hover:bg-muted/30 transition-colors">
+                <tr key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer">
                   <td className="px-4 py-3 font-medium text-foreground">{c.name}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell font-mono text-xs">{c.cpf}</td>
                   <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{c.phone}</td>
@@ -40,6 +54,10 @@ export default function AdminClients() {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="px-4 py-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+          <span>Mostrando {mockClients.length} de {mockClients.length} clientes</span>
+          <span>Página 1 de 1</span>
         </div>
       </div>
     </div>
