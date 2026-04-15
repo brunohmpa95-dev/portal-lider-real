@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Headphones, DollarSign, Home, ArrowRight, Bell, Clock } from 'lucide-react';
+import { FileText, Headphones, DollarSign, Home, ArrowRight, Bell, Clock, Loader2 } from 'lucide-react';
 import ClientLayout from '@/components/client/ClientLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import KPICard from '@/components/shared/KPICard';
+import { supabase } from '@/integrations/supabase/client';
 
 const shortcuts = [
   { icon: FileText, label: 'Contratos', desc: 'Veja seus contratos, vigência e valores.', path: '/cliente/contratos' },
@@ -13,7 +15,27 @@ const shortcuts = [
 ];
 
 const ClientDashboard = () => {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [contractCount, setContractCount] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [nextDue, setNextDue] = useState<string | null>(null);
+
+  useEffect(() => { if (user) loadKPIs(); }, [user]);
+
+  async function loadKPIs() {
+    setLoading(true);
+    const [contractsRes, ticketsRes, billingRes] = await Promise.all([
+      supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).eq('status', 'active'),
+      supabase.from('support_requests').select('id', { count: 'exact', head: true }).eq('user_id', user!.id).in('status', ['open', 'in_progress']),
+      supabase.from('billing_records').select('due_date').eq('user_id', user!.id).eq('payment_status', 'pending').order('due_date', { ascending: true }).limit(1),
+    ]);
+    setContractCount(contractsRes.count || 0);
+    setTicketCount(ticketsRes.count || 0);
+    const dueDate = billingRes.data?.[0]?.due_date;
+    setNextDue(dueDate ? new Date(dueDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : null);
+    setLoading(false);
+  }
 
   return (
     <ClientLayout title="Painel" description="Painel do cliente Líder Imóveis.">
@@ -22,14 +44,18 @@ const ClientDashboard = () => {
       </h1>
       <p className="text-muted-foreground text-sm mb-6">O que você precisa hoje?</p>
 
-      {/* Quick KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-        <KPICard title="Contratos ativos" value={2} icon={FileText} />
-        <KPICard title="Próximo vencimento" value="20/04" icon={Clock} description="boleto locação" />
-        <KPICard title="Solicitações" value={1} icon={Bell} description="em andamento" />
+        {loading ? (
+          <div className="col-span-full flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        ) : (
+          <>
+            <KPICard title="Contratos ativos" value={contractCount} icon={FileText} />
+            <KPICard title="Próximo vencimento" value={nextDue || '—'} icon={Clock} description="boleto" />
+            <KPICard title="Solicitações" value={ticketCount} icon={Bell} description="em andamento" />
+          </>
+        )}
       </div>
 
-      {/* Navigation shortcuts */}
       <div className="grid sm:grid-cols-2 gap-3">
         {shortcuts.map(s => (
           <Link
@@ -48,7 +74,6 @@ const ClientDashboard = () => {
         ))}
       </div>
 
-      {/* Info banner */}
       <div className="mt-6 bg-muted/50 border border-border rounded-lg p-4 text-center">
         <p className="text-xs text-muted-foreground">
           Para dúvidas urgentes, entre em contato pelo WhatsApp ou telefone da Líder Imóveis.
