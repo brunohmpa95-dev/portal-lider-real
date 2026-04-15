@@ -21,6 +21,9 @@ export interface Property {
   isSuperFeatured: boolean;
   isNew: boolean;
   createdAt: string;
+  condominiumFee?: number;
+  iptu?: number;
+  status?: string;
 }
 
 export type PropertyType = 'casa' | 'apartamento' | 'terreno' | 'comercial' | 'kitnet' | 'chácara';
