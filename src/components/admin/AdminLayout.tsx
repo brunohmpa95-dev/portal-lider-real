@@ -219,6 +219,13 @@ function getBreadcrumbs(pathname: string) {
     '/admin/leads/new': [{ label: 'Leads', path: '/admin/leads' }, { label: 'Novo Lead' }],
     '/admin/properties': [{ label: 'Imóveis' }],
     '/admin/properties/new': [{ label: 'Imóveis', path: '/admin/properties' }, { label: 'Novo Imóvel' }],
+    '/admin/clientes': [{ label: 'Clientes' }],
+    '/admin/corretores': [{ label: 'Corretores' }],
+    '/admin/contratos': [{ label: 'Contratos' }],
+    '/admin/documentos': [{ label: 'Documentos' }],
+    '/admin/tickets': [{ label: 'Chamados' }],
+    '/admin/financeiro': [{ label: 'Financeiro' }],
+    '/admin/auditoria': [{ label: 'Auditoria' }],
     '/admin/agenda': [{ label: 'Agenda' }],
     '/admin/team': [{ label: 'Equipe' }],
     '/admin/partners': [{ label: 'Parceiros' }],
@@ -230,7 +237,6 @@ function getBreadcrumbs(pathname: string) {
 
   if (map[pathname]) return map[pathname];
 
-  // Dynamic routes
   if (pathname.startsWith('/admin/leads/') && pathname !== '/admin/leads/new') {
     return [{ label: 'Leads', path: '/admin/leads' }, { label: 'Detalhe do Lead' }];
   }
