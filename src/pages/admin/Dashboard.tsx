@@ -193,8 +193,12 @@ export default function Dashboard() {
               {[
                 { label: 'Imóveis', path: '/admin/properties', icon: Building2 },
                 { label: 'Leads', path: '/admin/leads', icon: Users },
+                { label: 'Clientes', path: '/admin/clientes', icon: UserCog },
+                { label: 'Corretores', path: '/admin/corretores', icon: Briefcase },
+                { label: 'Contratos', path: '/admin/contratos', icon: FileText },
+                { label: 'Chamados', path: '/admin/tickets', icon: MessageSquare },
+                { label: 'Financeiro', path: '/admin/financeiro', icon: DollarSign },
                 { label: 'Agenda', path: '/admin/agenda', icon: CalendarDays },
-                { label: 'Relatórios', path: '/admin/reports', icon: ClipboardList },
               ].map((link) => (
                 <Link key={link.path} to={link.path} className="flex items-center gap-1.5 p-2 rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                   <link.icon className="h-3.5 w-3.5" /> {link.label}
