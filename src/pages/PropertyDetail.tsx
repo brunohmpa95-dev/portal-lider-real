@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
+import { useIsMobile } from '@/hooks/use-mobile';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import PropertyCard from '@/components/property/PropertyCard';
@@ -33,6 +34,7 @@ const PropertyDetail = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!carouselApi) return;
@@ -269,7 +271,7 @@ const PropertyDetail = () => {
       {/* Lightbox Gallery */}
       {property.images.length > 0 && (
         <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col items-center justify-center [&>button]:text-white [&>button]:hover:text-white/80">
+          <DialogContent className={`p-0 border-none bg-black/95 flex flex-col items-center justify-center [&>button]:text-white [&>button]:hover:text-white/80 ${isMobile ? 'w-screen h-screen max-w-none rounded-none' : 'max-w-5xl w-[95vw] h-[90vh]'}`}>
             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/80 text-sm font-mono z-10">
               {currentSlide + 1} / {property.images.length}
             </div>
@@ -289,8 +291,8 @@ const PropertyDetail = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-2 sm:left-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
-              <CarouselNext className="right-2 sm:right-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
+              <CarouselPrevious className="left-2 sm:left-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-12 w-12 sm:h-10 sm:w-10" />
+              <CarouselNext className="right-2 sm:right-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-12 w-12 sm:h-10 sm:w-10" />
             </Carousel>
           </DialogContent>
         </Dialog>
