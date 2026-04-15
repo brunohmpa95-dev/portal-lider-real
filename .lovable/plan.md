@@ -1,53 +1,41 @@
 
 
-# Teste Mobile — Resultado e Plano de Correções
+# Resultado do Teste Mobile + Plano de Lazy Loading
 
-## Resultado dos Testes (375x812 — iPhone)
+## Teste do Lightbox Mobile — APROVADO
 
-| Página | Status | Problemas encontrados |
-|---|---|---|
-| Home (hero + busca) | OK | Nenhum problema crítico |
-| Home (destaques) | OK | Cards renderizam bem em coluna única |
-| Home (footer) | OK | Layout adapta corretamente |
-| Listagem /comprar | OK | Filtros empilhados, cards em coluna |
-| Detalhe do imóvel | OK | Galeria, ficha, form lead — tudo funcional |
-| Lightbox | **Problemas** | Dialog não ocupa tela cheia; header/footer do site ficam visíveis atrás; botões prev/next apertados |
-| Menu hamburger | OK | Abre/fecha corretamente, links funcionais |
-| Contato | OK | Formulário bem adaptado |
-| WhatsApp button | **Menor** | Sobrepõe o canto inferior direito de alguns conteúdos |
-
-## Problemas Identificados
-
-### P1 — Lightbox não é fullscreen no mobile
-O Dialog do lightbox usa `max-w-5xl w-[95vw] h-[90vh]` que deixa margens visíveis no mobile. O header do site e outros elementos ficam parcialmente visíveis por trás. Os botões prev/next ficam apertados nas laterais.
-
-**Correção:** No mobile, usar `w-screen h-screen max-w-none` e `p-0`. Remover border-radius. Aumentar área de toque dos botões prev/next.
-
-### P2 — Botão WhatsApp sobrepõe conteúdo
-O botão flutuante no canto inferior direito pode sobrepor botões de ação importantes (ex: "Enviar mensagem" no form de lead, "Buscar" na home).
-
-**Correção:** Adicionar `mb-20` ou padding-bottom nas seções finais para evitar sobreposição, ou reduzir o tamanho do botão no mobile.
-
-### P3 — Lightbox: botões prev/next pequenos demais para toque
-Os botões `h-10 w-10` são marginalmente pequenos para toque confortável em mobile (recomendado: 44x44px mínimo).
-
-**Correção:** Aumentar para `h-12 w-12` no mobile.
-
-## Arquivos a Modificar
-
-| Arquivo | Ação |
+| Item | Status |
 |---|---|
-| `src/pages/PropertyDetail.tsx` | Ajustar lightbox Dialog para fullscreen no mobile; aumentar botões prev/next |
-| `src/components/layout/WhatsAppButton.tsx` | Reduzir padding no mobile para não sobrepor tanto |
+| Lightbox ocupa tela inteira | OK — fullscreen sem margens |
+| Contador de slides | OK — "1 / 3", "2 / 3" visível |
+| Botões prev/next | OK — tamanho adequado para toque |
+| Navegação entre fotos | OK — setas funcionam corretamente |
+| Botão fechar (X) | OK — fecha normalmente |
 
-## Detalhes Técnicos
+## Plano: Lazy Loading de Imagens
 
-### PropertyDetail.tsx — Lightbox mobile
-- Importar `useIsMobile` de `@/hooks/use-mobile`
-- No `DialogContent`, aplicar classes condicionais: mobile → `w-screen h-screen max-w-none rounded-none`; desktop → manter `max-w-5xl w-[95vw] h-[90vh]`
-- Botões prev/next: `h-12 w-12 sm:h-10 sm:w-10`
+Adicionar `loading="lazy"` nas imagens que não estão no viewport inicial (above-the-fold). Imagens que já estão visíveis no primeiro render (hero, logo header) NÃO recebem lazy loading para não atrasar o LCP.
 
-### WhatsAppButton.tsx
-- Reduzir de `p-4` para `p-3` no mobile: `p-3 sm:p-4`
-- Ajustar posição: `bottom-4 right-4 sm:bottom-6 sm:right-6`
+### Arquivos a modificar
+
+| Arquivo | Imagem | Ação |
+|---|---|---|
+| `PropertyCard.tsx` | Thumbnail do imóvel | Adicionar `loading="lazy"` (já tem) |
+| `PremiumPropertyCard.tsx` | Imagem do destaque | Adicionar `loading="lazy"` (já tem) |
+| `PropertyDetail.tsx` | Thumbnails da galeria | Adicionar `loading="lazy"` nos thumbnails |
+| `PropertyDetail.tsx` | Imagens do lightbox carousel | Adicionar `loading="lazy"` |
+| `About.tsx` | Foto do fundador | Adicionar `loading="lazy"` |
+| `PropertiesList.tsx` (admin) | Thumbnails na tabela | Adicionar `loading="lazy"` |
+| `Footer.tsx` | Logo no footer | Adicionar `loading="lazy"` |
+| `Header.tsx` | Logo no header | **NÃO** — above-the-fold, crítico para LCP |
+| `Index.tsx` | Foto hero do fundador | **NÃO** — above-the-fold, crítico para LCP |
+
+### Imagens que NÃO recebem lazy (above-the-fold)
+- Logo do header (`Header.tsx`) — sempre visível
+- Imagem hero do fundador (`Index.tsx`) — primeiro elemento visual
+
+### Detalhes técnicos
+- Apenas adicionar o atributo `loading="lazy"` nas tags `<img>` listadas
+- `PropertyCard` e `PremiumPropertyCard` já têm `loading="lazy"` — nenhuma mudança necessária
+- Total de arquivos a editar: **4** (PropertyDetail, About, PropertiesList, Footer)
 
