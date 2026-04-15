@@ -9,8 +9,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PROPERTY_TYPES, NEIGHBORHOODS } from '@/data/constants';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2, Loader2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const steps = [
+  { n: '1', text: 'Preencha o formulário com os dados do imóvel.' },
+  { n: '2', text: 'Nossa equipe analisará as informações enviadas.' },
+  { n: '3', text: 'Entraremos em contato para agendar uma visita, se necessário.' },
+];
 
 const Advertise = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +33,6 @@ const Advertise = () => {
     }
     setIsSubmitting(true);
     const fd = new FormData(e.currentTarget);
-
     try {
       await submitForm('listing', {
         owner_name: fd.get('owner_name'),
@@ -54,67 +59,89 @@ const Advertise = () => {
 
   return (
     <Layout>
-      <PageHead title="Anuncie seu Imóvel" description="Cadastre seu imóvel para venda ou locação com a Líder Imóveis Itaúna. Avaliação gratuita e sem compromisso." />
+      <PageHead title="Anuncie seu Imóvel" description="Cadastre seu imóvel para venda ou locação com a Líder Imóveis Itaúna." />
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label: 'Anuncie seu Imóvel' }]} />
-        <div className="max-w-2xl mx-auto pb-16">
-          <div className="text-center mb-10">
-            <Building2 className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-4">Anuncie seu Imóvel</h1>
-            <p className="text-muted-foreground text-lg">Preencha o formulário abaixo e nossa equipe entrará em contato para avaliar seu imóvel sem compromisso.</p>
+        <div className="max-w-3xl mx-auto pb-12">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Building2 className="h-10 w-10 text-primary mx-auto mb-3" />
+            <h1 className="text-2xl sm:text-3xl font-sans font-bold text-foreground mb-2">Anuncie seu Imóvel</h1>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+              Preencha os dados abaixo e nossa equipe fará uma análise sem compromisso.
+            </p>
+          </div>
+
+          {/* How it works */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            {steps.map(s => (
+              <div key={s.n} className="flex-1 flex items-start gap-3 bg-secondary/60 rounded-lg p-4">
+                <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">{s.n}</span>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.text}</p>
+              </div>
+            ))}
           </div>
 
           {success ? (
             <div className="bg-accent rounded-lg p-8 text-center">
-              <h3 className="text-xl font-semibold text-foreground mb-2">Imóvel cadastrado com sucesso!</h3>
-              <p className="text-muted-foreground">Nossa equipe entrará em contato em até 24 horas para agendar uma visita de avaliação.</p>
-              <Button className="mt-6" onClick={() => setSuccess(false)}>Cadastrar outro imóvel</Button>
+              <CheckCircle2 className="h-10 w-10 text-primary mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Imóvel cadastrado!</h3>
+              <p className="text-sm text-muted-foreground">Entraremos em contato em breve para dar andamento.</p>
+              <Button size="sm" className="mt-5" onClick={() => setSuccess(false)}>Cadastrar outro</Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
-              <h2 className="font-sans font-semibold text-foreground">Seus dados</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input name="owner_name" placeholder="Nome completo" required minLength={2} maxLength={100} />
-                <Input name="owner_phone" placeholder="Telefone / WhatsApp" required maxLength={20} />
+            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-5 sm:p-6">
+              {/* Owner info */}
+              <h2 className="font-sans font-semibold text-foreground text-sm mb-3">Seus dados</h2>
+              <div className="space-y-3 mb-5">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Input name="owner_name" placeholder="Nome completo" required minLength={2} maxLength={100} className="h-10" />
+                  <Input name="owner_phone" placeholder="Telefone / WhatsApp" required maxLength={20} className="h-10" />
+                </div>
+                <Input name="owner_email" placeholder="E-mail" type="email" required maxLength={255} className="h-10" />
               </div>
-              <Input name="owner_email" placeholder="E-mail" type="email" required maxLength={255} />
 
-              <h2 className="font-sans font-semibold text-foreground pt-4">Dados do imóvel</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <select name="purpose" className={selectClass} aria-label="Finalidade" required>
-                  <option value="">Finalidade</option>
-                  <option value="sale">Venda</option>
-                  <option value="rent">Locação</option>
-                </select>
-                <select name="property_type" className={selectClass} aria-label="Tipo do imóvel" required>
-                  <option value="">Tipo do imóvel</option>
-                  {PROPERTY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
+              {/* Property info */}
+              <h2 className="font-sans font-semibold text-foreground text-sm mb-3">Dados do imóvel</h2>
+              <div className="space-y-3 mb-5">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <select name="purpose" className={selectClass} aria-label="Finalidade" required>
+                    <option value="">Finalidade</option>
+                    <option value="sale">Venda</option>
+                    <option value="rent">Locação</option>
+                  </select>
+                  <select name="property_type" className={selectClass} aria-label="Tipo do imóvel" required>
+                    <option value="">Tipo do imóvel</option>
+                    {PROPERTY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <select name="neighborhood" className={selectClass} aria-label="Bairro">
+                    <option value="">Bairro</option>
+                    {NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                  <Input name="address" placeholder="Endereço completo" maxLength={200} className="h-10" />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <Input name="bedrooms" placeholder="Quartos" type="number" min={0} max={99} className="h-10" />
+                  <Input name="bathrooms" placeholder="Banheiros" type="number" min={0} max={99} className="h-10" />
+                  <Input name="parking_spots" placeholder="Vagas" type="number" min={0} max={99} className="h-10" />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Input name="area" placeholder="Área (m²)" type="number" min={0} max={999999} className="h-10" />
+                  <Input name="asking_price" placeholder="Valor pretendido (R$)" type="number" min={0} max={999999999} className="h-10" />
+                </div>
+                <Textarea name="description" placeholder="Descrição e observações sobre o imóvel" rows={3} maxLength={2000} />
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <select name="neighborhood" className={selectClass} aria-label="Bairro">
-                  <option value="">Bairro</option>
-                  {NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <Input name="address" placeholder="Endereço completo" maxLength={200} />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <Input name="bedrooms" placeholder="Quartos" type="number" min={0} max={99} />
-                <Input name="bathrooms" placeholder="Banheiros" type="number" min={0} max={99} />
-                <Input name="parking_spots" placeholder="Vagas" type="number" min={0} max={99} />
-              </div>
-              <Input name="area" placeholder="Área (m²)" type="number" min={0} max={999999} />
-              <Input name="asking_price" placeholder="Valor pretendido (R$)" type="number" min={0} max={999999999} />
-              <Textarea name="description" placeholder="Descrição e observações sobre o imóvel" rows={4} maxLength={2000} />
 
-              <div className="flex items-start gap-2">
-                <Checkbox id="consent-listing" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
-                <label htmlFor="consent-listing" className="text-xs text-muted-foreground leading-tight">
-                  Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link> e autorizo o tratamento dos meus dados para avaliação do imóvel.
+              <div className="flex items-start gap-2 mb-4">
+                <Checkbox id="consent-listing" checked={consent} onCheckedChange={(v) => setConsent(!!v)} className="mt-0.5" />
+                <label htmlFor="consent-listing" className="text-[11px] text-muted-foreground leading-tight">
+                  Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link>.
                 </label>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
                 {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Enviar para análise'}
               </Button>
             </form>
