@@ -177,7 +177,7 @@ const PropertyDetail = () => {
               <div className="flex gap-2 mb-6 overflow-x-auto">
                 {property.images.map((img, i) => (
                   <button key={i} onClick={() => setImgIdx(i)} onDoubleClick={() => openLightbox(i)} className={`shrink-0 w-20 h-16 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${i === imgIdx ? 'border-primary' : 'border-transparent'}`}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </button>
                 ))}
               </div>
