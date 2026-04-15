@@ -1,34 +1,53 @@
+import { useEffect, useState } from 'react';
 import InternalPageHeader from '@/components/shared/InternalPageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import EmptyState from '@/components/shared/EmptyState';
-import { Building2 } from 'lucide-react';
-
-const mockProperties = [
-  { id: '1', code: 'LDR-0045', title: 'Casa 3 Quartos - Centro', price: 385000, purpose: 'Venda', status: 'published', neighborhood: 'Centro' },
-  { id: '2', code: 'LDR-0078', title: 'Apartamento 2Q - São Geraldo', price: 245000, purpose: 'Venda', status: 'published', neighborhood: 'São Geraldo' },
-  { id: '3', code: 'LDR-0102', title: 'Lote Residencial - Piedade', price: 120000, purpose: 'Venda', status: 'published', neighborhood: 'Piedade' },
-  { id: '4', code: 'LDR-0115', title: 'Sala Comercial - Centro', price: 1800, purpose: 'Locação', status: 'published', neighborhood: 'Centro' },
-];
+import { Building2, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function BrokerProperties() {
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { loadProperties(); }, []);
+
+  async function loadProperties() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('properties')
+      .select('id, code, title, price, rent_price, purpose, status, neighborhood, city')
+      .order('created_at', { ascending: false });
+    setProperties(data || []);
+    setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <InternalPageHeader title="Meus Imóveis" subtitle="Carregando..." />
+        <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <InternalPageHeader title="Meus Imóveis" subtitle="Imóveis atribuídos à sua carteira" />
+      <InternalPageHeader title="Meus Imóveis" subtitle={`${properties.length} imóveis atribuídos`} />
 
-      {mockProperties.length === 0 ? (
+      {properties.length === 0 ? (
         <EmptyState icon={Building2} title="Nenhum imóvel atribuído" description="Quando imóveis forem atribuídos a você, eles aparecerão aqui." />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockProperties.map(p => (
+          {properties.map(p => (
             <div key={p.id} className="bg-card border border-border rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-mono text-muted-foreground">{p.code}</span>
-                <StatusBadge status={p.status} label={p.purpose} />
+                <StatusBadge status={p.status} label={p.purpose === 'rent' ? 'Locação' : 'Venda'} />
               </div>
               <h3 className="text-sm font-semibold text-foreground mb-1">{p.title}</h3>
-              <p className="text-xs text-muted-foreground mb-2">{p.neighborhood} · Itaúna</p>
+              <p className="text-xs text-muted-foreground mb-2">{p.neighborhood || ''} · {p.city}</p>
               <p className="text-base font-bold text-primary">
-                {p.purpose === 'Locação' ? `R$ ${p.price.toLocaleString('pt-BR')}/mês` : `R$ ${p.price.toLocaleString('pt-BR')}`}
+                {p.purpose === 'rent' ? `R$ ${(p.rent_price || p.price).toLocaleString('pt-BR')}/mês` : `R$ ${p.price.toLocaleString('pt-BR')}`}
               </p>
             </div>
           ))}
