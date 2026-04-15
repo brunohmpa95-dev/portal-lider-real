@@ -4,10 +4,10 @@ import ClientLayout from '@/components/client/ClientLayout';
 import { useAuth } from '@/contexts/AuthContext';
 
 const shortcuts = [
-  { icon: FileText, label: 'Documentos', desc: 'Consulte boletos, contratos, recibos e outros documentos.', path: '/area-do-cliente/documentos' },
-  { icon: Headphones, label: 'Suporte', desc: 'Abra uma solicitação ou fale com nossa equipe.', path: '/area-do-cliente/suporte' },
-  { icon: DollarSign, label: 'Financeiro', desc: 'Pagamentos, reajustes e negociações.', path: '/area-do-cliente/financeiro' },
-  { icon: Home, label: 'Locação', desc: 'Manutenções, vistorias e questões do imóvel.', path: '/area-do-cliente/locacao' },
+  { icon: FileText, label: 'Documentos', desc: 'Consulte boletos, contratos, recibos e outros documentos.', path: '/cliente/documentos' },
+  { icon: Headphones, label: 'Atendimento', desc: 'Abra uma solicitação ou fale com nossa equipe.', path: '/cliente/atendimento' },
+  { icon: DollarSign, label: 'Financeiro', desc: 'Pagamentos, reajustes e negociações.', path: '/cliente/financeiro' },
+  { icon: Home, label: 'Imóveis', desc: 'Seus imóveis e contratos vinculados.', path: '/cliente/imoveis' },
 ];
 
 const ClientDashboard = () => {

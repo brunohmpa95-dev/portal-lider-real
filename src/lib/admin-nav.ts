@@ -9,6 +9,10 @@ import {
   Settings,
   Bell,
   UserCircle,
+  FileText,
+  Headphones,
+  DollarSign,
+  Shield,
   type LucideIcon,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth-types';
@@ -21,63 +25,26 @@ export interface NavItem {
 }
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
-  {
-    title: 'Dashboard',
-    path: '/admin',
-    icon: LayoutDashboard,
-  },
-  {
-    title: 'Leads',
-    path: '/admin/leads',
-    icon: Users,
-  },
-  {
-    title: 'Imóveis',
-    path: '/admin/properties',
-    icon: Building2,
-  },
-  {
-    title: 'Agenda',
-    path: '/admin/agenda',
-    icon: CalendarDays,
-  },
-  {
-    title: 'Equipe',
-    path: '/admin/team',
-    icon: UserCog,
-    requiredRoles: ['administrativo', 'superadmin'],
-  },
-  {
-    title: 'Parceiros',
-    path: '/admin/partners',
-    icon: Handshake,
-    requiredRoles: ['administrativo', 'superadmin'],
-  },
-  {
-    title: 'Relatórios',
-    path: '/admin/reports',
-    icon: BarChart3,
-    requiredRoles: ['administrativo', 'superadmin', 'vendas', 'financeiro'],
-  },
-  {
-    title: 'Configurações',
-    path: '/admin/settings',
-    icon: Settings,
-    requiredRoles: ['administrativo', 'superadmin'],
-  },
+  { title: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+  { title: 'Leads', path: '/admin/leads', icon: Users },
+  { title: 'Imóveis', path: '/admin/properties', icon: Building2 },
+  { title: 'Clientes', path: '/admin/clientes', icon: Users, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Corretores', path: '/admin/corretores', icon: Handshake, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Contratos', path: '/admin/contratos', icon: FileText, requiredRoles: ['administrativo', 'superadmin', 'locacao', 'vendas'] },
+  { title: 'Agenda', path: '/admin/agenda', icon: CalendarDays },
+  { title: 'Chamados', path: '/admin/tickets', icon: Headphones, requiredRoles: ['administrativo', 'superadmin', 'locacao'] },
+  { title: 'Financeiro', path: '/admin/financeiro', icon: DollarSign, requiredRoles: ['financeiro', 'administrativo', 'superadmin'] },
+  { title: 'Documentos', path: '/admin/documentos', icon: FileText, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Equipe', path: '/admin/team', icon: UserCog, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Parceiros', path: '/admin/partners', icon: Handshake, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Relatórios', path: '/admin/reports', icon: BarChart3, requiredRoles: ['administrativo', 'superadmin', 'vendas', 'financeiro'] },
+  { title: 'Auditoria', path: '/admin/auditoria', icon: Shield, requiredRoles: ['administrativo', 'superadmin'] },
+  { title: 'Configurações', path: '/admin/settings', icon: Settings, requiredRoles: ['administrativo', 'superadmin'] },
 ];
 
 export const ADMIN_SECONDARY_NAV: NavItem[] = [
-  {
-    title: 'Notificações',
-    path: '/admin/notifications',
-    icon: Bell,
-  },
-  {
-    title: 'Meu Perfil',
-    path: '/admin/profile',
-    icon: UserCircle,
-  },
+  { title: 'Notificações', path: '/admin/notifications', icon: Bell },
+  { title: 'Meu Perfil', path: '/admin/profile', icon: UserCircle },
 ];
 
 /** All roles that can access the admin panel */

@@ -145,6 +145,174 @@ export type Database = {
         }
         Relationships: []
       }
+      brokers: {
+        Row: {
+          bank_info: string | null
+          commission_pct: number | null
+          created_at: string
+          creci: string | null
+          id: string
+          profile_id: string
+          region: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bank_info?: string | null
+          commission_pct?: number | null
+          created_at?: string
+          creci?: string | null
+          id?: string
+          profile_id: string
+          region?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bank_info?: string | null
+          commission_pct?: number | null
+          created_at?: string
+          creci?: string | null
+          id?: string
+          profile_id?: string
+          region?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brokers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          birth_date: string | null
+          city: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          profile_id: string
+          rg_ie: string | null
+          state: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profile_id: string
+          rg_ie?: string | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          rg_ie?: string | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commissions: {
+        Row: {
+          amount: number
+          broker_id: string
+          contract_id: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          paid_at: string | null
+          property_id: string | null
+          proposal_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          broker_id: string
+          contract_id?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          property_id?: string | null
+          proposal_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          broker_id?: string
+          contract_id?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          property_id?: string | null
+          proposal_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_broker_id_fkey"
+            columns: ["broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -308,6 +476,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      documents_unified: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          file_url: string | null
+          id: string
+          profile_id: string | null
+          property_id: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+          uploaded_by: string | null
+          visibility: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          profile_id?: string | null
+          property_id?: string | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          profile_id?: string | null
+          property_id?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_unified_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_unified_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_unified_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inspections: {
         Row: {
@@ -630,6 +865,7 @@ export type Database = {
         Row: {
           address: string | null
           area: number
+          assigned_broker_id: string | null
           bathrooms: number
           bedrooms: number
           city: string
@@ -647,9 +883,11 @@ export type Database = {
           is_new: boolean
           is_super_featured: boolean
           neighborhood: string | null
+          owner_client_id: string | null
           parking_spots: number
           price: number
           purpose: string
+          rent_price: number | null
           responsible_agent: string | null
           state: string
           status: string
@@ -661,6 +899,7 @@ export type Database = {
         Insert: {
           address?: string | null
           area?: number
+          assigned_broker_id?: string | null
           bathrooms?: number
           bedrooms?: number
           city?: string
@@ -678,9 +917,11 @@ export type Database = {
           is_new?: boolean
           is_super_featured?: boolean
           neighborhood?: string | null
+          owner_client_id?: string | null
           parking_spots?: number
           price?: number
           purpose: string
+          rent_price?: number | null
           responsible_agent?: string | null
           state?: string
           status?: string
@@ -692,6 +933,7 @@ export type Database = {
         Update: {
           address?: string | null
           area?: number
+          assigned_broker_id?: string | null
           bathrooms?: number
           bedrooms?: number
           city?: string
@@ -709,9 +951,11 @@ export type Database = {
           is_new?: boolean
           is_super_featured?: boolean
           neighborhood?: string | null
+          owner_client_id?: string | null
           parking_spots?: number
           price?: number
           purpose?: string
+          rent_price?: number | null
           responsible_agent?: string | null
           state?: string
           status?: string
@@ -720,7 +964,22 @@ export type Database = {
           type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "properties_assigned_broker_id_fkey"
+            columns: ["assigned_broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_owner_client_id_fkey"
+            columns: ["owner_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_leads: {
         Row: {
@@ -777,6 +1036,64 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          amount: number
+          broker_id: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          property_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          broker_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          broker_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_broker_id_fkey"
+            columns: ["broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -886,6 +1203,7 @@ export type Database = {
       visits: {
         Row: {
           agent_id: string
+          client_id: string | null
           created_at: string
           created_by: string | null
           duration_minutes: number | null
@@ -899,6 +1217,7 @@ export type Database = {
         }
         Insert: {
           agent_id: string
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           duration_minutes?: number | null
@@ -912,6 +1231,7 @@ export type Database = {
         }
         Update: {
           agent_id?: string
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           duration_minutes?: number | null
@@ -924,6 +1244,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "visits_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "visits_lead_id_fkey"
             columns: ["lead_id"]
@@ -964,6 +1291,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_broker_partner: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
@@ -974,6 +1302,7 @@ export type Database = {
         | "financeiro"
         | "administrativo"
         | "superadmin"
+        | "corretor_parceiro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1109,6 +1438,7 @@ export const Constants = {
         "financeiro",
         "administrativo",
         "superadmin",
+        "corretor_parceiro",
       ],
     },
   },

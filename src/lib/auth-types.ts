@@ -6,6 +6,7 @@ export type AppRole = Database['public']['Enums']['app_role'];
 export const ROLE_LABELS: Record<AppRole, string> = {
   cliente: 'Cliente',
   corretor: 'Corretor',
+  corretor_parceiro: 'Corretor Parceiro',
   locacao: 'Locação',
   vendas: 'Vendas',
   financeiro: 'Financeiro',
@@ -16,6 +17,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
 // Role hierarchy: higher index = more privileges
 export const ROLE_HIERARCHY: AppRole[] = [
   'cliente',
+  'corretor_parceiro',
   'corretor',
   'locacao',
   'vendas',
@@ -26,6 +28,7 @@ export const ROLE_HIERARCHY: AppRole[] = [
 
 export const ADMIN_ROLES: AppRole[] = ['administrativo', 'superadmin'];
 export const INTERNAL_ROLES: AppRole[] = ['corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'];
+export const BROKER_PARTNER_ROLES: AppRole[] = ['corretor_parceiro'];
 // TODO: Reativar MFA após testes — original: ['financeiro', 'administrativo', 'superadmin']
 export const MFA_REQUIRED_ROLES: AppRole[] = [];
 
@@ -52,7 +55,7 @@ export interface Permission {
 // Permission matrix: which roles can do what
 export const PERMISSION_MATRIX: Record<string, AppRole[]> = {
   // Client area
-  'client-area:view': ['cliente', 'corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'],
+  'client-area:view': ['cliente', 'corretor', 'corretor_parceiro', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'],
   'client-documents:view': ['cliente', 'administrativo', 'superadmin'],
   
   // Properties
@@ -62,12 +65,17 @@ export const PERMISSION_MATRIX: Record<string, AppRole[]> = {
   'properties:delete': ['administrativo', 'superadmin'],
   
   // Leads
-  'leads:view': ['corretor', 'vendas', 'locacao', 'administrativo', 'superadmin'],
+  'leads:view': ['corretor', 'corretor_parceiro', 'vendas', 'locacao', 'administrativo', 'superadmin'],
   'leads:manage': ['administrativo', 'superadmin'],
   
   // Financial
   'financial:view': ['financeiro', 'administrativo', 'superadmin'],
   'financial:manage': ['financeiro', 'administrativo', 'superadmin'],
+  
+  // Broker partner area
+  'broker-area:view': ['corretor_parceiro'],
+  'broker-commissions:view': ['corretor_parceiro', 'financeiro', 'administrativo', 'superadmin'],
+  'broker-proposals:view': ['corretor_parceiro', 'corretor', 'vendas', 'administrativo', 'superadmin'],
   
   // Ombudsman
   'ombudsman:view': ['administrativo', 'superadmin'],
@@ -104,4 +112,17 @@ export function isAdmin(roles: AppRole[]): boolean {
 
 export function isSuperAdmin(roles: AppRole[]): boolean {
   return roles.includes('superadmin');
+}
+
+export function isBrokerPartner(roles: AppRole[]): boolean {
+  return roles.includes('corretor_parceiro');
+}
+
+/**
+ * Determine where to redirect after login based on user roles.
+ */
+export function getPostLoginRedirect(roles: AppRole[]): string {
+  if (roles.includes('corretor_parceiro')) return '/parceiro';
+  if (roles.some(r => INTERNAL_ROLES.includes(r))) return '/admin';
+  return '/cliente';
 }

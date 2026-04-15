@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import logoImg from '@/assets/logo-transparent.png';
+import { getPostLoginRedirect } from '@/lib/auth-types';
 
 const loginSchema = z.object({
   email: z.string().trim().email('E-mail inválido').max(255),
@@ -15,10 +16,12 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { signIn, isAuthenticated, isLoading, mfaRequired, mfaVerified, mfaEnrolled } = useAuth();
+  const { signIn, isAuthenticated, isLoading, mfaRequired, mfaVerified, mfaEnrolled, roles } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from?.pathname || '/area-do-cliente';
+  const stateFrom = (location.state as any)?.from?.pathname;
+  // Use role-based redirect unless coming from a specific protected page
+  const from = stateFrom || getPostLoginRedirect(roles);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

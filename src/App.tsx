@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,11 +12,6 @@ import PropertyDetail from "./pages/PropertyDetail";
 import About from "./pages/About";
 import Advertise from "./pages/Advertise";
 import Contact from "./pages/Contact";
-import ClientDashboard from "./pages/client/ClientDashboard";
-import ClientDocuments from "./pages/client/ClientDocuments";
-import ClientSupport from "./pages/client/ClientSupport";
-import ClientFinancial from "./pages/client/ClientFinancial";
-import ClientRental from "./pages/client/ClientRental";
 import Ombudsman from "./pages/Ombudsman";
 import Careers from "./pages/Careers";
 import Privacy from "./pages/Privacy";
@@ -28,6 +23,26 @@ import AccessDenied from "./pages/AccessDenied";
 import NotFound from "./pages/NotFound";
 import MfaSetup from "./pages/MfaSetup";
 import MfaVerify from "./pages/MfaVerify";
+
+// Client
+import ClientDashboard from "./pages/client/ClientDashboard";
+import ClientDocuments from "./pages/client/ClientDocuments";
+import ClientSupport from "./pages/client/ClientSupport";
+import ClientFinancial from "./pages/client/ClientFinancial";
+import ClientRental from "./pages/client/ClientRental";
+import ClientContracts from "./pages/client/ClientContracts";
+import ClientProperties from "./pages/client/ClientProperties";
+import ClientProfile from "./pages/client/ClientProfile";
+
+// Broker Partner
+import BrokerLayout from "@/components/broker/BrokerLayout";
+import BrokerDashboard from "./pages/broker/BrokerDashboard";
+import BrokerLeads from "./pages/broker/BrokerLeads";
+import BrokerProperties from "./pages/broker/BrokerProperties";
+import BrokerVisits from "./pages/broker/BrokerVisits";
+import BrokerProposals from "./pages/broker/BrokerProposals";
+import BrokerCommissions from "./pages/broker/BrokerCommissions";
+import BrokerProfile from "./pages/broker/BrokerProfile";
 
 // Admin
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -44,6 +59,13 @@ import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import AdminProfile from "@/pages/admin/AdminProfile";
 import Notifications from "@/pages/admin/Notifications";
+import AdminClients from "@/pages/admin/AdminClients";
+import AdminBrokers from "@/pages/admin/AdminBrokers";
+import AdminContracts from "@/pages/admin/AdminContracts";
+import AdminDocuments from "@/pages/admin/AdminDocuments";
+import AdminTickets from "@/pages/admin/AdminTickets";
+import AdminFinancial from "@/pages/admin/AdminFinancial";
+import AdminAudit from "@/pages/admin/AdminAudit";
 
 const queryClient = new QueryClient();
 
@@ -79,61 +101,44 @@ const App = () => (
               <Route path="/mfa/setup" element={<MfaSetup />} />
               <Route path="/mfa/verify" element={<MfaVerify />} />
 
-              {/* Protected client routes */}
+              {/* Legacy client routes → redirect to new paths */}
+              <Route path="/area-do-cliente" element={<Navigate to="/cliente" replace />} />
+              <Route path="/area-do-cliente/*" element={<Navigate to="/cliente" replace />} />
+              <Route path="/documentos" element={<Navigate to="/cliente/documentos" replace />} />
+
+              {/* Protected client routes (/cliente) */}
+              <Route path="/cliente" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+              <Route path="/cliente/contratos" element={<ProtectedRoute><ClientContracts /></ProtectedRoute>} />
+              <Route path="/cliente/documentos" element={<ProtectedRoute><ClientDocuments /></ProtectedRoute>} />
+              <Route path="/cliente/financeiro" element={<ProtectedRoute><ClientFinancial /></ProtectedRoute>} />
+              <Route path="/cliente/atendimento" element={<ProtectedRoute><ClientSupport /></ProtectedRoute>} />
+              <Route path="/cliente/imoveis" element={<ProtectedRoute><ClientProperties /></ProtectedRoute>} />
+              <Route path="/cliente/perfil" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+              <Route path="/cliente/locacao" element={<ProtectedRoute><ClientRental /></ProtectedRoute>} />
+
+              {/* Protected broker partner routes (/parceiro) */}
               <Route
-                path="/area-do-cliente"
+                path="/parceiro"
                 element={
-                  <ProtectedRoute>
-                    <ClientDashboard />
+                  <ProtectedRoute requiredRoles={['corretor_parceiro']}>
+                    <BrokerLayout />
                   </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/area-do-cliente/documentos"
-                element={
-                  <ProtectedRoute>
-                    <ClientDocuments />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/area-do-cliente/suporte"
-                element={
-                  <ProtectedRoute>
-                    <ClientSupport />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/area-do-cliente/financeiro"
-                element={
-                  <ProtectedRoute>
-                    <ClientFinancial />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/area-do-cliente/locacao"
-                element={
-                  <ProtectedRoute>
-                    <ClientRental />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/documentos"
-                element={
-                  <ProtectedRoute>
-                    <ClientDocuments />
-                  </ProtectedRoute>
-                }
-              />
+              >
+                <Route index element={<BrokerDashboard />} />
+                <Route path="leads" element={<BrokerLeads />} />
+                <Route path="imoveis" element={<BrokerProperties />} />
+                <Route path="visitas" element={<BrokerVisits />} />
+                <Route path="propostas" element={<BrokerProposals />} />
+                <Route path="comissoes" element={<BrokerCommissions />} />
+                <Route path="perfil" element={<BrokerProfile />} />
+              </Route>
 
               {/* Admin routes */}
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                  <ProtectedRoute requiredRoles={['admin', 'superadmin', 'corretor', 'vendas', 'locacao', 'financeiro']}>
                     <AdminLayout />
                   </ProtectedRoute>
                 }
@@ -146,6 +151,13 @@ const App = () => (
                 <Route path="properties/new" element={<PropertyForm />} />
                 <Route path="properties/:id" element={<PropertyForm />} />
                 <Route path="properties/:id/edit" element={<PropertyForm />} />
+                <Route path="clientes" element={<AdminClients />} />
+                <Route path="corretores" element={<AdminBrokers />} />
+                <Route path="contratos" element={<AdminContracts />} />
+                <Route path="documentos" element={<AdminDocuments />} />
+                <Route path="tickets" element={<AdminTickets />} />
+                <Route path="financeiro" element={<AdminFinancial />} />
+                <Route path="auditoria" element={<AdminAudit />} />
                 <Route path="agenda" element={<Agenda />} />
                 <Route path="team" element={<Team />} />
                 <Route path="partners" element={<Partners />} />

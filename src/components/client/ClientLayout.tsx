@@ -10,11 +10,12 @@ import { ROLE_LABELS } from '@/lib/auth-types';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Painel', path: '/area-do-cliente' },
-  { icon: FileText, label: 'Documentos', path: '/area-do-cliente/documentos' },
-  { icon: Headphones, label: 'Suporte', path: '/area-do-cliente/suporte' },
-  { icon: DollarSign, label: 'Financeiro', path: '/area-do-cliente/financeiro' },
-  { icon: Home, label: 'Locação', path: '/area-do-cliente/locacao' },
+  { icon: LayoutDashboard, label: 'Painel', path: '/cliente' },
+  { icon: FileText, label: 'Contratos', path: '/cliente/contratos' },
+  { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
+  { icon: DollarSign, label: 'Financeiro', path: '/cliente/financeiro' },
+  { icon: Headphones, label: 'Atendimento', path: '/cliente/atendimento' },
+  { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
 ];
 
 interface ClientLayoutProps {
