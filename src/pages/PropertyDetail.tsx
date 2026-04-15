@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
@@ -88,6 +89,36 @@ const PropertyDetail = () => {
   return (
     <Layout>
       <PageHead title={property.title} description={`${property.title} - ${property.neighborhood}, ${property.city}. ${formatPrice(property.price, property.purpose)}`} />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "RealEstateListing",
+          "name": property.title,
+          "description": property.description || '',
+          "url": `https://portal-lider-real.lovable.app/imovel/${property.id}`,
+          "datePosted": property.createdAt,
+          "image": property.images.length > 0 ? property.images : undefined,
+          "offers": {
+            "@type": "Offer",
+            "price": property.price,
+            "priceCurrency": "BRL",
+            "availability": "https://schema.org/InStock"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": property.city,
+            "addressRegion": property.state,
+            "streetAddress": property.address || property.neighborhood
+          },
+          "floorSize": {
+            "@type": "QuantitativeValue",
+            "value": property.area,
+            "unitCode": "MTK"
+          },
+          "numberOfRooms": property.bedrooms,
+          "numberOfBathroomsTotal": property.bathrooms
+        })}</script>
+      </Helmet>
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[
           { label: property.purpose === 'sale' ? 'Comprar' : 'Alugar', path: property.purpose === 'sale' ? '/comprar' : '/alugar' },

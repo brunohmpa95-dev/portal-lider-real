@@ -12,6 +12,7 @@ import { PROPERTY_TYPE_OPTIONS, PROPERTY_PURPOSE_OPTIONS, PROPERTY_STATUS_OPTION
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import PropertyImageUpload from '@/components/admin/PropertyImageUpload';
 
 const defaultForm = {
   code: '', title: '', type: 'casa', purpose: 'sale', status: 'draft',
@@ -20,6 +21,7 @@ const defaultForm = {
   neighborhood: '', city: 'Itaúna', state: 'MG', address: '',
   description: '', internal_notes: '', features: '',
   is_featured: false, is_super_featured: false, is_new: true,
+  images: [] as string[],
 };
 
 export default function PropertyForm() {
@@ -62,6 +64,7 @@ export default function PropertyForm() {
         is_featured: data.is_featured,
         is_super_featured: data.is_super_featured,
         is_new: data.is_new,
+        images: data.images || [],
       });
     }
     setLoading(false);
@@ -97,6 +100,7 @@ export default function PropertyForm() {
       description: form.description.trim() || null,
       internal_notes: form.internal_notes.trim() || null,
       features: form.features ? form.features.split(',').map((f) => f.trim()).filter(Boolean) : [],
+      images: form.images,
       is_featured: form.is_featured,
       is_super_featured: form.is_super_featured,
       is_new: form.is_new,
@@ -232,6 +236,12 @@ export default function PropertyForm() {
             </div>
           </CardContent>
         </Card>
+
+        <PropertyImageUpload
+          images={form.images}
+          onChange={(imgs) => set('images', imgs)}
+          propertyCode={form.code}
+        />
 
         <div className="flex gap-3">
           <Button type="submit" disabled={saving}>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { User, Building2, Phone, HandshakeIcon, Headphones, ArrowRight, Shield, ExternalLink } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -47,6 +48,27 @@ const Index = () => {
   return (
     <Layout>
       <PageHead title="Início" description="Líder Imóveis Itaúna - Os melhores imóveis para comprar e alugar em Itaúna e região. Confiança e tradição no mercado imobiliário." />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": ["RealEstateAgent", "LocalBusiness"],
+          "name": COMPANY.fullName,
+          "description": "Imobiliária em Itaúna e região. Compra, venda e locação de imóveis com confiança e tradição.",
+          "url": "https://portal-lider-real.lovable.app",
+          "telephone": COMPANY.phone,
+          "email": COMPANY.email,
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rua Expedito Alves, 67 - Nova Villa Mozart",
+            "addressLocality": COMPANY.city,
+            "addressRegion": COMPANY.state,
+            "addressCountry": "BR"
+          },
+          "openingHours": ["Mo-Fr 08:00-18:00", "Sa 08:00-12:00"],
+          "sameAs": [COMPANY.instagram, COMPANY.facebook],
+          "image": "https://portal-lider-real.lovable.app/og-image.png"
+        })}</script>
+      </Helmet>
 
       {/* Hero */}
       <section
