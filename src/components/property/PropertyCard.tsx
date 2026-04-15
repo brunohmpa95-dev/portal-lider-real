@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bed, Bath, Car, Maximize2, ArrowRight } from 'lucide-react';
+import { Bed, Bath, Car, Maximize2 } from 'lucide-react';
 import { Property } from '@/data/types';
 import { formatPrice } from '@/data/properties';
 import { Badge } from '@/components/ui/badge';
@@ -12,70 +12,70 @@ interface PropertyCardProps {
 
 const PropertyCard = ({ property, index = 0 }: PropertyCardProps) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 16 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.4, delay: index * 0.08, ease: 'easeOut' }}
-    whileHover={{ y: -6 }}
+    transition={{ duration: 0.35, delay: index * 0.06, ease: 'easeOut' }}
   >
     <Link
       to={`/imovel/${property.id}`}
-      className="group block bg-card rounded-lg border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+      className="group flex flex-col bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full"
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      {/* Image */}
+      <div className="relative aspect-[16/10] overflow-hidden">
         <img
           src={property.images[0]}
           alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-[1.08] transition-transform duration-700 ease-out"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           loading="lazy"
         />
-        {/* Hover gradient overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
-        <div className="absolute top-3 left-3 flex gap-1.5 z-10">
-          {property.isNew && <Badge className="bg-primary text-primary-foreground text-xs">Novo</Badge>}
-          {property.isFeatured && <Badge variant="secondary" className="text-xs">Destaque</Badge>}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+        {/* Badges — top left */}
+        <div className="absolute top-2.5 left-2.5 flex gap-1.5">
+          {property.isNew && (
+            <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 font-semibold">Novo</Badge>
+          )}
+          {property.isSuperFeatured && (
+            <Badge className="bg-amber-500 text-white text-[10px] px-2 py-0.5 font-semibold">Destaque</Badge>
+          )}
         </div>
-        <div className="absolute top-3 right-3 z-10">
-          <Badge variant="outline" className="bg-background/90 backdrop-blur-sm text-xs font-mono">
-            {property.code}
-          </Badge>
-        </div>
-        {/* "Ver detalhes" indicator */}
-        <div className="absolute bottom-14 right-3 z-10 flex items-center gap-1 text-xs font-medium text-white bg-primary/80 backdrop-blur-sm rounded-full px-3 py-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-          Ver detalhes <ArrowRight className="h-3 w-3" />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 group-hover:from-black/70 to-transparent p-4 transition-colors duration-300">
-          <p className="text-white font-semibold text-lg">
+
+        {/* Code — top right */}
+        <span className="absolute top-2.5 right-2.5 text-[10px] font-mono text-white/80 bg-black/40 backdrop-blur-sm rounded px-1.5 py-0.5">
+          {property.code}
+        </span>
+
+        {/* Price overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6">
+          <p className="text-white font-bold text-lg leading-tight">
             {formatPrice(property.price, property.purpose)}
           </p>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-sans font-semibold text-foreground text-sm leading-snug mb-1 line-clamp-1 group-hover:text-primary transition-colors duration-300">
+
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-3.5">
+        <h3 className="font-sans font-semibold text-foreground text-sm leading-snug line-clamp-1 mb-1 group-hover:text-primary transition-colors">
           {property.title}
         </h3>
         <p className="text-xs text-muted-foreground mb-3">
           {property.neighborhood} · {property.city}
         </p>
-        {property.type !== 'terreno' && (
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            {property.bedrooms > 0 && (
-              <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{property.bedrooms}</span>
-            )}
-            {property.bathrooms > 0 && (
-              <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{property.bathrooms}</span>
-            )}
-            {property.parkingSpots > 0 && (
-              <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />{property.parkingSpots}</span>
-            )}
-            <span className="flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5" />{property.area}m²</span>
-          </div>
-        )}
-        {property.type === 'terreno' && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Maximize2 className="h-3.5 w-3.5" />{property.area}m²
-          </div>
-        )}
+
+        {/* Attributes */}
+        <div className="mt-auto flex items-center gap-3 text-xs text-muted-foreground border-t border-border pt-3">
+          {property.bedrooms > 0 && (
+            <span className="flex items-center gap-1" title="Quartos"><Bed className="h-3.5 w-3.5 text-primary/70" />{property.bedrooms}</span>
+          )}
+          {property.bathrooms > 0 && (
+            <span className="flex items-center gap-1" title="Banheiros"><Bath className="h-3.5 w-3.5 text-primary/70" />{property.bathrooms}</span>
+          )}
+          {property.parkingSpots > 0 && (
+            <span className="flex items-center gap-1" title="Vagas"><Car className="h-3.5 w-3.5 text-primary/70" />{property.parkingSpots}</span>
+          )}
+          <span className="flex items-center gap-1 ml-auto" title="Área"><Maximize2 className="h-3.5 w-3.5 text-primary/70" />{property.area}m²</span>
+        </div>
       </div>
     </Link>
   </motion.div>
