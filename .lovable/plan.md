@@ -1,44 +1,53 @@
 
 
-# Galeria Lightbox com Zoom — Página de Detalhe do Imóvel
+# Teste Mobile — Resultado e Plano de Correções
 
-## Resultado dos Testes
+## Resultado dos Testes (375x812 — iPhone)
 
-| Fluxo | Status | Observações |
+| Página | Status | Problemas encontrados |
 |---|---|---|
-| Home | OK | Todas as seções, JSON-LD LocalBusiness presente |
-| Listagem /comprar | OK | 7 imóveis, filtros funcionais, ordenação |
-| Detalhe do imóvel | OK | Galeria, ficha, form lead, WhatsApp, similares, JSON-LD RealEstateListing |
-| Admin /admin/properties/new | Pendente login | Requer autenticação — não testado via browser |
+| Home (hero + busca) | OK | Nenhum problema crítico |
+| Home (destaques) | OK | Cards renderizam bem em coluna única |
+| Home (footer) | OK | Layout adapta corretamente |
+| Listagem /comprar | OK | Filtros empilhados, cards em coluna |
+| Detalhe do imóvel | OK | Galeria, ficha, form lead — tudo funcional |
+| Lightbox | **Problemas** | Dialog não ocupa tela cheia; header/footer do site ficam visíveis atrás; botões prev/next apertados |
+| Menu hamburger | OK | Abre/fecha corretamente, links funcionais |
+| Contato | OK | Formulário bem adaptado |
+| WhatsApp button | **Menor** | Sobrepõe o canto inferior direito de alguns conteúdos |
 
-## Implementação: Lightbox com Dialog + Carousel
+## Problemas Identificados
 
-### O que será feito
+### P1 — Lightbox não é fullscreen no mobile
+O Dialog do lightbox usa `max-w-5xl w-[95vw] h-[90vh]` que deixa margens visíveis no mobile. O header do site e outros elementos ficam parcialmente visíveis por trás. Os botões prev/next ficam apertados nas laterais.
 
-Ao clicar na imagem principal ou em qualquer thumbnail na página de detalhe, abre um Dialog fullscreen com:
-- Carousel (Embla, já instalado) para navegar entre fotos
-- Contador "3 / 12" no topo
-- Botões prev/next estilizados
-- Fechar com X ou clicando fora
-- Suporte a swipe no mobile
+**Correção:** No mobile, usar `w-screen h-screen max-w-none` e `p-0`. Remover border-radius. Aumentar área de toque dos botões prev/next.
 
-### Arquivo modificado
+### P2 — Botão WhatsApp sobrepõe conteúdo
+O botão flutuante no canto inferior direito pode sobrepor botões de ação importantes (ex: "Enviar mensagem" no form de lead, "Buscar" na home).
 
-**`src/pages/PropertyDetail.tsx`** — adicionar:
-- Estado `lightboxOpen` + `lightboxIdx`
-- Import de `Dialog`, `DialogContent` do shadcn/ui
-- Import de `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselPrevious`, `CarouselNext`
-- Bloco `<Dialog>` no final do JSX com carousel fullscreen
-- `cursor-pointer` na imagem principal e thumbnails para indicar clicabilidade
-- Callback `onClick` na imagem principal para abrir lightbox no índice atual
-- Sincronização do `startIndex` do Embla com `lightboxIdx`
+**Correção:** Adicionar `mb-20` ou padding-bottom nas seções finais para evitar sobreposição, ou reduzir o tamanho do botão no mobile.
 
-### Detalhes técnicos
+### P3 — Lightbox: botões prev/next pequenos demais para toque
+Os botões `h-10 w-10` são marginalmente pequenos para toque confortável em mobile (recomendado: 44x44px mínimo).
 
-- Dialog: `max-w-5xl`, fundo escuro (`bg-black/95`)
-- Carousel: `opts={{ startIndex: lightboxIdx }}` para abrir na foto correta
-- Contador: `{currentSlide} / {total}` posicionado no topo do dialog
-- `setApi` do Carousel para rastrear slide atual via `api.on('select')`
-- Botões prev/next: brancos, posicionados nas laterais
-- Mobile: Embla já suporta swipe nativamente
+**Correção:** Aumentar para `h-12 w-12` no mobile.
+
+## Arquivos a Modificar
+
+| Arquivo | Ação |
+|---|---|
+| `src/pages/PropertyDetail.tsx` | Ajustar lightbox Dialog para fullscreen no mobile; aumentar botões prev/next |
+| `src/components/layout/WhatsAppButton.tsx` | Reduzir padding no mobile para não sobrepor tanto |
+
+## Detalhes Técnicos
+
+### PropertyDetail.tsx — Lightbox mobile
+- Importar `useIsMobile` de `@/hooks/use-mobile`
+- No `DialogContent`, aplicar classes condicionais: mobile → `w-screen h-screen max-w-none rounded-none`; desktop → manter `max-w-5xl w-[95vw] h-[90vh]`
+- Botões prev/next: `h-12 w-12 sm:h-10 sm:w-10`
+
+### WhatsAppButton.tsx
+- Reduzir de `p-4` para `p-3` no mobile: `p-3 sm:p-4`
+- Ajustar posição: `bottom-4 right-4 sm:bottom-6 sm:right-6`
 
