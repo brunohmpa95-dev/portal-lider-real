@@ -123,6 +123,7 @@ export default function PropertiesList() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12"></TableHead>
                     <TableHead>Código</TableHead>
                     <TableHead>Título</TableHead>
                     <TableHead className="hidden md:table-cell">Tipo</TableHead>
@@ -135,6 +136,13 @@ export default function PropertiesList() {
                 <TableBody>
                   {filtered.map((p) => (
                     <TableRow key={p.id}>
+                      <TableCell className="p-1">
+                        {p.images?.[0] ? (
+                          <img src={p.images[0]} alt="" className="w-10 h-10 rounded object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-muted" />
+                        )}
+                      </TableCell>
                       <TableCell className="font-mono text-xs">{p.code}</TableCell>
                       <TableCell className="font-medium max-w-[200px] truncate">
                         {p.is_featured && <Star className="h-3 w-3 inline mr-1 text-amber-500" />}
