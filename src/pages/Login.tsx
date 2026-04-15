@@ -6,7 +6,8 @@ import PageHead from '@/components/shared/PageHead';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import logoImg from '@/assets/logo-transparent.png';
 
 const loginSchema = z.object({
   email: z.string().trim().email('E-mail inválido').max(255),
@@ -25,10 +26,8 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle post-login MFA redirect
   useEffect(() => {
     if (isLoading || !isAuthenticated) return;
-
     if (mfaRequired && !mfaVerified) {
       if (!mfaEnrolled) {
         navigate('/mfa/setup', { state: { from: { pathname: from } }, replace: true });
@@ -43,47 +42,42 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
     const parsed = loginSchema.safeParse({ email, password });
     if (!parsed.success) {
       setError(parsed.error.errors[0].message);
       return;
     }
-
     setIsSubmitting(true);
     const result = await signIn(parsed.data.email, parsed.data.password);
     setIsSubmitting(false);
-
-    if (result.error) {
-      setError(result.error);
-    }
-    // Navigation is handled by the useEffect above after auth state updates
+    if (result.error) setError(result.error);
   };
 
   return (
     <Layout>
       <PageHead title="Entrar" description="Acesse sua conta na Líder Imóveis Itaúna." />
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <LogIn className="h-10 w-10 text-primary mx-auto mb-4" />
-            <h1 className="text-2xl md:text-3xl font-sans font-bold text-foreground mb-2">
+      <div className="container mx-auto px-4 py-12 sm:py-16">
+        <div className="max-w-sm mx-auto">
+          {/* Logo + heading */}
+          <div className="text-center mb-6">
+            <img src={logoImg} alt="Líder Imóveis" className="h-10 w-auto mx-auto mb-4" />
+            <h1 className="text-xl sm:text-2xl font-sans font-bold text-foreground mb-1">
               Entrar na sua conta
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-xs text-muted-foreground">
               Acesse a Área do Cliente para gerenciar seus imóveis e documentos.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
+          <form onSubmit={handleSubmit} className="space-y-3 bg-card border border-border rounded-lg p-5">
             {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+              <div className="bg-destructive/10 text-destructive text-xs p-3 rounded-md">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+              <label htmlFor="email" className="block text-xs font-medium text-foreground mb-1">
                 E-mail
               </label>
               <Input
@@ -96,11 +90,12 @@ const Login = () => {
                 maxLength={255}
                 autoComplete="email"
                 disabled={isSubmitting}
+                className="h-10"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
+              <label htmlFor="password" className="block text-xs font-medium text-foreground mb-1">
                 Senha
               </label>
               <div className="relative">
@@ -114,6 +109,7 @@ const Login = () => {
                   maxLength={128}
                   autoComplete="current-password"
                   disabled={isSubmitting}
+                  className="h-10 pr-10"
                 />
                 <button
                   type="button"
@@ -126,11 +122,11 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10" disabled={isSubmitting}>
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
 
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs pt-1">
               <Link to="/recuperar-senha" className="text-primary hover:underline">
                 Esqueceu a senha?
               </Link>

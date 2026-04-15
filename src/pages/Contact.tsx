@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Phone, Mail, MapPin, Clock, Loader2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Loader2, MessageCircle } from 'lucide-react';
 import { COMPANY, DEPARTMENTS } from '@/data/constants';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +25,6 @@ const Contact = () => {
       return;
     }
     setIsSubmitting(true);
-
     const fd = new FormData(e.currentTarget);
     try {
       await submitForm('contact', {
@@ -43,72 +42,101 @@ const Contact = () => {
     }
   };
 
+  const selectClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
   return (
     <Layout>
-      <PageHead title="Contato" description="Entre em contato com a Líder Imóveis Itaúna. Atendimento personalizado para compra, venda e locação de imóveis." />
+      <PageHead title="Contato" description="Entre em contato com a Líder Imóveis Itaúna. Atendimento próximo para compra, venda e locação de imóveis." />
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label: 'Contato' }]} />
-        <h1 className="text-3xl md:text-4xl font-sans font-bold text-foreground mb-10">Fale Conosco</h1>
 
-        <div className="grid lg:grid-cols-2 gap-12 pb-16">
-          <div>
-            {success ? (
-              <div className="bg-accent rounded-lg p-8 text-center">
-                <h3 className="text-xl font-semibold text-foreground mb-2">Mensagem enviada!</h3>
-                <p className="text-muted-foreground">Retornaremos em breve.</p>
-                <Button className="mt-6" onClick={() => setSuccess(false)}>Enviar outra mensagem</Button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
-                <Input name="name" placeholder="Nome completo" required minLength={2} maxLength={100} />
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Input name="email" placeholder="E-mail" type="email" required maxLength={255} />
-                  <Input name="phone" placeholder="Telefone" maxLength={20} />
-                </div>
-                <select name="subject" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" aria-label="Assunto">
-                  <option value="">Selecione o assunto</option>
-                  <option value="compra">Compra de imóvel</option>
-                  <option value="venda">Venda de imóvel</option>
-                  <option value="locacao">Locação</option>
-                  <option value="financeiro">Financeiro</option>
-                  <option value="outro">Outro</option>
-                </select>
-                <Textarea name="message" placeholder="Sua mensagem" rows={5} required minLength={10} maxLength={2000} />
+        <div className="max-w-4xl mx-auto pb-12">
+          <h1 className="text-2xl sm:text-3xl font-sans font-bold text-foreground mb-2">Fale Conosco</h1>
+          <p className="text-sm text-muted-foreground mb-8">Escolha o canal que preferir. Respondemos o mais rápido possível.</p>
 
-                <div className="flex items-start gap-2">
-                  <Checkbox id="consent-contact" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
-                  <label htmlFor="consent-contact" className="text-xs text-muted-foreground leading-tight">
-                    Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link> e autorizo o tratamento dos meus dados para fins de atendimento.
-                  </label>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Enviar mensagem'}
-                </Button>
-              </form>
-            )}
+          {/* Quick contact bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            <a href={`tel:${COMPANY.phone}`} className="flex flex-col items-center gap-1.5 bg-card border border-border rounded-lg p-4 text-center hover:border-primary/30 transition-colors">
+              <Phone className="h-5 w-5 text-primary" />
+              <span className="text-xs font-medium text-foreground">Ligar</span>
+              <span className="text-[10px] text-muted-foreground">{COMPANY.phone}</span>
+            </a>
+            <a href={`${COMPANY.whatsappLink}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 bg-card border border-border rounded-lg p-4 text-center hover:border-primary/30 transition-colors">
+              <MessageCircle className="h-5 w-5 text-primary" />
+              <span className="text-xs font-medium text-foreground">WhatsApp</span>
+              <span className="text-[10px] text-muted-foreground">Resposta rápida</span>
+            </a>
+            <a href={`mailto:${COMPANY.email}`} className="flex flex-col items-center gap-1.5 bg-card border border-border rounded-lg p-4 text-center hover:border-primary/30 transition-colors">
+              <Mail className="h-5 w-5 text-primary" />
+              <span className="text-xs font-medium text-foreground">E-mail</span>
+              <span className="text-[10px] text-muted-foreground">{COMPANY.email}</span>
+            </a>
+            <div className="flex flex-col items-center gap-1.5 bg-card border border-border rounded-lg p-4 text-center">
+              <Clock className="h-5 w-5 text-primary" />
+              <span className="text-xs font-medium text-foreground">Horário</span>
+              <span className="text-[10px] text-muted-foreground">{COMPANY.hours}</span>
+            </div>
           </div>
 
-          <div className="space-y-8">
-            <div>
-              <h2 className="font-sans text-lg font-semibold text-foreground mb-4">Informações</h2>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p className="flex items-start gap-2"><MapPin className="h-4 w-4 shrink-0 mt-0.5 text-primary" />{COMPANY.address}</p>
-                <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" />{COMPANY.phone}</p>
-                <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" />{COMPANY.email}</p>
-                <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{COMPANY.hours}</p>
-              </div>
-            </div>
-            <div>
-              <h2 className="font-sans text-lg font-semibold text-foreground mb-4">Contatos por Departamento</h2>
-              <div className="space-y-4">
-                {Object.values(DEPARTMENTS).map(dept => (
-                  <div key={dept.id} className="bg-secondary rounded-lg p-4">
-                    <p className="font-semibold text-foreground text-sm mb-1">{dept.name}</p>
-                    <p className="text-xs text-muted-foreground">{dept.phone} · {dept.email}</p>
-                    <p className="text-xs text-muted-foreground">{dept.hours}</p>
+          <div className="grid lg:grid-cols-5 gap-8">
+            {/* Form — 3 cols */}
+            <div className="lg:col-span-3">
+              {success ? (
+                <div className="bg-accent rounded-lg p-8 text-center">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Mensagem enviada!</h3>
+                  <p className="text-sm text-muted-foreground">Retornaremos em breve.</p>
+                  <Button size="sm" className="mt-5" onClick={() => setSuccess(false)}>Enviar outra</Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-3 bg-card border border-border rounded-lg p-5">
+                  <h2 className="font-sans font-semibold text-foreground text-sm mb-1">Envie uma mensagem</h2>
+                  <Input name="name" placeholder="Nome completo" required minLength={2} maxLength={100} className="h-10" />
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-10" />
+                    <Input name="phone" placeholder="Telefone" maxLength={20} className="h-10" />
                   </div>
-                ))}
+                  <select name="subject" className={selectClass} aria-label="Assunto">
+                    <option value="">Selecione o assunto</option>
+                    <option value="compra">Compra de imóvel</option>
+                    <option value="venda">Venda de imóvel</option>
+                    <option value="locacao">Locação</option>
+                    <option value="financeiro">Financeiro</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                  <Textarea name="message" placeholder="Sua mensagem" rows={4} required minLength={10} maxLength={2000} />
+                  <div className="flex items-start gap-2">
+                    <Checkbox id="consent-contact" checked={consent} onCheckedChange={(v) => setConsent(!!v)} className="mt-0.5" />
+                    <label htmlFor="consent-contact" className="text-[11px] text-muted-foreground leading-tight">
+                      Concordo com a <Link to="/privacidade" className="underline text-primary">Política de Privacidade</Link>.
+                    </label>
+                  </div>
+                  <Button type="submit" className="w-full h-10" disabled={isSubmitting}>
+                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Enviar mensagem'}
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            {/* Sidebar — 2 cols */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-card border border-border rounded-lg p-5">
+                <h3 className="font-sans font-semibold text-foreground text-sm mb-3">Endereço</h3>
+                <p className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary" />{COMPANY.address}
+                </p>
+              </div>
+
+              <div className="bg-card border border-border rounded-lg p-5">
+                <h3 className="font-sans font-semibold text-foreground text-sm mb-3">Departamentos</h3>
+                <div className="space-y-3">
+                  {Object.values(DEPARTMENTS).map(dept => (
+                    <div key={dept.id} className="border-b border-border last:border-0 pb-2.5 last:pb-0">
+                      <p className="font-medium text-foreground text-xs mb-0.5">{dept.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{dept.phone}</p>
+                      <p className="text-[11px] text-muted-foreground">{dept.email}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
