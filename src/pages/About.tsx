@@ -29,7 +29,7 @@ const About = () => (
             <img
               src={founderImg}
               alt="Fundador da Líder Imóveis"
-              className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-lg mx-auto"
+              className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-2xl shadow-lg mx-auto" loading="lazy"
             />
           </div>
 
