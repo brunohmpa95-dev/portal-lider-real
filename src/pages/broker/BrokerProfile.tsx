@@ -14,15 +14,22 @@ export default function BrokerProfile() {
   const [saving, setSaving] = useState(false);
   const [phone, setPhone] = useState(profile?.phone || '');
 
-  useEffect(() => { loadBroker(); }, []);
+  useEffect(() => { loadBroker(); }, [user]);
 
   async function loadBroker() {
+    if (!user) return;
     setLoading(true);
-    if (profile) {
+    // Get profile id first
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (profileData) {
       const { data } = await supabase
         .from('brokers')
         .select('id, creci, region, commission_pct, status, bank_info')
-        .eq('profile_id', profile.id)
+        .eq('profile_id', profileData.id)
         .maybeSingle();
       setBroker(data);
     }
