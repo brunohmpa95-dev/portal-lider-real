@@ -138,7 +138,7 @@ export default function PropertiesList() {
                     <TableRow key={p.id}>
                       <TableCell className="p-1">
                         {p.images?.[0] ? (
-                          <img src={p.images[0]} alt="" className="w-10 h-10 rounded object-cover" />
+                          <img src={p.images[0]} alt="" className="w-10 h-10 rounded object-cover" loading="lazy" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-muted" />
                         )}

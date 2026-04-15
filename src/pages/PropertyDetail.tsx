@@ -287,6 +287,7 @@ const PropertyDetail = () => {
                       src={img}
                       alt={`${property.title} - Foto ${i + 1}`}
                       className="max-w-full max-h-[80vh] object-contain select-none"
+                      loading="lazy"
                     />
                   </CarouselItem>
                 ))}

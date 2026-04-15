@@ -9,7 +9,7 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         {/* Col 1 — Brand */}
         <div>
-          <img src={logoImg} alt="Líder Imóveis" className="h-12 w-auto mb-4 brightness-0 invert" />
+          <img src={logoImg} alt="Líder Imóveis" className="h-12 w-auto mb-4 brightness-0 invert" loading="lazy" />
           <p className="text-sm text-primary-foreground/70 mb-4 leading-relaxed">
             Há mais de 15 anos conectando pessoas aos melhores imóveis de Itaúna e região.
           </p>
