@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Building2, Phone, ArrowRight, Shield, ExternalLink, MessageCircle, Headphones } from 'lucide-react';
+import { Building2, ArrowRight, Shield, ExternalLink, MessageCircle, Phone } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import heroBg from '@/assets/hero-bg.jpg';
-import AnimatedSection from '@/components/shared/AnimatedSection';
 import SearchBar from '@/components/property/SearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
 import PremiumPropertyCard from '@/components/property/PremiumPropertyCard';
@@ -66,18 +65,18 @@ const Index = () => {
         className="relative bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/55 to-black/70" />
-        <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/65" />
+        <div className="container mx-auto px-4 relative z-10 py-10 sm:py-16 md:py-24">
           <motion.div
-            className="text-center mb-8 md:mb-10"
+            className="text-center mb-6 sm:mb-8 md:mb-10"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-bold text-white mb-3 leading-tight">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-bold text-white mb-2 sm:mb-3 leading-tight">
               Encontre seu imóvel<br className="hidden sm:block" /> em Itaúna e região
             </h1>
-            <p className="text-white/75 text-base sm:text-lg max-w-xl mx-auto">
+            <p className="text-white/70 text-sm sm:text-lg max-w-xl mx-auto">
               Compra, venda e locação com atendimento próximo e transparente.
             </p>
           </motion.div>
@@ -92,21 +91,19 @@ const Index = () => {
       </section>
 
       {/* ─── Quick actions ─── */}
-      <section className="py-8 md:py-10 border-b border-border">
+      <section className="py-5 sm:py-6 border-b border-border">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
             {[
-              { icon: Phone, label: 'Fale com Locação', path: '/contato' },
-              { icon: MessageCircle, label: 'Fale com Vendas', path: '/contato' },
-              { icon: Headphones, label: 'Atendimento', path: '/contato' },
+              { icon: Phone, label: 'Fale conosco', path: '/contato' },
               { icon: Building2, label: 'Anuncie seu imóvel', path: '/anuncie' },
             ].map((s) => (
               <Link
                 key={s.label}
                 to={s.path}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card text-sm font-medium text-foreground hover:border-primary/40 hover:shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:border-primary/40 hover:shadow-sm transition-all"
               >
-                <s.icon className="h-4 w-4 text-primary" />
+                <s.icon className="h-3.5 w-3.5 text-primary" />
                 {s.label}
               </Link>
             ))}
