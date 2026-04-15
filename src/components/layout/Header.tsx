@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Home as HomeIcon, LogIn, LogOut, Settings } from 'lucide-react';
+import { Menu, X, User, LogIn, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_ACCESS_ROLES } from '@/lib/admin-nav';
@@ -21,19 +21,19 @@ const Header = () => {
   const showAdminLink = isAuthenticated && hasAnyRole(ADMIN_ACCESS_ROLES);
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto flex items-center justify-between px-4 h-[88px]">
-        <Link to="/" className="flex items-center" aria-label="Página inicial">
-          <img src={logoImg} alt="Líder Imóveis Itaúna" className="h-16 md:h-[72px] w-auto" />
+    <header className="bg-background border-b border-border sticky top-0 z-50">
+      <div className="container mx-auto flex items-center justify-between px-4 h-16 sm:h-[72px]">
+        <Link to="/" className="flex items-center shrink-0" aria-label="Página inicial">
+          <img src={logoImg} alt="Líder Imóveis Itaúna" className="h-11 sm:h-14 w-auto" />
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-0.5">
           {navItems.map(item => (
             <Link
               key={item.path}
               to={item.path}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 location.pathname === item.path
                   ? 'text-primary bg-accent'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -44,35 +44,30 @@ const Header = () => {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-1.5">
           {showAdminLink && (
             <Link to="/admin">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Settings className="h-4 w-4" /> Admin
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8">
+                <Settings className="h-3.5 w-3.5" /> Admin
               </Button>
             </Link>
           )}
-          <Link to="/anuncie">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
-            </Button>
-          </Link>
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Link to="/area-do-cliente">
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <User className="h-4 w-4" />
-                  {profile?.full_name?.split(' ')[0] || 'Minha conta'}
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8">
+                  <User className="h-3.5 w-3.5" />
+                  {profile?.full_name?.split(' ')[0] || 'Conta'}
                 </Button>
               </Link>
-              <Button size="sm" variant="ghost" className="gap-1.5" onClick={() => signOut()}>
-                <LogOut className="h-4 w-4" />
+              <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => signOut()} aria-label="Sair">
+                <LogOut className="h-3.5 w-3.5" />
               </Button>
             </div>
           ) : (
             <Link to="/login">
-              <Button size="sm" className="gap-1.5">
-                <LogIn className="h-4 w-4" /> Entrar
+              <Button size="sm" className="gap-1.5 text-xs h-8">
+                <LogIn className="h-3.5 w-3.5" /> Entrar
               </Button>
             </Link>
           )}
@@ -80,24 +75,24 @@ const Header = () => {
 
         {/* Mobile toggle */}
         <button
-          className="lg:hidden p-2 rounded-md hover:bg-secondary transition-colors"
+          className="lg:hidden p-2 -mr-2 rounded-md hover:bg-secondary transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-border bg-background animate-fade-in">
-          <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
+        <div className="lg:hidden border-t border-border bg-background">
+          <nav className="container mx-auto px-4 py-3 flex flex-col gap-0.5">
             {navItems.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
-                className={`px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                className={`px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
                   location.pathname === item.path
                     ? 'text-primary bg-accent'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
@@ -109,35 +104,31 @@ const Header = () => {
             <hr className="my-2 border-border" />
             {showAdminLink && (
               <Link to="/admin" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" className="w-full gap-1.5 justify-center">
-                  <Settings className="h-4 w-4" /> Área Administrativa
+                <Button variant="outline" size="sm" className="w-full gap-1.5 justify-center h-9">
+                  <Settings className="h-3.5 w-3.5" /> Admin
                 </Button>
               </Link>
             )}
-            <Link to="/anuncie" onClick={() => setMobileOpen(false)}>
-              <Button variant="outline" className="w-full gap-1.5 justify-center">
-                <HomeIcon className="h-4 w-4" /> Anuncie seu imóvel
-              </Button>
-            </Link>
             {isAuthenticated ? (
-              <>
-                <Link to="/area-do-cliente" onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" className="w-full gap-1.5 justify-center mt-1">
-                    <User className="h-4 w-4" /> Minha conta
+              <div className="flex gap-2 mt-1">
+                <Link to="/area-do-cliente" onClick={() => setMobileOpen(false)} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 justify-center h-9">
+                    <User className="h-3.5 w-3.5" /> Minha conta
                   </Button>
                 </Link>
                 <Button
                   variant="ghost"
-                  className="w-full gap-1.5 justify-center mt-1"
+                  size="sm"
+                  className="gap-1.5 h-9"
                   onClick={() => { signOut(); setMobileOpen(false); }}
                 >
-                  <LogOut className="h-4 w-4" /> Sair
+                  <LogOut className="h-3.5 w-3.5" /> Sair
                 </Button>
-              </>
+              </div>
             ) : (
-              <Link to="/login" onClick={() => setMobileOpen(false)}>
-                <Button className="w-full gap-1.5 justify-center mt-1">
-                  <LogIn className="h-4 w-4" /> Entrar
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="mt-1">
+                <Button size="sm" className="w-full gap-1.5 justify-center h-9">
+                  <LogIn className="h-3.5 w-3.5" /> Entrar
                 </Button>
               </Link>
             )}
