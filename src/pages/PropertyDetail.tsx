@@ -265,6 +265,36 @@ const PropertyDetail = () => {
           </section>
         )}
       </div>
+
+      {/* Lightbox Gallery */}
+      {property.images.length > 0 && (
+        <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col items-center justify-center [&>button]:text-white [&>button]:hover:text-white/80">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/80 text-sm font-mono z-10">
+              {currentSlide + 1} / {property.images.length}
+            </div>
+            <Carousel
+              opts={{ startIndex: lightboxIdx, loop: true }}
+              setApi={setCarouselApi}
+              className="w-full h-full flex items-center"
+            >
+              <CarouselContent className="h-full">
+                {property.images.map((img, i) => (
+                  <CarouselItem key={i} className="flex items-center justify-center h-full">
+                    <img
+                      src={img}
+                      alt={`${property.title} - Foto ${i + 1}`}
+                      className="max-w-full max-h-[80vh] object-contain select-none"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2 sm:left-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
+              <CarouselNext className="right-2 sm:right-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
+            </Carousel>
+          </DialogContent>
+        </Dialog>
+      )}
     </Layout>
   );
 };
