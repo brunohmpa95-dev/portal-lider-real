@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from '@/components/ui/carousel';
 import { useProperty, useSimilarProperties } from '@/hooks/useProperties';
 import { formatPrice } from '@/data/properties';
 import { COMPANY } from '@/data/constants';
@@ -26,7 +28,24 @@ const PropertyDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!carouselApi) return;
+    setCurrentSlide(carouselApi.selectedScrollSnap());
+    carouselApi.on('select', () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap());
+    });
+  }, [carouselApi]);
+
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIdx(index);
+    setLightboxOpen(true);
+  }, []);
 
   if (isLoading) {
     return (
@@ -131,7 +150,7 @@ const PropertyDetail = () => {
             {/* Gallery */}
             <div className="relative rounded-lg overflow-hidden mb-6 aspect-[16/10]">
               {property.images.length > 0 ? (
-                <img src={property.images[imgIdx]} alt={property.title} className="w-full h-full object-cover" />
+                <img src={property.images[imgIdx]} alt={property.title} className="w-full h-full object-cover cursor-pointer" onClick={() => openLightbox(imgIdx)} />
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">
                   <p className="text-muted-foreground">Sem fotos disponíveis</p>
@@ -155,7 +174,7 @@ const PropertyDetail = () => {
             {property.images.length > 1 && (
               <div className="flex gap-2 mb-6 overflow-x-auto">
                 {property.images.map((img, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)} className={`shrink-0 w-20 h-16 rounded-md overflow-hidden border-2 transition-colors ${i === imgIdx ? 'border-primary' : 'border-transparent'}`}>
+                  <button key={i} onClick={() => setImgIdx(i)} onDoubleClick={() => openLightbox(i)} className={`shrink-0 w-20 h-16 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${i === imgIdx ? 'border-primary' : 'border-transparent'}`}>
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -246,6 +265,36 @@ const PropertyDetail = () => {
           </section>
         )}
       </div>
+
+      {/* Lightbox Gallery */}
+      {property.images.length > 0 && (
+        <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 border-none bg-black/95 flex flex-col items-center justify-center [&>button]:text-white [&>button]:hover:text-white/80">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/80 text-sm font-mono z-10">
+              {currentSlide + 1} / {property.images.length}
+            </div>
+            <Carousel
+              opts={{ startIndex: lightboxIdx, loop: true }}
+              setApi={setCarouselApi}
+              className="w-full h-full flex items-center"
+            >
+              <CarouselContent className="h-full">
+                {property.images.map((img, i) => (
+                  <CarouselItem key={i} className="flex items-center justify-center h-full">
+                    <img
+                      src={img}
+                      alt={`${property.title} - Foto ${i + 1}`}
+                      className="max-w-full max-h-[80vh] object-contain select-none"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2 sm:left-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
+              <CarouselNext className="right-2 sm:right-4 bg-white/10 border-none text-white hover:bg-white/20 hover:text-white h-10 w-10" />
+            </Carousel>
+          </DialogContent>
+        </Dialog>
+      )}
     </Layout>
   );
 };
