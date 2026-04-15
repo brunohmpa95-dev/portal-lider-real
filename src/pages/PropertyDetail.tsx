@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from '@/components/ui/carousel';
 import { useProperty, useSimilarProperties } from '@/hooks/useProperties';
 import { formatPrice } from '@/data/properties';
 import { COMPANY } from '@/data/constants';
@@ -26,7 +28,24 @@ const PropertyDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!carouselApi) return;
+    setCurrentSlide(carouselApi.selectedScrollSnap());
+    carouselApi.on('select', () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap());
+    });
+  }, [carouselApi]);
+
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIdx(index);
+    setLightboxOpen(true);
+  }, []);
 
   if (isLoading) {
     return (
