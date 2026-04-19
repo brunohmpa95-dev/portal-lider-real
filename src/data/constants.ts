@@ -52,20 +52,12 @@ export const DEPARTMENTS = {
   },
 };
 
-export const NEIGHBORHOODS = [
-  'Centro',
-  'Santa Edwiges',
-  'São Geraldo',
-  'Piedade',
-  'Santo Antônio',
-  'Residencial Morro Verde',
-  'Vila Romana',
-  'Alvorada',
-  'Graças',
-  'São José',
-  'Bela Vista',
-  'Vila São Fernando',
-];
+/**
+ * @deprecated Use the `useNeighborhoods()` hook instead.
+ * Kept temporarily as a fallback for non-React contexts.
+ * Real source of truth is the `neighborhoods` table.
+ */
+export const NEIGHBORHOODS: string[] = [];
 
 export const PROPERTY_TYPES = [
   { value: 'casa', label: 'Casa' },
