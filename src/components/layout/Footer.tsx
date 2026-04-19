@@ -32,6 +32,7 @@ const Footer = () => (
               { label: 'Alugar', path: '/alugar' },
               { label: 'Sobre nós', path: '/sobre' },
               { label: 'Anuncie seu imóvel', path: '/anuncie' },
+              { label: 'Financiamento', path: '/financiamento' },
               { label: 'Contato', path: '/contato' },
               { label: 'Privacidade', path: '/privacidade' },
             ].map(l => (
