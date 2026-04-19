@@ -6,6 +6,7 @@ import Layout from '@/components/layout/Layout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
+import BreadcrumbsJsonLd from '@/components/shared/BreadcrumbsJsonLd';
 import PropertyCard from '@/components/property/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +18,9 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from '@/components/ui/carousel';
 import { useProperty, useSimilarProperties } from '@/hooks/useProperties';
 import { formatPrice } from '@/data/properties';
-import { COMPANY } from '@/data/constants';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
@@ -110,11 +111,21 @@ const PropertyDetail = () => {
     }
   };
 
-  const whatsappUrl = `${COMPANY.whatsappLink}?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.code} - ${property.title}`)}`;
+  const intent = property.purpose === 'sale' ? 'buy' : 'rent';
+  const whatsappUrl = buildWhatsAppLink(intent, { propertyCode: property.code, propertyTitle: property.title });
+  const visitWhatsappUrl = buildWhatsAppLink('visit', { propertyCode: property.code, propertyTitle: property.title });
 
   return (
     <Layout>
-      <PageHead title={property.title} description={`${property.title} - ${property.neighborhood}, ${property.city}. ${formatPrice(property.price, property.purpose)}`} />
+      <PageHead
+        title={property.title}
+        description={`${property.title} - ${property.neighborhood}, ${property.city}. ${formatPrice(property.price, property.purpose)}`}
+        canonical={`/imovel/${property.id}`}
+      />
+      <BreadcrumbsJsonLd items={[
+        { name: property.purpose === 'sale' ? 'Comprar' : 'Alugar', path: property.purpose === 'sale' ? '/comprar' : '/alugar' },
+        { name: property.title, path: `/imovel/${property.id}` },
+      ]} />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
