@@ -1,58 +1,44 @@
 
-# Plano: Correções + Implementação Fase 3 CRM
+O usuário pediu para verificar todo o site no formato mobile. Isso é teste/verificação no preview — vou usar o browser em viewport mobile (375x812, iPhone) para inspecionar as páginas principais públicas e internas, capturar screenshots e reportar problemas reais de layout, overflow, toques pequenos demais, navegação quebrada etc.
 
-## Auditoria curta
+## Escopo da verificação mobile (375x812)
 
-| Item | Status real | Ação |
-|---|---|---|
-| Bug /anuncie | **Já corrigido** (usa `useNeighborhoodNames`) | Apenas validar fallback de loading |
-| 4 bairros pendentes | 1 imóvel cada, source `legacy-data` | Validar via web e marcar |
-| `user_roles` "0 ativos" | Falso alarme — 2 superadmins ok | Sem ação (criar role para usuários novos quando existirem) |
-| Fase 3 CRM | Não implementada | Implementar completa |
-| Status do imóvel | 6 valores, faltam 2 | Expandir para 8 padronizados |
+**Site público:**
+1. `/` — Home (hero, busca, vitrines, simulador, grid de bairros, FAQ, footer)
+2. `/comprar` — listagem com filtros, chips, paginação
+3. `/alugar` — idem
+4. `/imovel/:id` — detalhe (galeria, lightbox, formulário, WhatsApp)
+5. `/financiamento` — simulador, passos, docs, FAQ
+6. `/anuncie` — formulário com select de bairro
+7. `/sobre`, `/contato`, `/ouvidoria`, `/trabalhe-conosco`, `/privacidade` — varredura rápida
+8. Header mobile (menu hambúrguer) e Footer
 
-## Parte 1 — Correções
+**Áreas internas (se acessível com sessão atual):**
+9. `/admin` Dashboard (KPIs, funil, pendências)
+10. `/admin/leads` (Kanban — crítico em mobile)
+11. `/admin/tarefas`
+12. `/admin/imoveis`, `/admin/bairros`
 
-**1.1 Bairros pendentes** — pesquisa web rápida (Wikipedia/prefeitura) e atualizo via SQL:
-- **Santo Antônio** → bairro real de Itaúna → `verified=true`
-- **Alvorada** → bairro real → `verified=true`
-- **Vila Romana** → bairro real → `verified=true`
-- **Residencial Morro Verde** → loteamento/condomínio fechado, não bairro oficial → renomear para "Morro Verde" se confirmado, senão `verified=true` mantendo o nome (já tem 1 imóvel vinculado). Vou validar e decidir antes de aplicar.
+## O que vou avaliar em cada tela
 
-**1.2 Fallback de loading no /anuncie e SearchBar** — placeholder "Carregando bairros..." quando `isLoading`.
+- Overflow horizontal (scroll lateral indevido)
+- Texto cortado, sobreposto ou ilegível
+- Botões/áreas de toque < 40px
+- Imagens estouradas ou desproporcionais
+- Modais/drawers que ficam fora da viewport
+- Kanban no mobile (geralmente problemático — confirmar se há fallback)
+- Tabelas que não viram cards/lista
+- Header sticky e menu hambúrguer
+- Formulários (selects, inputs, datepickers)
+- WhatsApp button fixo não cobrindo conteúdo
 
-**1.3 Migração:** garantir consistência de grafia entre `properties.neighborhood` e `neighborhoods.name`.
+## Entrega
 
-## Parte 2 — Fase 3 CRM (implementação completa)
+Relatório objetivo agrupado por:
+- ✅ OK
+- ⚠️ Ajuste recomendado (com print)
+- ❌ Bug real (com print + correção sugerida)
 
-### Migrações SQL
-- **Expandir `property_leads`**: adicionar `interest_purpose, interest_property_type, interest_neighborhood_id, interest_min_price, interest_max_price, interest_bedrooms, next_followup_at, lost_reason_id, lost_notes, lost_at`
-- **Nova tabela `lead_lost_reasons`**: id, name, description, is_active, sort_order — RLS leitura interna, escrita admin. Seed: Preço alto, Localização, Sem retorno, Escolheu concorrente, Fora do perfil, Crédito negado, Desistiu, Outro.
-- **Nova tabela `tasks`**: id, title, description, due_at, status (`pending|done|cancelled`), priority (`low|normal|high|urgent`), assigned_to, created_by, lead_id, client_profile_id, property_id, contract_id, completed_at. RLS: dono ou admin lê/edita; criação por internos.
-- **Trigger `validate_lead_lost`** em `property_leads BEFORE UPDATE`: se `funnel_stage='lost'` exige `lost_reason_id`; preenche `lost_at=now()` automaticamente.
-- **Expandir status do imóvel** em `PROPERTY_STATUS_OPTIONS`: adicionar `captacao` e `aguardando_documentacao`. Sem migração SQL necessária (campo é text).
+Ao final, listo as correções priorizadas. Se encontrar bugs durante a auditoria, paro e te aviso antes de seguir corrigindo (regra do modo browser).
 
-### Frontend
-- **`LeadForm.tsx`**: nova seção "Interesse do cliente" (finalidade, tipo, bairro via combobox, faixa de preço, quartos, próximo follow-up).
-- **`LeadDetail.tsx`**: card de interesse + card de tarefas vinculadas + próximo follow-up no header.
-- **`LeadsList.tsx` Kanban**: `LostReasonDialog` modal obrigatório quando arrasta para "Perdido"; bloqueia drop sem motivo.
-- **`PropertyForm.tsx` + `PropertiesList.tsx`**: usar `PROPERTY_STATUS_OPTIONS` expandida; badges com cores.
-- **Nova rota `/admin/tarefas`** (`AdminTasks.tsx`): listagem com filtros tabs (minhas | equipe | atrasadas | hoje | próximos 7 dias), criar/editar/concluir tarefas.
-- **Dashboard (`Dashboard.tsx`)**: 
-  - Widget "Pendências" (tarefas vencidas + follow-ups vencidos + leads sem atividade > 7d)
-  - Funil de conversão (barras por etapa) + filtro 7/30/90 dias
-  - Tempo médio por etapa
-  - Top 5 motivos de perda
-- **Hooks novos**: `useTasks`, `useLostReasons`, `useLeadStats`.
-- **`admin-nav.ts`**: adicionar item "Tarefas" e "Bairros" (já existe).
-
-## Parte 3 — Revisão final
-
-- Compilar TS sem erros
-- Testar /anuncie, /comprar, /admin/leads (Kanban), /admin/tarefas
-- Validar que bairros aparecem em todos os selects
-- Confirmar que arrastar lead para "Perdido" sem motivo é bloqueado
-- Verificar dashboards renderizam mesmo sem dados
-
-## Restrições respeitadas
-- Sem alterar RLS existente • sem remover páginas • sem inventar bairros • sem quebrar SEO • TS continua compilando
+Sem mudanças de código nesta etapa — só auditoria. Após o relatório você decide o que corrigir.
