@@ -9,4 +9,4 @@ Disallow: /recuperar-senha
 Disallow: /redefinir-senha
 Disallow: /mfa
 
-Sitemap: https://portal-lider-real.lovable.app/sitemap.xml
+Sitemap: https://lkjgwzmolatkjupapepm.supabase.co/functions/v1/sitemap
