@@ -307,7 +307,7 @@ export default function LeadsList() {
               {stageLeads.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">Nenhum lead</p>
               ) : (
-                stageLeads.map(renderLeadCard)
+                stageLeads.map((l) => renderLeadCard(l, true))
               )}
             </AccordionContent>
           </AccordionItem>
