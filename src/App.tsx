@@ -66,6 +66,7 @@ import AdminDocuments from "@/pages/admin/AdminDocuments";
 import AdminTickets from "@/pages/admin/AdminTickets";
 import AdminFinancial from "@/pages/admin/AdminFinancial";
 import AdminAudit from "@/pages/admin/AdminAudit";
+import AdminNeighborhoods from "@/pages/admin/Neighborhoods";
 
 const queryClient = new QueryClient();
 
@@ -148,6 +149,7 @@ const App = () => (
                 <Route path="leads/new" element={<LeadForm />} />
                 <Route path="leads/:id" element={<LeadDetail />} />
                 <Route path="properties" element={<PropertiesList />} />
+                <Route path="bairros" element={<AdminNeighborhoods />} />
                 <Route path="properties/new" element={<PropertyForm />} />
                 <Route path="properties/:id" element={<PropertyForm />} />
                 <Route path="properties/:id/edit" element={<PropertyForm />} />
