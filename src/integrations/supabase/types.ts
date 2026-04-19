@@ -654,6 +654,33 @@ export type Database = {
           },
         ]
       }
+      lead_lost_reasons: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       listing_submissions: {
         Row: {
           address: string | null
@@ -1027,9 +1054,19 @@ export type Database = {
           email: string
           funnel_stage: string
           id: string
+          interest_bedrooms: number | null
+          interest_max_price: number | null
+          interest_min_price: number | null
+          interest_neighborhood_id: string | null
+          interest_property_type: string | null
+          interest_purpose: string | null
           internal_notes: string | null
+          lost_at: string | null
+          lost_notes: string | null
+          lost_reason_id: string | null
           message: string | null
           name: string
+          next_followup_at: string | null
           phone: string | null
           priority: string
           property_id: string | null
@@ -1044,9 +1081,19 @@ export type Database = {
           email: string
           funnel_stage?: string
           id?: string
+          interest_bedrooms?: number | null
+          interest_max_price?: number | null
+          interest_min_price?: number | null
+          interest_neighborhood_id?: string | null
+          interest_property_type?: string | null
+          interest_purpose?: string | null
           internal_notes?: string | null
+          lost_at?: string | null
+          lost_notes?: string | null
+          lost_reason_id?: string | null
           message?: string | null
           name: string
+          next_followup_at?: string | null
           phone?: string | null
           priority?: string
           property_id?: string | null
@@ -1061,9 +1108,19 @@ export type Database = {
           email?: string
           funnel_stage?: string
           id?: string
+          interest_bedrooms?: number | null
+          interest_max_price?: number | null
+          interest_min_price?: number | null
+          interest_neighborhood_id?: string | null
+          interest_property_type?: string | null
+          interest_purpose?: string | null
           internal_notes?: string | null
+          lost_at?: string | null
+          lost_notes?: string | null
+          lost_reason_id?: string | null
           message?: string | null
           name?: string
+          next_followup_at?: string | null
           phone?: string | null
           priority?: string
           property_id?: string | null
@@ -1073,6 +1130,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "property_leads_interest_neighborhood_id_fkey"
+            columns: ["interest_neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhoods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_leads_lost_reason_id_fkey"
+            columns: ["lost_reason_id"]
+            isOneToOne: false
+            referencedRelation: "lead_lost_reasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "property_leads_property_id_fkey"
             columns: ["property_id"]
@@ -1214,6 +1285,89 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          client_profile_id: string | null
+          completed_at: string | null
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          lead_id: string | null
+          priority: string
+          property_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          client_profile_id?: string | null
+          completed_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          property_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          client_profile_id?: string | null
+          completed_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          property_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_client_profile_id_fkey"
+            columns: ["client_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "property_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
