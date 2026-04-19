@@ -248,7 +248,7 @@ const PropertyDetail = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors mb-6"
               >
-                <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
+                <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — chamar no WhatsApp' : 'Quero alugar — chamar no WhatsApp'}
               </a>
             )}
 
@@ -278,7 +278,12 @@ const PropertyDetail = () => {
             <div className="sticky top-24 space-y-4">
               {/* Lead form */}
               <div className="bg-card border border-border rounded-lg p-5">
-                <h3 className="font-sans font-semibold text-foreground text-sm mb-3">Tenho interesse neste imóvel</h3>
+                <h2 className="font-sans font-semibold text-foreground text-sm mb-1">Fale com um especialista</h2>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  {intent === 'buy'
+                    ? 'Tire dúvidas, agende uma visita ou faça uma proposta para este imóvel.'
+                    : 'Tire dúvidas sobre valores, garantias e agende uma visita.'}
+                </p>
                 {formSuccess ? (
                   <div className="text-center py-5">
                     <p className="text-primary font-semibold mb-1">Mensagem enviada!</p>
@@ -288,8 +293,8 @@ const PropertyDetail = () => {
                   <form onSubmit={handleSubmit} className="space-y-2.5">
                     <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} className="h-10" />
                     <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-10" />
-                    <Input name="phone" placeholder="Telefone" maxLength={20} className="h-10" />
-                    <Textarea name="message" placeholder="Mensagem (opcional)" rows={2} maxLength={1000} className="resize-none" />
+                    <Input name="phone" placeholder="Telefone / WhatsApp" maxLength={20} className="h-10" />
+                    <Textarea name="message" placeholder="Conte o que quer saber (opcional)" rows={2} maxLength={1000} className="resize-none" />
                     <div className="flex items-start gap-2">
                       <Checkbox id="consent-lead" checked={consent} onCheckedChange={(v) => setConsent(!!v)} className="mt-0.5" />
                       <label htmlFor="consent-lead" className="text-[11px] text-muted-foreground leading-tight">
@@ -305,14 +310,24 @@ const PropertyDetail = () => {
 
               {/* WhatsApp — desktop only (mobile has inline CTA above) */}
               {!isMobile && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors"
-                >
-                  <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
-                </a>
+                <div className="space-y-2">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — WhatsApp' : 'Quero alugar — WhatsApp'}
+                  </a>
+                  <a
+                    href={visitWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full border border-border bg-background py-2.5 rounded-lg text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                  >
+                    Agendar visita pelo WhatsApp
+                  </a>
+                </div>
               )}
             </div>
           </div>
