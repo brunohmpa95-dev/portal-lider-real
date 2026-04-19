@@ -122,7 +122,7 @@ export default function AdminNeighborhoods() {
       <div className="grid grid-cols-3 gap-3">
         <Card><CardContent className="pt-4"><div className="text-xs text-muted-foreground">Ativos</div><div className="text-2xl font-bold">{totalActive}</div></CardContent></Card>
         <Card><CardContent className="pt-4"><div className="text-xs text-muted-foreground">Verificados</div><div className="text-2xl font-bold text-primary">{totalVerified}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><div className="text-xs text-muted-foreground">Pendentes de revisão</div><div className="text-2xl font-bold text-amber-600">{totalPending}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><div className="text-xs text-muted-foreground">Pendentes de revisão</div><div className="text-2xl font-bold text-destructive">{totalPending}</div></CardContent></Card>
       </div>
 
       <Card>
@@ -167,7 +167,7 @@ export default function AdminNeighborhoods() {
                           {n.verified ? (
                             <Badge variant="default" className="text-[10px]">Verificado</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600">Não verificado</Badge>
+                            <Badge variant="outline" className="text-[10px] border-destructive text-destructive">Não verificado</Badge>
                           )}
                           {n.is_active ? (
                             <Badge variant="secondary" className="text-[10px]">Ativo</Badge>
