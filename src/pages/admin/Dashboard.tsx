@@ -16,6 +16,9 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import type { AppRole } from '@/lib/auth-types';
 import { ROLE_LABELS } from '@/lib/auth-types';
+import { useTasks } from '@/hooks/useTasks';
+import { useLeadStats, type StatsPeriod } from '@/hooks/useLeadStats';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const FUNNEL_COLORS = ['hsl(var(--primary))', '#60a5fa', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#94a3b8'];
 
@@ -34,6 +37,10 @@ export default function Dashboard() {
   const { roles, hasRole } = useAuth();
   const isSuperAdmin = hasRole('superadmin');
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<StatsPeriod>(30);
+  const { data: overdueTasks = [] } = useTasks({ filter: 'overdue' });
+  const { data: todayTasks = [] } = useTasks({ filter: 'today' });
+  const { data: leadStats } = useLeadStats(period);
   const [stats, setStats] = useState<DashboardStats>({
     leads: 0, leadsMonth: 0, properties: 0, visits: 0,
     ticketsOpen: 0, ticketsProgress: 0, ticketsResolved: 0, applications: 0,
@@ -152,6 +159,88 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* CRM — Pendências e funil avançado */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" /> Pendências
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <Link to="/admin/tarefas" className="flex justify-between p-2 rounded hover:bg-muted">
+              <span className="text-muted-foreground">Tarefas atrasadas</span>
+              <Badge variant={overdueTasks.length > 0 ? 'destructive' : 'outline'}>{overdueTasks.length}</Badge>
+            </Link>
+            <Link to="/admin/tarefas" className="flex justify-between p-2 rounded hover:bg-muted">
+              <span className="text-muted-foreground">Tarefas para hoje</span>
+              <Badge variant="secondary">{todayTasks.length}</Badge>
+            </Link>
+            <Link to="/admin/leads" className="flex justify-between p-2 rounded hover:bg-muted">
+              <span className="text-muted-foreground">Leads em negociação</span>
+              <Badge variant="outline">{leadStats?.byStage['negotiation'] ?? 0}</Badge>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-primary" /> Funil de conversão
+            </CardTitle>
+            <Tabs value={String(period)} onValueChange={(v) => setPeriod(Number(v) as StatsPeriod)}>
+              <TabsList className="h-8">
+                <TabsTrigger value="7" className="text-xs h-6">7d</TabsTrigger>
+                <TabsTrigger value="30" className="text-xs h-6">30d</TabsTrigger>
+                <TabsTrigger value="90" className="text-xs h-6">90d</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="p-2 rounded border">
+                <p className="text-[10px] text-muted-foreground">Conversão</p>
+                <p className="text-lg font-bold text-green-600">{leadStats?.conversionRate.toFixed(1) ?? '0.0'}%</p>
+              </div>
+              <div className="p-2 rounded border">
+                <p className="text-[10px] text-muted-foreground">Perda</p>
+                <p className="text-lg font-bold text-red-500">{leadStats?.lostRate.toFixed(1) ?? '0.0'}%</p>
+              </div>
+              <div className="p-2 rounded border">
+                <p className="text-[10px] text-muted-foreground">Tempo médio</p>
+                <p className="text-lg font-bold">{leadStats?.avgDaysToClose ? `${leadStats.avgDaysToClose.toFixed(0)}d` : '—'}</p>
+              </div>
+            </div>
+            {leadStats && Object.values(leadStats.byStage).some((v) => v > 0) ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={Object.entries(leadStats.byStage).map(([k, v]) => ({ name: k, value: v }))}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">Sem dados no período</div>
+            )}
+            {leadStats && leadStats.topLostReasons.length > 0 && (
+              <div className="mt-3 pt-3 border-t">
+                <p className="text-xs font-semibold mb-1.5">Top motivos de perda</p>
+                <ul className="space-y-1">
+                  {leadStats.topLostReasons.map((r) => (
+                    <li key={r.name} className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">{r.name}</span>
+                      <span className="font-medium">{r.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tickets + Applications summary */}
