@@ -6,6 +6,7 @@ import Layout from '@/components/layout/Layout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
+import BreadcrumbsJsonLd from '@/components/shared/BreadcrumbsJsonLd';
 import PropertyCard from '@/components/property/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +18,9 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from '@/components/ui/carousel';
 import { useProperty, useSimilarProperties } from '@/hooks/useProperties';
 import { formatPrice } from '@/data/properties';
-import { COMPANY } from '@/data/constants';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
@@ -110,11 +111,21 @@ const PropertyDetail = () => {
     }
   };
 
-  const whatsappUrl = `${COMPANY.whatsappLink}?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.code} - ${property.title}`)}`;
+  const intent = property.purpose === 'sale' ? 'buy' : 'rent';
+  const whatsappUrl = buildWhatsAppLink(intent, { propertyCode: property.code, propertyTitle: property.title });
+  const visitWhatsappUrl = buildWhatsAppLink('visit', { propertyCode: property.code, propertyTitle: property.title });
 
   return (
     <Layout>
-      <PageHead title={property.title} description={`${property.title} - ${property.neighborhood}, ${property.city}. ${formatPrice(property.price, property.purpose)}`} />
+      <PageHead
+        title={property.title}
+        description={`${property.title} - ${property.neighborhood}, ${property.city}. ${formatPrice(property.price, property.purpose)}`}
+        canonical={`/imovel/${property.id}`}
+      />
+      <BreadcrumbsJsonLd items={[
+        { name: property.purpose === 'sale' ? 'Comprar' : 'Alugar', path: property.purpose === 'sale' ? '/comprar' : '/alugar' },
+        { name: property.title, path: `/imovel/${property.id}` },
+      ]} />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
@@ -237,7 +248,7 @@ const PropertyDetail = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors mb-6"
               >
-                <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
+                <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — chamar no WhatsApp' : 'Quero alugar — chamar no WhatsApp'}
               </a>
             )}
 
@@ -267,7 +278,12 @@ const PropertyDetail = () => {
             <div className="sticky top-24 space-y-4">
               {/* Lead form */}
               <div className="bg-card border border-border rounded-lg p-5">
-                <h3 className="font-sans font-semibold text-foreground text-sm mb-3">Tenho interesse neste imóvel</h3>
+                <h2 className="font-sans font-semibold text-foreground text-sm mb-1">Fale com um especialista</h2>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  {intent === 'buy'
+                    ? 'Tire dúvidas, agende uma visita ou faça uma proposta para este imóvel.'
+                    : 'Tire dúvidas sobre valores, garantias e agende uma visita.'}
+                </p>
                 {formSuccess ? (
                   <div className="text-center py-5">
                     <p className="text-primary font-semibold mb-1">Mensagem enviada!</p>
@@ -277,8 +293,8 @@ const PropertyDetail = () => {
                   <form onSubmit={handleSubmit} className="space-y-2.5">
                     <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} className="h-10" />
                     <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-10" />
-                    <Input name="phone" placeholder="Telefone" maxLength={20} className="h-10" />
-                    <Textarea name="message" placeholder="Mensagem (opcional)" rows={2} maxLength={1000} className="resize-none" />
+                    <Input name="phone" placeholder="Telefone / WhatsApp" maxLength={20} className="h-10" />
+                    <Textarea name="message" placeholder="Conte o que quer saber (opcional)" rows={2} maxLength={1000} className="resize-none" />
                     <div className="flex items-start gap-2">
                       <Checkbox id="consent-lead" checked={consent} onCheckedChange={(v) => setConsent(!!v)} className="mt-0.5" />
                       <label htmlFor="consent-lead" className="text-[11px] text-muted-foreground leading-tight">
@@ -294,14 +310,24 @@ const PropertyDetail = () => {
 
               {/* WhatsApp — desktop only (mobile has inline CTA above) */}
               {!isMobile && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors"
-                >
-                  <MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
-                </a>
+                <div className="space-y-2">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — WhatsApp' : 'Quero alugar — WhatsApp'}
+                  </a>
+                  <a
+                    href={visitWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full border border-border bg-background py-2.5 rounded-lg text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                  >
+                    Agendar visita pelo WhatsApp
+                  </a>
+                </div>
               )}
             </div>
           </div>

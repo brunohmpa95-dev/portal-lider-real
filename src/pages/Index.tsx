@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Building2, ArrowRight, Shield, ExternalLink, MessageCircle, Phone } from 'lucide-react';
+import { Building2, ArrowRight, ExternalLink, Phone, Home as HomeIcon, Key, Tag } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
+import TrustStrip from '@/components/shared/TrustStrip';
+import HowItWorks from '@/components/shared/HowItWorks';
+import NeighborhoodsGrid from '@/components/shared/NeighborhoodsGrid';
+import FaqSection from '@/components/shared/FaqSection';
 import heroBg from '@/assets/hero-bg.jpg';
 import SearchBar from '@/components/property/SearchBar';
 import PropertyCard from '@/components/property/PropertyCard';
@@ -28,6 +32,20 @@ const PropertyGridSkeleton = () => (
   </div>
 );
 
+const homeFaq = [
+  { q: 'Quais regiões a Líder Imóveis atende?', a: 'Atendemos Itaúna e cidades da região, com foco em todos os principais bairros como Centro, Santa Edwiges, Piedade, São Geraldo, Vila Romana e demais regiões da cidade.' },
+  { q: 'Como funciona o processo de compra de um imóvel?', a: 'Você escolhe o imóvel pelo site, agendamos uma visita acompanhada por um corretor, fazemos a proposta e cuidamos de toda documentação até a entrega das chaves, inclusive financiamento.' },
+  { q: 'Posso anunciar meu imóvel para vender ou alugar?', a: 'Sim. Fazemos uma avaliação gratuita do seu imóvel, divulgamos em todos os nossos canais e cuidamos de visitas, negociação e contrato. Acesse a página "Anuncie seu imóvel" para começar.' },
+  { q: 'Vocês trabalham com financiamento?', a: 'Sim. Orientamos toda a parte de financiamento e disponibilizamos um simulador oficial da CAIXA aqui no site para você calcular as condições antes de decidir.' },
+  { q: 'Quanto tempo leva para responder uma mensagem?', a: 'Respondemos em minutos pelo WhatsApp dentro do horário comercial e em até 1 dia útil pelo e-mail e formulário de contato.' },
+];
+
+const journeys = [
+  { icon: HomeIcon, title: 'Quero comprar', text: 'Casas, apartamentos e terrenos para venda em Itaúna e região.', cta: 'Ver imóveis à venda', to: '/comprar' },
+  { icon: Key, title: 'Quero alugar', text: 'Imóveis para locação com processo descomplicado e contrato claro.', cta: 'Ver imóveis para alugar', to: '/alugar' },
+  { icon: Tag, title: 'Quero anunciar', text: 'Avaliação gratuita e divulgação profissional do seu imóvel.', cta: 'Anunciar meu imóvel', to: '/anuncie' },
+];
+
 const Index = () => {
   const { data: superFeatured, isLoading: loadingSuper } = useSuperFeaturedProperty();
   const { data: featuredSale = [], isLoading: loadingSale } = useFeaturedProperties('sale');
@@ -37,13 +55,18 @@ const Index = () => {
 
   return (
     <Layout>
-      <PageHead title="Início" description="Líder Imóveis Itaúna - Imobiliária moderna em Itaúna e região. Compra, venda e locação de imóveis com atendimento próximo e transparente." />
+      <PageHead
+        title="Imobiliária em Itaúna - MG"
+        description="Imóveis para comprar e alugar em Itaúna e região. Casas, apartamentos, terrenos e imóveis comerciais com atendimento próximo, transparente e CRECI ativo."
+        keywords="imobiliária Itaúna, imóveis Itaúna MG, casas à venda Itaúna, aluguel Itaúna, apartamentos Itaúna, Líder Imóveis"
+        canonical="/"
+      />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": ["RealEstateAgent", "LocalBusiness"],
           "name": COMPANY.fullName,
-          "description": "Imobiliária moderna em Itaúna e região. Compra, venda e locação de imóveis com atendimento próximo e transparente.",
+          "description": "Imobiliária em Itaúna e região. Compra, venda e locação de imóveis com atendimento próximo e transparente.",
           "url": "https://portal-lider-real.lovable.app",
           "telephone": COMPANY.phone,
           "email": COMPANY.email,
@@ -74,10 +97,10 @@ const Index = () => {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-bold text-white mb-2 sm:mb-3 leading-tight">
-              Encontre seu imóvel<br className="hidden sm:block" /> em Itaúna e região
+              Imóveis para comprar e alugar<br className="hidden sm:block" /> em Itaúna e região
             </h1>
-            <p className="text-white/70 text-sm sm:text-lg max-w-xl mx-auto">
-              Compra, venda e locação com atendimento próximo e transparente.
+            <p className="text-white/80 text-sm sm:text-lg max-w-xl mx-auto">
+              Atendimento local, transparente e ágil — do primeiro contato à entrega das chaves.
             </p>
           </motion.div>
           <motion.div
@@ -90,13 +113,16 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ─── Trust strip ─── */}
+      <TrustStrip />
+
       {/* ─── Quick actions ─── */}
       <section className="py-5 sm:py-6 border-b border-border">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
             {[
-              { icon: Phone, label: 'Fale conosco', path: '/contato' },
-              { icon: Building2, label: 'Anuncie seu imóvel', path: '/anuncie' },
+              { icon: Phone, label: 'Falar com especialista', path: '/contato' },
+              { icon: Building2, label: 'Anunciar meu imóvel', path: '/anuncie' },
             ].map((s) => (
               <Link
                 key={s.label}
@@ -125,7 +151,7 @@ const Index = () => {
       <section className="py-12 md:py-16 bg-secondary/40">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground">Imóveis à Venda</h2>
+            <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground">Imóveis à venda em Itaúna</h2>
             <Link to="/comprar">
               <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm">
                 Ver todos <ArrowRight className="h-3.5 w-3.5" />
@@ -147,7 +173,7 @@ const Index = () => {
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground">Imóveis para Locação</h2>
+            <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground">Imóveis para alugar em Itaúna</h2>
             <Link to="/alugar">
               <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm">
                 Ver todos <ArrowRight className="h-3.5 w-3.5" />
@@ -165,32 +191,40 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ─── Institutional ─── */}
+      {/* ─── How it works ─── */}
+      <div className="bg-secondary/30">
+        <HowItWorks />
+      </div>
+
+      {/* ─── Neighborhoods ─── */}
+      <NeighborhoodsGrid />
+
+      {/* ─── Journeys ─── */}
       <section className="py-12 md:py-16 bg-secondary/40">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
-            <div>
-              <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground mb-4">
-                Uma nova imobiliária em Itaúna, com atendimento próximo e visão moderna
-              </h2>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                A Líder Imóveis Itaúna nasce com a proposta de oferecer um atendimento mais próximo, transparente e eficiente para quem deseja comprar, vender ou alugar imóveis na região.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-5">
-                Unimos agilidade, cuidado em cada etapa e conhecimento do mercado local para tornar sua experiência imobiliária mais simples e segura.
-              </p>
-              <Link to="/sobre">
-                <Button variant="outline" className="gap-2">Conheça nossa proposta <ArrowRight className="h-4 w-4" /></Button>
-              </Link>
-            </div>
-            <div className="flex justify-center">
-              <div className="bg-card border border-border rounded-xl p-8 text-center max-w-xs w-full">
-                <Shield className="h-10 w-10 text-primary mx-auto mb-3" />
-                <p className="text-lg font-sans font-bold text-foreground mb-1">Atendimento próximo</p>
-                <p className="text-muted-foreground text-sm">Suporte personalizado para comprar, vender ou alugar com mais clareza e segurança.</p>
-                <p className="text-xs text-muted-foreground mt-4">{COMPANY.creci}</p>
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground mb-2">
+              Por onde você quer começar?
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Cada jornada tem um caminho. Escolha o seu e fale com nossa equipe.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {journeys.map((j) => (
+              <div key={j.title} className="bg-card border border-border rounded-lg p-6 text-center flex flex-col">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mx-auto mb-3">
+                  <j.icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                </span>
+                <h3 className="font-sans font-semibold text-foreground text-base mb-1.5">{j.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">{j.text}</p>
+                <Link to={j.to}>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs">
+                    {j.cta} <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -199,7 +233,7 @@ const Index = () => {
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <h2 className="text-xl md:text-2xl font-sans font-semibold text-foreground mb-2">Simule seu financiamento</h2>
-          <p className="text-muted-foreground mb-5 text-sm sm:text-base">Use o simulador oficial da CAIXA para calcular parcelas e condições do seu financiamento.</p>
+          <p className="text-muted-foreground mb-5 text-sm sm:text-base">Use o simulador oficial da CAIXA para calcular parcelas e condições do seu financiamento imobiliário.</p>
           <a
             href="https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso"
             target="_blank"
@@ -215,14 +249,17 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ─── FAQ ─── */}
+      <FaqSection items={homeFaq} subtitle="Tire as principais dúvidas antes de comprar, alugar ou anunciar com a Líder Imóveis." />
+
       {/* ─── CTA Capture ─── */}
       <section className="py-14 md:py-16 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h2 className="text-xl md:text-2xl font-sans font-semibold mb-3">Tem um imóvel para vender ou alugar?</h2>
-          <p className="text-primary-foreground/80 mb-6 text-sm sm:text-base">Cadastre seu imóvel e conte com a nossa equipe para encontrar os melhores negócios.</p>
+          <h2 className="text-xl md:text-2xl font-sans font-semibold mb-3">Tem um imóvel para vender ou alugar em Itaúna?</h2>
+          <p className="text-primary-foreground/80 mb-6 text-sm sm:text-base">Avaliação gratuita, divulgação profissional e equipe dedicada para encontrar o comprador ou inquilino certo.</p>
           <Link to="/anuncie">
             <Button variant="secondary" size="lg" className="gap-2 text-sm sm:text-base">
-              <Building2 className="h-5 w-5" /> Anuncie seu imóvel
+              <Building2 className="h-5 w-5" /> Anunciar meu imóvel
             </Button>
           </Link>
         </div>
