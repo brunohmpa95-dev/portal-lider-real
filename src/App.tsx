@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import Ombudsman from "./pages/Ombudsman";
 import Careers from "./pages/Careers";
 import Privacy from "./pages/Privacy";
+import Financiamento from "./pages/Financiamento";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -90,6 +91,7 @@ const App = () => (
               <Route path="/ouvidoria" element={<Ombudsman />} />
               <Route path="/trabalhe-conosco" element={<Careers />} />
               <Route path="/privacidade" element={<Privacy />} />
+              <Route path="/financiamento" element={<Financiamento />} />
 
               {/* Auth routes */}
               <Route path="/login" element={<Login />} />

@@ -14,6 +14,7 @@ import PropertyCard from '@/components/property/PropertyCard';
 import PremiumPropertyCard from '@/components/property/PremiumPropertyCard';
 import { Button } from '@/components/ui/button';
 import { useFeaturedProperties, useSuperFeaturedProperty } from '@/hooks/useProperties';
+import { useNeighborhoods } from '@/hooks/useNeighborhoods';
 import { COMPANY } from '@/data/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -50,6 +51,7 @@ const Index = () => {
   const { data: superFeatured, isLoading: loadingSuper } = useSuperFeaturedProperty();
   const { data: featuredSale = [], isLoading: loadingSale } = useFeaturedProperties('sale');
   const { data: featuredRent = [], isLoading: loadingRent } = useFeaturedProperties('rent');
+  const { data: neighborhoods = [] } = useNeighborhoods();
 
   const saleFiltered = featuredSale.filter(p => !p.isSuperFeatured);
 
@@ -79,7 +81,21 @@ const Index = () => {
           },
           "openingHours": ["Mo-Fr 08:00-18:00", "Sa 08:00-12:00"],
           "sameAs": [COMPANY.instagram, COMPANY.facebook],
-          "image": "https://portal-lider-real.lovable.app/og-image.png"
+          "image": "https://portal-lider-real.lovable.app/og-image.png",
+          "areaServed": [
+            { "@type": "City", "name": "Itaúna", "addressRegion": "MG", "addressCountry": "BR" },
+            ...neighborhoods.map(n => ({
+              "@type": "Place",
+              "name": `${n.name}, Itaúna - MG`,
+            })),
+          ],
+          "knowsAbout": [
+            "Compra de imóveis em Itaúna",
+            "Locação de imóveis em Itaúna",
+            "Financiamento imobiliário CAIXA",
+            "Avaliação de imóveis",
+            ...neighborhoods.slice(0, 10).map(n => `Imóveis no bairro ${n.name}`),
+          ],
         })}</script>
       </Helmet>
 
