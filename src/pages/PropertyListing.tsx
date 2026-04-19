@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProperties } from '@/hooks/useProperties';
-import { NEIGHBORHOODS, PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
+import { PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
+import { useNeighborhoodNames } from '@/hooks/useNeighborhoods';
 import { Search, ChevronLeft, ChevronRight, SlidersHorizontal, X, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
@@ -24,6 +25,7 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
   const [searchParams] = useSearchParams();
   const label = purpose === 'sale' ? 'Comprar' : 'Alugar';
   const isMobile = useIsMobile();
+  const { data: NEIGHBORHOODS } = useNeighborhoodNames();
 
   const [type, setType] = useState(searchParams.get('tipo') || '');
   const [neighborhood, setNeighborhood] = useState(searchParams.get('bairro') || '');

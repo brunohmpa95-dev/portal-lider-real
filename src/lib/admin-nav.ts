@@ -13,6 +13,7 @@ import {
   Headphones,
   DollarSign,
   Shield,
+  MapPin,
   type LucideIcon,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth-types';
@@ -28,6 +29,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { title: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { title: 'Leads', path: '/admin/leads', icon: Users },
   { title: 'Imóveis', path: '/admin/properties', icon: Building2 },
+  { title: 'Bairros', path: '/admin/bairros', icon: MapPin, requiredRoles: ['administrativo', 'superadmin'] },
   { title: 'Clientes', path: '/admin/clientes', icon: Users, requiredRoles: ['administrativo', 'superadmin'] },
   { title: 'Corretores', path: '/admin/corretores', icon: Handshake, requiredRoles: ['administrativo', 'superadmin'] },
   { title: 'Contratos', path: '/admin/contratos', icon: FileText, requiredRoles: ['administrativo', 'superadmin', 'locacao', 'vendas'] },
