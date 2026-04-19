@@ -93,12 +93,14 @@ export interface TeamMember {
 }
 
 export const PROPERTY_STATUS_OPTIONS = [
+  { value: 'captacao', label: 'Captação' },
+  { value: 'aguardando_documentacao', label: 'Aguardando documentação' },
   { value: 'published', label: 'Publicado' },
-  { value: 'draft', label: 'Rascunho' },
   { value: 'reserved', label: 'Reservado' },
+  { value: 'em_proposta', label: 'Em proposta' },
   { value: 'sold', label: 'Vendido' },
   { value: 'rented', label: 'Alugado' },
-  { value: 'paused', label: 'Pausado' },
+  { value: 'paused', label: 'Inativo' },
 ];
 
 export const LEAD_FUNNEL_STAGES = [
