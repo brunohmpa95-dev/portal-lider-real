@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NEIGHBORHOODS, PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
+import { PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
+import { useNeighborhoodNames } from '@/hooks/useNeighborhoods';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const SearchBar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { data: NEIGHBORHOODS } = useNeighborhoodNames();
   const [purpose, setPurpose] = useState<'sale' | 'rent'>('sale');
   const [type, setType] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
