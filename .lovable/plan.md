@@ -1,134 +1,110 @@
 
 
-# Conclusão do Sistema Interno — Plano de Produção
+# Finalização do Site Público — Líder Imóveis Itaúna
 
-## Auditoria: Estado Atual
+## Auditoria curta do front público
 
-### Já conectado ao Supabase (funcional):
-- **Admin Dashboard** — KPIs reais (leads, properties, visits, tickets, audit)
-- **Admin Leads** — CRUD completo com kanban drag-and-drop, filtros, busca, delete
-- **Admin LeadForm / LeadDetail** — criação e edição de leads
-- **Admin Properties** — CRUD completo com PropertyForm (create/edit/images)
-- **Admin Agenda** — visitas reais do banco
-- **Cliente Financeiro** — busca de boletos e solicitação de documentos
-- **Cliente Suporte** — CRUD de tickets (criar, listar, status real)
-- **Cliente Documentos** — download de modelos + solicitação de documentos
-- **Auth completo** — login, registro, MFA, roles, redirecionamento por perfil
+**Já existe e funciona:**
+- Home com hero, busca, vitrines, simulador CAIXA, CTA captação
+- Listagens `/comprar` e `/alugar` com filtros, paginação, ordenação
+- Detalhe do imóvel com galeria, lightbox, formulário de lead, WhatsApp contextualizado, JSON-LD `RealEstateListing`
+- Páginas Sobre, Contato, Anuncie, Privacidade, Ouvidoria, Carreiras, Documentos
+- JSON-LD `RealEstateAgent + LocalBusiness` na home
+- Formulários com validação básica, consentimento LGPD
+- Responsividade existente, skeletons
 
-### Ainda usando dados mockados:
-- **Broker Dashboard** — `mockBrokerLeads`, `mockBrokerVisits`, `mockCommissions`, `mockProposals`
-- **Broker Leads** — `mockBrokerLeads`
-- **Broker Properties** — mock local inline
-- **Broker Visits** — `mockBrokerVisits`
-- **Broker Proposals** — `mockProposals`
-- **Broker Commissions** — `mockCommissions`
-- **Broker Profile** — campos disabled sem dados do banco
-- **Cliente Contratos** — `mockContracts`
-- **Cliente Dashboard** — KPIs hardcoded (2 contratos, "20/04")
-- **Cliente Properties** — empty state fixo
-- **Admin Clients** — `mockClients`
-- **Admin Brokers** — `mockBrokers`
-- **Admin Contracts** — `mockContracts`
-- **Admin Documents** — mock local inline
-- **Admin Tickets** — `mockTickets`
-- **Admin Financial** — `mockCommissions`
-- **Admin Audit** — `mockAuditLogs`
-
-### Tabelas Supabase existentes e prontas:
-`profiles`, `user_roles`, `properties`, `property_leads`, `lead_interactions`, `visits`, `contracts`, `support_requests`, `boletos`, `document_requests`, `customer_documents`, `documents_unified`, `billing_records`, `notifications`, `audit_log`, `ombudsman_tickets`, `job_applications`, `listing_submissions`, `inspections`, `maintenance_requests`, `rental_inquiries`, `contact_messages`, `clients`, `brokers`, `proposals`, `commissions`
+**Lacunas para fechar:**
+- Sem seção "Como funciona" para comprador/locatário/proprietário
+- Sem FAQ (e sem `FAQPage` JSON-LD)
+- Sem bloco/seção de bairros atendidos com links indexáveis
+- Sem `BreadcrumbList` JSON-LD
+- Copy genérica em alguns blocos institucionais
+- Página Anuncie pouco persuasiva (sem benefícios claros para proprietário)
+- Privacy completa mas formal demais — falta um resumo visual de confiança
+- CTAs WhatsApp pouco contextualizados por intenção (comprar vs alugar vs anunciar)
+- Detalhe do imóvel sem bloco "fale com especialista" segmentado
+- Listagens sem chip de filtros ativos visível e sem CTA intermediário de WhatsApp
 
 ---
 
-## Plano de Implementação (por prioridade)
+## O que vou implementar
 
-### Bloco 1: Conectar módulos Admin ao Supabase (~8 arquivos)
+### 1. Novos componentes públicos compartilhados
+- `src/components/shared/HowItWorks.tsx` — bloco com 3-4 passos, variante por intenção (comprar / alugar / anunciar)
+- `src/components/shared/FaqSection.tsx` — accordion + injeção automática de `FAQPage` JSON-LD
+- `src/components/shared/NeighborhoodsGrid.tsx` — grid de bairros de Itaúna com link para listagem filtrada (`/comprar?bairro=...`)
+- `src/components/shared/TrustStrip.tsx` — faixa de confiança (CRECI, atendimento local, transparência, LGPD)
+- `src/components/shared/BreadcrumbsJsonLd.tsx` — helper para `BreadcrumbList`
+- `src/lib/whatsapp.ts` — helper `buildWhatsAppLink(intent, context)` para mensagens contextualizadas
 
-1. **AdminClients** — query `clients` + `profiles`, busca, filtro status, modal de criação/edição com validação
-2. **AdminBrokers** — query `brokers` + `profiles`, CRECI, região, status, modal criar/editar
-3. **AdminContracts** — query `contracts` + profile join, filtro tipo/status, modal criar/editar, link com imóvel/cliente
-4. **AdminDocuments** — query `documents_unified`, upload via `secureUpload`, filtro tipo/visibilidade, download via `secureDownload`
-5. **AdminTickets** — query `support_requests`, atribuição, prioridade, status update, notas internas
-6. **AdminFinancial** — query `commissions` + `billing_records`, KPIs reais, update status
-7. **AdminAudit** — query `audit_log` real (já tem RLS), filtros por módulo/ação/período
+### 2. Home (`Index.tsx`)
+- Reescrever H1 e subtítulo com posicionamento local mais forte
+- Adicionar `TrustStrip` logo após o hero
+- Adicionar `HowItWorks` (variante "comprar/alugar/anunciar" em tabs)
+- Adicionar `NeighborhoodsGrid` (SEO local + navegação)
+- Adicionar `FaqSection` curta (5-6 perguntas)
+- Reforçar CTAs: trocar "Anuncie seu imóvel" final por bloco com 3 jornadas (comprador, locatário, proprietário)
 
-### Bloco 2: Conectar Portal do Corretor ao Supabase (~7 arquivos)
+### 3. `Sobre`
+- Reescrever copy: posicionamento, processo, compromisso, foco regional
+- Adicionar bloco "Como atendemos" (timeline 4 etapas)
+- Reforçar autoridade: CRECI + endereço + cobertura geográfica
+- CTAs segmentados no final
 
-1. **BrokerDashboard** — queries reais: leads atribuídos, visitas do corretor, comissões, propostas
-2. **BrokerLeads** — query `property_leads` filtrado por `assigned_to = auth.uid()`, update de stage
-3. **BrokerProperties** — query `properties` filtrado por `assigned_broker_id`
-4. **BrokerVisits** — query `visits` filtrado por `agent_id = auth.uid()`, modal agendar, update status/notas
-5. **BrokerProposals** — query `proposals` filtrado por `broker_id`, modal criar proposta
-6. **BrokerCommissions** — query `commissions` filtrado por `broker_id`
-7. **BrokerProfile** — query `brokers` + `profiles`, edição de dados permitidos
+### 4. `Contato`
+- Cabeçalho mais comercial, microcopy por canal (telefone = atendimento rápido, WhatsApp = resposta em minutos, e-mail = retorno em até 1 dia útil)
+- Departamentos com finalidade clara de cada um
+- Mapa/endereço destacado
 
-### Bloco 3: Conectar Área do Cliente ao Supabase (~4 arquivos)
+### 5. `Anuncie`
+- Reescrever hero com benefícios para proprietário (avaliação sem compromisso, divulgação, triagem de interessados, suporte documental)
+- Expandir "Como funciona" com 4 passos detalhados
+- Bloco "Por que anunciar com a Líder" (4 diferenciais)
+- FAQ específica para proprietários
+- Manter o formulário, melhorar microcopy de campos
 
-1. **ClientDashboard** — KPIs reais: contratos, tickets, próximo vencimento (billing_records)
-2. **ClientContracts** — query `contracts` filtrado por `user_id = auth.uid()`
-3. **ClientProperties** — query `properties` via contratos vinculados ou proposals
-4. **ClientProfile** — edição real de nome/telefone via `profiles` update
+### 6. `PropertyDetail`
+- Adicionar `BreadcrumbList` JSON-LD
+- CTAs WhatsApp com mensagem contextualizada por compra/locação
+- Bloco "Fale com um especialista" mais persuasivo no sidebar
+- Microcopy do formulário mais clara
+- Mantém galeria/lightbox/similar
 
-### Bloco 4: CRUDs e Modais de Criação/Edição
+### 7. `PropertyListing` (`/comprar`, `/alugar`)
+- Subtítulo descritivo abaixo do H1 (SEO local)
+- Chips de filtros ativos removíveis
+- CTA intermediário ao final dos resultados ("Não encontrou? Fale conosco / Cadastre seu interesse")
+- Adicionar `BreadcrumbList` JSON-LD
 
-Para cada módulo, criar componentes de dialog/modal:
-- **ClientForm** — criar/editar cliente (admin)
-- **BrokerForm** — criar/editar corretor (admin)
-- **ContractForm** — criar/editar contrato (admin)
-- **ProposalForm** — criar proposta (broker/admin)
-- **VisitForm** — agendar visita (broker/admin)
-- **CommissionForm** — registrar comissão (admin/financeiro)
-- **DocumentUploadForm** — upload com categorização (admin)
-- **TicketDetailModal** — ver detalhes, atribuir, mudar status (admin)
+### 8. `Privacy`
+- Adicionar resumo visual no topo (4 cards: o que coletamos, para que, seus direitos, contato DPO)
+- Manter conteúdo legal completo abaixo
+- Versão mais navegável com índice clicável
 
-Cada formulário com: validação, loading, toast de sucesso/erro, confirmação em delete.
+### 9. SEO técnico
+- Atualizar `PageHead` para aceitar `keywords` e `canonical` opcionais
+- `BreadcrumbList` JSON-LD em todas as páginas internas
+- `FAQPage` JSON-LD nas páginas com FAQ
+- Heading hierarchy revisada (um único H1 por página)
 
-### Bloco 5: Fluxos Operacionais
-
-- **Lead → Visita → Proposta → Contrato**: botões de ação no LeadDetail para "Agendar Visita", "Criar Proposta"; no ProposalDetail para "Gerar Contrato"
-- **Ticket lifecycle**: abertura → atribuição → andamento → resolução com timestamps
-- **Documento lifecycle**: upload → pendente → aprovado/recusado
-- **Comissão lifecycle**: geração vinculada a contrato → conferência → pagamento
-
-### Bloco 6: Auditoria
-
-- Criar helper `logAudit(action, module, entityType, entityId, metadata)` usando `supabase.from('audit_log').insert()`
-- Adicionar chamadas nos CRUDs: criação, edição, delete, mudança de status, upload
-
-### Bloco 7: UX de Produção
-
-- Loading skeletons em todas as páginas de listagem
-- Empty states com ícone + CTA em todas as tabelas vazias
-- Confirmação via `AlertDialog` em ações destrutivas (delete, arquivar)
-- Toast consistente (sonner) para sucesso/erro
-- Filtros de período nos dashboards
-
-### Bloco 8: Padronização de Status
-
-Definir constantes centralizadas em `src/types/admin.ts`:
-```
-Lead: new → contact → visit → proposal → negotiation → closed → lost
-Visit: scheduled → completed → cancelled → no_show
-Proposal: pending → accepted → rejected → expired
-Contract: draft → active → expired → cancelled → renewed
-Ticket: open → in_progress → resolved → closed
-Document: pending → active → rejected → archived
-Commission: pending → approved → paid → cancelled
-```
+### 10. Padronização e polish
+- Consistência de copy (botões, labels, mensagens)
+- Revisão de espaçamentos verticais entre seções
+- Acessibilidade: foco visível, aria-labels em ícones-only, contraste
 
 ---
 
 ## O que NÃO será alterado
-- Auth/RBAC existente (já funcional)
-- Layouts (AdminLayout, BrokerLayout, ClientLayout)
-- Componentes compartilhados (KPICard, StatusBadge, etc.)
-- Schema de banco (todas as tabelas e RLS já existem)
-- Páginas públicas do site
+- Área interna (`/admin`, `/parceiro`, `/cliente`) e seus componentes
+- Auth, RBAC, integrações Supabase
+- Schema/layouts internos
+- Sem seção de depoimentos (proibido)
 
 ## Estimativa
-- ~25 arquivos modificados
-- ~8 novos componentes (formulários/modais)
-- 0 migrações SQL (schema completo)
-- Implementação em etapas incrementais
+- ~6 componentes novos compartilhados
+- ~9 páginas públicas atualizadas (Index, About, Contact, Advertise, Privacy, PropertyDetail, PropertyListing, PageHead helper, whatsapp helper)
+- 0 migrações SQL
+- 0 mudanças em rotas
 
-Dada a escala (~30+ arquivos), após aprovação implementarei em blocos: primeiro Admin (Bloco 1), depois Broker (Bloco 2), depois Cliente (Bloco 3), e finalmente CRUDs, fluxos e polimento (Blocos 4-8).
+Após aprovação, executo em uma única passada por estar tudo no escopo público.
 
