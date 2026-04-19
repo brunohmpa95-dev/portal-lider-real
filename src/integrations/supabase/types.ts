@@ -750,6 +750,45 @@ export type Database = {
         }
         Relationships: []
       }
+      neighborhoods: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          normalized: string
+          region: string | null
+          slug: string
+          source: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          normalized: string
+          region?: string | null
+          slug: string
+          source?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          normalized?: string
+          region?: string | null
+          slug?: string
+          source?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
