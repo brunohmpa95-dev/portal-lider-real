@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import PropertyImageUpload from '@/components/admin/PropertyImageUpload';
+import { useNeighborhoods } from '@/hooks/useNeighborhoods';
 
 const defaultForm = {
   code: '', title: '', type: 'casa', purpose: 'sale', status: 'draft',
@@ -29,6 +30,7 @@ export default function PropertyForm() {
   const isEdit = !!id && id !== 'new';
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: neighborhoods } = useNeighborhoods({ includeAll: true });
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -215,7 +217,21 @@ export default function PropertyForm() {
           <CardHeader className="pb-3"><CardTitle className="text-base">Localização</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-1.5"><Label>Bairro</Label><Input value={form.neighborhood} onChange={(e) => set('neighborhood', e.target.value)} /></div>
+              <div className="space-y-1.5">
+                <Label>Bairro</Label>
+                <Select value={form.neighborhood || '__none__'} onValueChange={(v) => set('neighborhood', v === '__none__' ? '' : v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="__none__">— Não informado —</SelectItem>
+                    {(neighborhoods ?? []).map((n) => (
+                      <SelectItem key={n.id} value={n.name}>
+                        {n.name}{!n.verified && ' ⚠'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">⚠ = bairro não verificado oficialmente</p>
+              </div>
               <div className="space-y-1.5"><Label>Cidade</Label><Input value={form.city} onChange={(e) => set('city', e.target.value)} /></div>
               <div className="space-y-1.5"><Label>Estado</Label><Input value={form.state} onChange={(e) => set('state', e.target.value)} maxLength={2} /></div>
               <div className="space-y-1.5 sm:col-span-3"><Label>Endereço</Label><Input value={form.address} onChange={(e) => set('address', e.target.value)} /></div>
