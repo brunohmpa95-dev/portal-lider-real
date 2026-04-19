@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import LostReasonDialog from '@/components/admin/LostReasonDialog';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
   new: { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700', dot: 'bg-blue-500' },
@@ -35,6 +36,7 @@ export default function LeadsList() {
   const [filterSource, setFilterSource] = useState('all');
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
+  const [pendingLost, setPendingLost] = useState<{ leadId: string; leadName: string } | null>(null);
 
   const isAdmin = roles.some((r) => ['administrativo', 'superadmin'].includes(r));
 
@@ -63,13 +65,25 @@ export default function LeadsList() {
     }
   }
 
-  async function updateLeadStage(id: string, newStage: string) {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, funnel_stage: newStage } : l)));
-    const { error } = await supabase.from('property_leads').update({ funnel_stage: newStage }).eq('id', id);
+  async function updateLeadStage(id: string, newStage: string, extra: Record<string, any> = {}) {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, funnel_stage: newStage, ...extra } : l)));
+    const { error } = await supabase.from('property_leads').update({ funnel_stage: newStage, ...extra } as any).eq('id', id);
     if (error) {
-      toast({ title: 'Erro', description: 'Não foi possível mover o lead.', variant: 'destructive' });
+      toast({ title: 'Erro', description: error.message || 'Não foi possível mover o lead.', variant: 'destructive' });
       loadLeads();
+      return false;
     }
+    return true;
+  }
+
+  async function confirmLost(reasonId: string, notes: string) {
+    if (!pendingLost) return;
+    const ok = await updateLeadStage(pendingLost.leadId, 'lost', {
+      lost_reason_id: reasonId,
+      lost_notes: notes || null,
+    });
+    if (ok) toast({ title: 'Lead marcado como perdido' });
+    setPendingLost(null);
   }
 
   const filtered = leads.filter((l) => {
@@ -111,9 +125,12 @@ export default function LeadsList() {
     const leadId = e.dataTransfer.getData('leadId');
     if (!leadId) return;
     const lead = leads.find((l) => l.id === leadId);
-    if (lead && lead.funnel_stage !== newStage) {
-      updateLeadStage(leadId, newStage);
+    if (!lead || lead.funnel_stage === newStage) return;
+    if (newStage === 'lost') {
+      setPendingLost({ leadId, leadName: lead.name });
+      return;
     }
+    updateLeadStage(leadId, newStage);
   }
 
   const leadsForStage = (stage: string) => filtered.filter((l) => l.funnel_stage === stage);
@@ -402,6 +419,13 @@ export default function LeadsList() {
       ) : (
         renderTable()
       )}
+
+      <LostReasonDialog
+        open={!!pendingLost}
+        leadName={pendingLost?.leadName}
+        onCancel={() => setPendingLost(null)}
+        onConfirm={confirmLost}
+      />
     </div>
   );
 }
