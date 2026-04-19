@@ -87,9 +87,7 @@ const financingFaq = [
 ];
 
 const Financiamento = () => {
-  const wppLink = buildWhatsAppLink({
-    context: 'Vim pela página de Financiamento no site e gostaria de orientação para financiar um imóvel.',
-  });
+  const wppLink = buildWhatsAppLink('speak');
 
   return (
     <Layout>
