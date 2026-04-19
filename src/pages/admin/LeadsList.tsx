@@ -279,7 +279,7 @@ export default function LeadsList() {
               {stageLeads.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">Nenhum lead</p>
               ) : (
-                stageLeads.map(renderLeadCard)
+                stageLeads.map((l) => renderLeadCard(l, false))
               )}
             </div>
           </div>
