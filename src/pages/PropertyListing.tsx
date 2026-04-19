@@ -25,6 +25,7 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
   const [searchParams] = useSearchParams();
   const label = purpose === 'sale' ? 'Comprar' : 'Alugar';
   const isMobile = useIsMobile();
+  const { data: NEIGHBORHOODS } = useNeighborhoodNames();
 
   const [type, setType] = useState(searchParams.get('tipo') || '');
   const [neighborhood, setNeighborhood] = useState(searchParams.get('bairro') || '');

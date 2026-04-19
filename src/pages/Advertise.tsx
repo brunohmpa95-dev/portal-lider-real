@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PROPERTY_TYPES, NEIGHBORHOODS } from '@/data/constants';
+import { PROPERTY_TYPES } from '@/data/constants';
+import { useNeighborhoodNames } from '@/hooks/useNeighborhoods';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Loader2, CheckCircle2, ClipboardList, Camera, Users, Handshake, ShieldCheck, MapPin, MessageCircle, BadgeCheck } from 'lucide-react';
@@ -42,6 +43,7 @@ const Advertise = () => {
   const [success, setSuccess] = useState(false);
   const [consent, setConsent] = useState(false);
   const { toast } = useToast();
+  const { data: NEIGHBORHOODS } = useNeighborhoodNames();
   const selectClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
