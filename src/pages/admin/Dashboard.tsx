@@ -16,6 +16,9 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import type { AppRole } from '@/lib/auth-types';
 import { ROLE_LABELS } from '@/lib/auth-types';
+import { useTasks } from '@/hooks/useTasks';
+import { useLeadStats, type StatsPeriod } from '@/hooks/useLeadStats';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const FUNNEL_COLORS = ['hsl(var(--primary))', '#60a5fa', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#94a3b8'];
 
@@ -34,6 +37,10 @@ export default function Dashboard() {
   const { roles, hasRole } = useAuth();
   const isSuperAdmin = hasRole('superadmin');
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<StatsPeriod>(30);
+  const { data: overdueTasks = [] } = useTasks({ filter: 'overdue' });
+  const { data: todayTasks = [] } = useTasks({ filter: 'today' });
+  const { data: leadStats } = useLeadStats(period);
   const [stats, setStats] = useState<DashboardStats>({
     leads: 0, leadsMonth: 0, properties: 0, visits: 0,
     ticketsOpen: 0, ticketsProgress: 0, ticketsResolved: 0, applications: 0,
