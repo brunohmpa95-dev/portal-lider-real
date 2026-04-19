@@ -1,16 +1,18 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
+import BreadcrumbsJsonLd from '@/components/shared/BreadcrumbsJsonLd';
 import PropertyCard from '@/components/property/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProperties } from '@/hooks/useProperties';
 import { NEIGHBORHOODS, PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
-import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, SlidersHorizontal, X, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 
 interface PropertyListingPageProps {
   purpose: 'sale' | 'rent';
@@ -53,28 +55,55 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
     setPage(0);
   };
 
+  const typeLabel = PROPERTY_TYPES.find(t => t.value === type)?.label;
+  const bedroomsLabel = BEDROOM_OPTIONS.find(b => b.value === bedrooms)?.label;
+
+  const activeChips: { label: string; clear: () => void }[] = [];
+  if (typeLabel) activeChips.push({ label: typeLabel, clear: () => { setType(''); setPage(0); } });
+  if (neighborhood) activeChips.push({ label: neighborhood, clear: () => { setNeighborhood(''); setPage(0); } });
+  if (bedroomsLabel) activeChips.push({ label: bedroomsLabel, clear: () => { setBedrooms(''); setPage(0); } });
+  if (priceMin) activeChips.push({ label: `Mín. R$ ${priceMin}`, clear: () => { setPriceMin(''); setPage(0); } });
+  if (priceMax) activeChips.push({ label: `Máx. R$ ${priceMax}`, clear: () => { setPriceMax(''); setPage(0); } });
+  if (code) activeChips.push({ label: `Código: ${code}`, clear: () => { setCode(''); setPage(0); } });
+
+  const path = purpose === 'sale' ? '/comprar' : '/alugar';
+  const intent = purpose === 'sale' ? 'buy' : 'rent';
+
+  const seoTitle = purpose === 'sale' ? 'Imóveis à venda em Itaúna' : 'Imóveis para alugar em Itaúna';
+  const seoDescription = purpose === 'sale'
+    ? 'Casas, apartamentos, terrenos e imóveis comerciais à venda em Itaúna - MG. Encontre o seu imóvel com a Líder Imóveis.'
+    : 'Casas, apartamentos e imóveis para alugar em Itaúna - MG. Imóveis com contrato claro e atendimento próximo da Líder Imóveis.';
+
   return (
     <Layout>
       <PageHead
         title={label}
-        description={`Imóveis para ${label.toLowerCase()} em Itaúna - MG. Encontre casas, apartamentos, terrenos e mais com a Líder Imóveis.`}
+        description={seoDescription}
+        keywords={`${purpose === 'sale' ? 'comprar imóvel' : 'alugar imóvel'} Itaúna, imóveis Itaúna MG, casas ${label.toLowerCase()} Itaúna`}
+        canonical={path}
       />
+      <BreadcrumbsJsonLd items={[{ name: label, path }]} />
       <div className="container mx-auto px-4">
         <Breadcrumbs items={[{ label }]} />
 
-        <div className="flex items-center justify-between mb-5">
-          <h1 className="text-2xl sm:text-3xl font-sans font-bold text-foreground">
-            Imóveis para {label}
-          </h1>
-          {!isLoading && (
-            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-3">
-              {totalCount} {totalCount === 1 ? 'imóvel' : 'imóveis'}
-            </span>
-          )}
+        <div className="mb-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-sans font-bold text-foreground">{seoTitle}</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Casas, apartamentos, terrenos e imóveis comerciais nos principais bairros de Itaúna e região.
+              </p>
+            </div>
+            {!isLoading && (
+              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap pt-1">
+                {totalCount} {totalCount === 1 ? 'imóvel' : 'imóveis'}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 mb-6">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-5 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-2.5">
             <select value={type} onChange={e => { setType(e.target.value); setPage(0); }} className={selectClass} aria-label="Tipo">
               <option value="">Todos os tipos</option>
@@ -116,6 +145,30 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
           )}
         </div>
 
+        {/* Active chips */}
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-6">
+            <span className="text-xs text-muted-foreground mr-1">Filtros:</span>
+            {activeChips.map((chip, i) => (
+              <button
+                key={i}
+                onClick={chip.clear}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary text-foreground text-xs hover:bg-secondary/70 transition-colors"
+                aria-label={`Remover filtro ${chip.label}`}
+              >
+                {chip.label}
+                <X className="h-3 w-3" />
+              </button>
+            ))}
+            <button
+              onClick={resetFilters}
+              className="text-xs text-primary hover:underline ml-1"
+            >
+              Limpar todos
+            </button>
+          </div>
+        )}
+
         {/* Results */}
         {isError && (
           <div className="text-center py-20">
@@ -145,7 +198,7 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mb-12">
+              <div className="flex items-center justify-center gap-2 mb-8">
                 <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -157,15 +210,48 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
                 </Button>
               </div>
             )}
+
+            {/* Intermediate CTA */}
+            <div className="bg-secondary/40 border border-border rounded-lg p-5 sm:p-6 text-center mb-12">
+              <h2 className="font-sans font-semibold text-foreground text-base sm:text-lg mb-1">
+                Não encontrou o que procurava?
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                Cadastramos seu interesse e avisamos quando entrar um imóvel com o seu perfil em Itaúna.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                <a
+                  href={buildWhatsAppLink(intent)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-[#20BD5A] transition-colors w-full sm:w-auto"
+                >
+                  <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
+                </a>
+                <Link to="/contato" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full">Cadastrar interesse</Button>
+                </Link>
+              </div>
+            </div>
           </>
         )}
 
         {!isLoading && !isError && results.length === 0 && (
-          <div className="text-center py-20">
+          <div className="text-center py-16">
             <Search className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-sans text-base font-semibold text-foreground mb-1">Nenhum imóvel encontrado</h3>
-            <p className="text-muted-foreground text-sm mb-4">Tente ajustar os filtros para encontrar mais resultados.</p>
-            <Button variant="outline" size="sm" onClick={resetFilters}>Limpar filtros</Button>
+            <h2 className="font-sans text-base font-semibold text-foreground mb-1">Nenhum imóvel encontrado</h2>
+            <p className="text-muted-foreground text-sm mb-4">Tente ajustar os filtros ou fale com a gente — temos imóveis fora do site também.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              <Button variant="outline" size="sm" onClick={resetFilters}>Limpar filtros</Button>
+              <a
+                href={buildWhatsAppLink(intent)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
+              </a>
+            </div>
           </div>
         )}
       </div>
