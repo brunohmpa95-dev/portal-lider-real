@@ -25,9 +25,9 @@ import { FormattedDescription } from '@/lib/format-description';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
-  <div className="flex flex-col items-center justify-center bg-secondary/80 rounded-lg py-3 px-2 min-w-0">
-    <Icon className="h-4 w-4 text-primary mb-1" />
-    <p className="font-semibold text-foreground text-sm leading-none">{value}</p>
+  <div className="flex flex-col items-center justify-center text-center bg-secondary/80 rounded-lg py-3 px-2 min-w-0 break-words">
+    <Icon className="h-4 w-4 text-primary mb-1 shrink-0" />
+    <p className="font-semibold text-foreground text-sm leading-tight break-words max-w-full">{value}</p>
     <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
   </div>
 );
@@ -154,7 +154,7 @@ const PropertyDetail = () => {
         })}</script>
       </Helmet>
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 w-full max-w-full overflow-x-hidden pb-24 md:pb-12">
         <Breadcrumbs items={[
           { label: property.purpose === 'sale' ? 'Comprar' : 'Alugar', path: property.purpose === 'sale' ? '/comprar' : '/alugar' },
           { label: property.title },
@@ -164,7 +164,7 @@ const PropertyDetail = () => {
           {/* ─── Main column ─── */}
           <div className="lg:col-span-2">
             {/* Gallery */}
-            <div className="relative rounded-lg overflow-hidden mb-3 aspect-[16/10]">
+            <div className="relative rounded-lg overflow-hidden mb-3 aspect-[4/3] sm:aspect-[16/10] w-full">
               {property.images.length > 0 ? (
                 <img
                   src={property.images[imgIdx]}
@@ -233,7 +233,7 @@ const PropertyDetail = () => {
             </div>
 
             {/* ─── Attributes grid ─── */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6">
               {property.bedrooms > 0 && <AttrCard icon={Bed} value={property.bedrooms} label="Quartos" />}
               {property.suites > 0 && <AttrCard icon={Bed} value={property.suites} label="Suítes" />}
               {property.bathrooms > 0 && <AttrCard icon={Bath} value={property.bathrooms} label="Banheiros" />}
