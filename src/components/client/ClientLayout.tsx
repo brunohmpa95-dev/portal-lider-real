@@ -63,18 +63,18 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
     <Layout>
       <PageHead title={title} description={description || 'Acesse a Área do Cliente da Líder Imóveis.'} />
       <div className="min-h-[80vh] bg-surface-sunken pb-20 md:pb-0">
-        {/* MOBILE: compact account header (não sticky para não conflitar com Header global) */}
+        {/* MOBILE: header de conta enxuto (apenas saudação + menu) */}
         <div className="md:hidden bg-card border-b border-border">
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 px-4 py-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
                 {initial}
               </div>
               <div className="min-w-0">
+                <p className="text-[11px] text-muted-foreground leading-tight">Olá,</p>
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">
                   {profile?.full_name?.split(' ')[0] || 'Cliente'}
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate leading-tight">{user?.email}</p>
               </div>
             </div>
             <DropdownMenu>
