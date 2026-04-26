@@ -160,9 +160,9 @@ const PropertyDetail = () => {
           { label: property.title },
         ]} />
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16 w-full min-w-0">
           {/* ─── Main column ─── */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0 w-full">
             {/* Gallery */}
             <div className="relative rounded-lg overflow-hidden mb-3 aspect-[4/3] sm:aspect-[16/10] w-full">
               {property.images.length > 0 ? (
