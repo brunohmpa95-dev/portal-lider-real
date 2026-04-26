@@ -246,7 +246,53 @@ export default function PropertyForm() {
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">Detalhes</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-1.5"><Label>Descrição</Label><Textarea value={form.description} onChange={(e) => set('description', e.target.value)} rows={4} /></div>
+            <div className="space-y-1.5">
+              <Label>Descrição</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                rows={6}
+                placeholder={'Ex: Apartamento à venda | Belvedere - 3 quartos - 1 suíte - Sala ampla - 2 vagas'}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Use traços (` - `) entre itens para virar lista. Frases curtas com hífen são preservadas.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Estilo do cabeçalho da descrição</Label>
+                <Select
+                  value={form.description_heading_style}
+                  onValueChange={(v) => set('description_heading_style', v as HeadingStyle)}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="soft">Destaque leve (negrito)</SelectItem>
+                    <SelectItem value="h3">Título (H3)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  Como a primeira linha (antes do primeiro " - ") será exibida no site.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Pré-visualização da descrição</Label>
+              <div className="rounded-md border bg-muted/30 p-4 min-h-[80px]">
+                {form.description.trim() ? (
+                  <FormattedDescription
+                    text={form.description}
+                    headingStyle={form.description_heading_style}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Digite a descrição acima para ver a pré-visualização.
+                  </p>
+                )}
+              </div>
+            </div>
             <div className="space-y-1.5"><Label>Características (separadas por vírgula)</Label><Input value={form.features} onChange={(e) => set('features', e.target.value)} placeholder="Piscina, Churrasqueira, Área de lazer" /></div>
             <div className="space-y-1.5"><Label>Notas Internas</Label><Textarea value={form.internal_notes} onChange={(e) => set('internal_notes', e.target.value)} rows={2} placeholder="Visível apenas para a equipe" /></div>
             <div className="flex flex-wrap gap-6 pt-2">
