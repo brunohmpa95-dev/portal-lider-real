@@ -105,6 +105,7 @@ export default function PropertyForm() {
       description: form.description.trim() || null,
       internal_notes: form.internal_notes.trim() || null,
       features: form.features ? form.features.split(',').map((f) => f.trim()).filter(Boolean) : [],
+      description_heading_style: form.description_heading_style,
       images: form.images,
       is_featured: form.is_featured,
       is_super_featured: form.is_super_featured,
