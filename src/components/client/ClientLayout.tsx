@@ -171,7 +171,7 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           aria-label="Navegação principal do cliente"
         >
-          <div className="grid grid-cols-6">
+          <div className="grid grid-cols-5">
             {primaryItems.map(item => {
               const isActive = location.pathname === item.path;
               return (
@@ -179,13 +179,13 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    'flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] text-[11px] font-medium transition-colors',
                     isActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span className="leading-none truncate max-w-full px-0.5">{item.shortLabel}</span>
+                  <item.icon className="h-[22px] w-[22px]" />
+                  <span className="leading-none truncate max-w-full px-0.5">{item.label}</span>
                 </Link>
               );
             })}
