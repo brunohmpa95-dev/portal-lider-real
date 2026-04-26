@@ -90,7 +90,7 @@ const ClientSupport = () => {
 
   return (
     <ClientLayout title="Suporte" description="Solicite suporte ou acompanhe suas solicitações.">
-      <h1 className="text-xl font-sans font-bold text-foreground mb-1">Suporte</h1>
+      <h1 className="text-lg sm:text-xl font-sans font-bold text-foreground mb-1">Suporte</h1>
       <p className="text-muted-foreground text-sm mb-6">Abra uma solicitação ou acompanhe o andamento.</p>
 
       <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">

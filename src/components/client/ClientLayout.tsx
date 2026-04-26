@@ -1,6 +1,16 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileText, Headphones, DollarSign, Home, LayoutDashboard, LogOut, Shield, MoreVertical } from 'lucide-react';
+import {
+  FileText,
+  Headphones,
+  DollarSign,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Shield,
+  MoreVertical,
+  User,
+} from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import { Button } from '@/components/ui/button';
@@ -8,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -15,14 +26,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS } from '@/lib/auth-types';
 import { cn } from '@/lib/utils';
 
-const menuItems = [
+// Primary nav (shown in mobile bottom bar). Imóveis foi movido para "Mais" para
+// caber confortavelmente em telas a partir de 320px (5 itens × ~64px).
+const primaryItems = [
   { icon: LayoutDashboard, label: 'Painel', shortLabel: 'Painel', path: '/cliente' },
   { icon: FileText, label: 'Contratos', shortLabel: 'Contratos', path: '/cliente/contratos' },
-  { icon: FileText, label: 'Documentos', shortLabel: 'Docs', path: '/cliente/documentos' },
   { icon: DollarSign, label: 'Financeiro', shortLabel: 'Finanças', path: '/cliente/financeiro' },
+  { icon: FileText, label: 'Documentos', shortLabel: 'Docs', path: '/cliente/documentos' },
   { icon: Headphones, label: 'Atendimento', shortLabel: 'Suporte', path: '/cliente/atendimento' },
-  { icon: Home, label: 'Imóveis', shortLabel: 'Imóveis', path: '/cliente/imoveis' },
 ];
+const secondaryItems = [
+  { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
+];
+const allItems = [...primaryItems, ...secondaryItems];
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -34,15 +50,16 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
   const { user, profile, roles, signOut, signOutAllSessions } = useAuth();
   const location = useLocation();
   const initial = (profile?.full_name || user?.email || 'C').charAt(0).toUpperCase();
+  const isMoreActive = secondaryItems.some(i => location.pathname === i.path);
 
   return (
     <Layout>
       <PageHead title={title} description={description || 'Acesse a Área do Cliente da Líder Imóveis.'} />
-      <div className="min-h-[80vh] bg-surface-sunken">
-        {/* MOBILE: sticky compact header */}
-        <div className="md:hidden sticky top-0 z-30 bg-card/95 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between px-3 py-2.5">
-            <div className="flex items-center gap-2.5 min-w-0">
+      <div className="min-h-[80vh] bg-surface-sunken pb-20 md:pb-0">
+        {/* MOBILE: compact account header (não sticky para não conflitar com Header global) */}
+        <div className="md:hidden bg-card border-b border-border">
+          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
                 {initial}
               </div>
@@ -59,20 +76,29 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuContent align="end" className="w-56">
                 {roles.length > 0 && (
                   <>
-                    <div className="px-2 py-1.5 text-[11px] text-muted-foreground flex items-center gap-1.5">
+                    <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 py-1.5">
                       <Shield className="h-3 w-3 text-primary" />
                       {roles.map(r => ROLE_LABELS[r]).join(', ')}
-                    </div>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                   </>
                 )}
+                <DropdownMenuItem asChild>
+                  <Link to="/cliente/perfil" className="gap-2 cursor-pointer">
+                    <User className="h-4 w-4" /> Meu perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut()} className="gap-2">
                   <LogOut className="h-4 w-4" /> Sair
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => signOutAllSessions()} className="gap-2 text-muted-foreground">
+                <DropdownMenuItem
+                  onClick={() => signOutAllSessions()}
+                  className="gap-2 text-muted-foreground text-xs"
+                >
                   <LogOut className="h-4 w-4" /> Sair de todas as sessões
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -100,7 +126,7 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
               </div>
 
               <nav className="bg-card border border-border rounded-lg overflow-hidden">
-                {menuItems.map(item => {
+                {allItems.map(item => {
                   const isActive = location.pathname === item.path;
                   return (
                     <Link
@@ -131,37 +157,62 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 min-w-0 pb-24 md:pb-0">
-              {children}
-            </main>
+            <main className="flex-1 min-w-0">{children}</main>
           </div>
         </div>
 
-        {/* MOBILE: bottom navigation */}
+        {/* MOBILE: bottom navigation (5 itens primários + Mais) */}
         <nav
-          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border"
+          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur border-t border-border shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.06)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          aria-label="Navegação principal do cliente"
         >
           <div className="grid grid-cols-6">
-            {menuItems.map(item => {
+            {primaryItems.map(item => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] text-[10px] font-medium transition-colors',
-                    isActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground active:bg-accent/40'
+                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
-                  <span className="leading-none truncate max-w-full px-1">{item.shortLabel}</span>
+                  <item.icon className="h-5 w-5" />
+                  <span className="leading-none truncate max-w-full px-0.5">{item.shortLabel}</span>
                 </Link>
               );
             })}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    isMoreActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
+                  )}
+                  aria-label="Mais opções"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                  <span className="leading-none">Mais</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="top" className="w-48 mb-1">
+                {secondaryItems.map(item => (
+                  <DropdownMenuItem key={item.path} asChild>
+                    <Link to={item.path} className="gap-2 cursor-pointer">
+                      <item.icon className="h-4 w-4" /> {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem asChild>
+                  <Link to="/cliente/perfil" className="gap-2 cursor-pointer">
+                    <User className="h-4 w-4" /> Meu perfil
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
       </div>

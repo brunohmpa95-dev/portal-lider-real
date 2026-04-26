@@ -123,7 +123,7 @@ const ClientDocuments = () => {
 
   return (
     <ClientLayout title="Documentos" description="Acesse documentos e formulários da Líder Imóveis.">
-      <h1 className="text-xl font-sans font-bold text-foreground mb-1">Documentos</h1>
+      <h1 className="text-lg sm:text-xl font-sans font-bold text-foreground mb-1">Documentos</h1>
       <p className="text-muted-foreground text-sm mb-6">Acesse documentos, formulários e modelos úteis.</p>
 
       {/* My documents from the system */}
