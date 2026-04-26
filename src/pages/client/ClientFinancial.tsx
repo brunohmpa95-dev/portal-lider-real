@@ -69,24 +69,24 @@ const ClientFinancial = () => {
       <p className="text-muted-foreground text-sm mb-6">Acompanhe seus pagamentos e documentos financeiros.</p>
 
       <div className="space-y-4">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-lg p-5 sm:p-6">
           <div className="flex items-start gap-4">
             <DollarSign className="h-8 w-8 text-primary shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground mb-1">Segunda via de boleto</p>
               <p className="text-sm text-muted-foreground mb-3">Selecione o mês e ano para buscar seus boletos.</p>
-              <Button size="sm" onClick={() => { setBoletoResult(null); setBoletoModal(true); }}>Buscar boleto</Button>
+              <Button size="sm" onClick={() => { setBoletoResult(null); setBoletoModal(true); }} className="w-full sm:w-auto">Buscar boleto</Button>
             </div>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-lg p-5 sm:p-6">
           <div className="flex items-start gap-4">
             <FileText className="h-8 w-8 text-primary shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground mb-1">Declarações e recibos</p>
               <p className="text-sm text-muted-foreground mb-3">Solicite declaração de quitação, recibos de pagamento e outros documentos financeiros.</p>
-              <Button size="sm" variant="outline" onClick={() => setDocModal(true)}>Solicitar</Button>
+              <Button size="sm" variant="outline" onClick={() => setDocModal(true)} className="w-full sm:w-auto">Solicitar</Button>
             </div>
           </div>
         </div>
