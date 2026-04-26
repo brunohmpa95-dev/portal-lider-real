@@ -193,12 +193,12 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    'flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] text-[11px] font-medium transition-colors',
                     isMoreActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
                   )}
                   aria-label="Mais opções"
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="h-[22px] w-[22px]" />
                   <span className="leading-none">Mais</span>
                 </button>
               </DropdownMenuTrigger>
