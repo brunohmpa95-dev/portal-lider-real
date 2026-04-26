@@ -45,7 +45,7 @@ export default function ClientContracts() {
         <EmptyState icon={FileText} title="Nenhum contrato encontrado" description="Seus contratos aparecerão aqui quando forem cadastrados." />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
             <KPICard title="Ativos" value={active.length} icon={FileText} />
             <KPICard title="Total" value={contracts.length} icon={FileText} />
           </div>
