@@ -943,6 +943,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          description_heading_style: string
           features: string[] | null
           id: string
           images: string[] | null
@@ -980,6 +981,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_heading_style?: string
           features?: string[] | null
           id?: string
           images?: string[] | null
@@ -1017,6 +1019,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_heading_style?: string
           features?: string[] | null
           id?: string
           images?: string[] | null
