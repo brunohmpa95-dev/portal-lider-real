@@ -132,11 +132,11 @@ const ClientSupport = () => {
         <Headphones className="h-10 w-10 text-primary mx-auto mb-3" />
         <p className="text-foreground font-semibold mb-1">Precisa de ajuda?</p>
         <p className="text-sm text-muted-foreground mb-4">Entre em contato com nossa equipe de atendimento.</p>
-        <Button onClick={() => setOpen(true)}>Abrir solicitação</Button>
+        <Button onClick={() => setOpen(true)} className="w-full sm:w-auto">Abrir solicitação</Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nova solicitação</DialogTitle>
             <DialogDescription>Preencha os dados abaixo para abrir uma solicitação de suporte.</DialogDescription>
