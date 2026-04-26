@@ -82,7 +82,7 @@ const ClientRental = () => {
 
   return (
     <ClientLayout title="Locação" description="Informações e atendimento sobre locação de imóveis.">
-      <h1 className="text-xl font-sans font-bold text-foreground mb-1">Locação</h1>
+      <h1 className="text-lg sm:text-xl font-sans font-bold text-foreground mb-1">Locação</h1>
       <p className="text-muted-foreground text-sm mb-6">Informações e atendimento sobre seu imóvel alugado.</p>
 
       <div className="space-y-4">

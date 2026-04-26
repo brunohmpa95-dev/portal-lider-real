@@ -65,7 +65,7 @@ const ClientFinancial = () => {
 
   return (
     <ClientLayout title="Financeiro" description="Acompanhe pagamentos e informações financeiras.">
-      <h1 className="text-xl font-sans font-bold text-foreground mb-1">Financeiro</h1>
+      <h1 className="text-lg sm:text-xl font-sans font-bold text-foreground mb-1">Financeiro</h1>
       <p className="text-muted-foreground text-sm mb-6">Acompanhe seus pagamentos e documentos financeiros.</p>
 
       <div className="space-y-4">
