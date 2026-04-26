@@ -26,19 +26,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS } from '@/lib/auth-types';
 import { cn } from '@/lib/utils';
 
-// Primary nav (shown in mobile bottom bar). Imóveis foi movido para "Mais" para
-// caber confortavelmente em telas a partir de 320px (5 itens × ~64px).
+// Bottom nav: 4 essenciais + "Mais". Tudo continua acessível pela sidebar no desktop.
 const primaryItems = [
-  { icon: LayoutDashboard, label: 'Painel', shortLabel: 'Painel', path: '/cliente' },
-  { icon: FileText, label: 'Contratos', shortLabel: 'Contratos', path: '/cliente/contratos' },
-  { icon: DollarSign, label: 'Financeiro', shortLabel: 'Finanças', path: '/cliente/financeiro' },
-  { icon: FileText, label: 'Documentos', shortLabel: 'Docs', path: '/cliente/documentos' },
-  { icon: Headphones, label: 'Atendimento', shortLabel: 'Suporte', path: '/cliente/atendimento' },
+  { icon: LayoutDashboard, label: 'Início', path: '/cliente' },
+  { icon: FileText, label: 'Contratos', path: '/cliente/contratos' },
+  { icon: DollarSign, label: 'Financeiro', path: '/cliente/financeiro' },
+  { icon: Headphones, label: 'Suporte', path: '/cliente/atendimento' },
 ];
 const secondaryItems = [
+  { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
   { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
 ];
-const allItems = [...primaryItems, ...secondaryItems];
+const allItems = [
+  ...primaryItems.slice(0, 1),
+  { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
+  ...primaryItems.slice(1),
+  { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
+];
 
 interface ClientLayoutProps {
   children: ReactNode;
