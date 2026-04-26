@@ -1,44 +1,38 @@
+## Plano: Excluir múltiplos imóveis de uma vez
 
-O usuário pediu para verificar todo o site no formato mobile. Isso é teste/verificação no preview — vou usar o browser em viewport mobile (375x812, iPhone) para inspecionar as páginas principais públicas e internas, capturar screenshots e reportar problemas reais de layout, overflow, toques pequenos demais, navegação quebrada etc.
+Adicionar seleção múltipla na listagem `/admin/imoveis` (`src/pages/admin/PropertiesList.tsx`) com ação em lote para excluir.
 
-## Escopo da verificação mobile (375x812)
+### Mudanças em `PropertiesList.tsx`
 
-**Site público:**
-1. `/` — Home (hero, busca, vitrines, simulador, grid de bairros, FAQ, footer)
-2. `/comprar` — listagem com filtros, chips, paginação
-3. `/alugar` — idem
-4. `/imovel/:id` — detalhe (galeria, lightbox, formulário, WhatsApp)
-5. `/financiamento` — simulador, passos, docs, FAQ
-6. `/anuncie` — formulário com select de bairro
-7. `/sobre`, `/contato`, `/ouvidoria`, `/trabalhe-conosco`, `/privacidade` — varredura rápida
-8. Header mobile (menu hambúrguer) e Footer
+1. **Estado novo:** `selectedIds: Set<string>` para controlar imóveis marcados.
 
-**Áreas internas (se acessível com sessão atual):**
-9. `/admin` Dashboard (KPIs, funil, pendências)
-10. `/admin/leads` (Kanban — crítico em mobile)
-11. `/admin/tarefas`
-12. `/admin/imoveis`, `/admin/bairros`
+2. **Coluna de checkbox na tabela:**
+   - Checkbox no `TableHead` que seleciona/desseleciona todos os imóveis filtrados visíveis (com estado indeterminate quando seleção é parcial).
+   - Checkbox em cada linha (`TableRow`) usando `@/components/ui/checkbox`.
+   - Visível apenas para quem tem permissão de excluir (`isAdmin` — administrativo/superadmin), seguindo a regra atual do botão lixeira.
 
-## O que vou avaliar em cada tela
+3. **Barra de ações em lote** (aparece acima da tabela quando há seleção):
+   - Texto: "X imóveis selecionados"
+   - Botão "Limpar seleção"
+   - Botão "Excluir selecionados" (variant destructive) → abre `AlertDialog` de confirmação ("Excluir N imóveis? Esta ação não pode ser desfeita.")
 
-- Overflow horizontal (scroll lateral indevido)
-- Texto cortado, sobreposto ou ilegível
-- Botões/áreas de toque < 40px
-- Imagens estouradas ou desproporcionais
-- Modais/drawers que ficam fora da viewport
-- Kanban no mobile (geralmente problemático — confirmar se há fallback)
-- Tabelas que não viram cards/lista
-- Header sticky e menu hambúrguer
-- Formulários (selects, inputs, datepickers)
-- WhatsApp button fixo não cobrindo conteúdo
+4. **Função `deleteSelected()`:**
+   - `supabase.from('properties').delete().in('id', Array.from(selectedIds))`
+   - Em sucesso: toast com contagem, remove do estado local e limpa `selectedIds`.
+   - Em erro: toast destructive com a mensagem do Postgres.
 
-## Entrega
+5. **Substituir `confirm()` nativo** atual da exclusão individual pelo mesmo `AlertDialog` (consistência visual). Mantém o botão lixeira por linha.
 
-Relatório objetivo agrupado por:
-- ✅ OK
-- ⚠️ Ajuste recomendado (com print)
-- ❌ Bug real (com print + correção sugerida)
+6. **Limpar seleção** automaticamente quando filtros mudam, para evitar excluir item que o usuário não está mais vendo.
 
-Ao final, listo as correções priorizadas. Se encontrar bugs durante a auditoria, paro e te aviso antes de seguir corrigindo (regra do modo browser).
+### Permissões e segurança
+- UI: checkboxes/botão de lote só renderizados para `isAdmin` (mesma regra do delete individual hoje).
+- Backend: a RLS `properties_admin_delete` já restringe `DELETE` a `is_admin(auth.uid())`. Nenhuma migração SQL necessária.
 
-Sem mudanças de código nesta etapa — só auditoria. Após o relatório você decide o que corrigir.
+### Fora de escopo (para confirmar depois, se quiser)
+- Outras ações em lote: pausar, publicar, mudar status, exportar CSV. Por ora só **excluir**, conforme pedido.
+- Seleção múltipla nas listas de leads, tarefas, contratos etc.
+- Lixeira / soft-delete (hoje exclusão é permanente — comportamento mantido).
+
+### Restrições respeitadas
+- Sem alterar RLS • sem mexer em outras telas • TS continua compilando • mobile mantém layout (checkbox cabe na coluna existente da imagem).
