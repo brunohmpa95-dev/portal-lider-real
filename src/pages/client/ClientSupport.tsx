@@ -93,16 +93,16 @@ const ClientSupport = () => {
       <h1 className="text-xl font-sans font-bold text-foreground mb-1">Suporte</h1>
       <p className="text-muted-foreground text-sm mb-6">Abra uma solicitação ou acompanhe o andamento.</p>
 
-      <div className="grid sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
         {[
           { icon: MessageSquare, label: 'Abertas', value: counts.open, color: 'text-blue-600' },
           { icon: Clock, label: 'Em andamento', value: counts.in_progress, color: 'text-amber-600' },
           { icon: CheckCircle, label: 'Resolvidas', value: counts.resolved, color: 'text-emerald-600' },
         ].map(s => (
-          <div key={s.label} className="bg-card border border-border rounded-lg p-4 text-center">
-            <s.icon className={`h-6 w-6 mx-auto mb-2 ${s.color}`} />
-            <p className="text-lg font-bold text-foreground">{fetching ? '—' : s.value}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+          <div key={s.label} className="bg-card border border-border rounded-lg p-3 sm:p-4 text-center">
+            <s.icon className={`h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-1.5 sm:mb-2 ${s.color}`} />
+            <p className="text-base sm:text-lg font-bold text-foreground">{fetching ? '—' : s.value}</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight">{s.label}</p>
           </div>
         ))}
       </div>
@@ -132,11 +132,11 @@ const ClientSupport = () => {
         <Headphones className="h-10 w-10 text-primary mx-auto mb-3" />
         <p className="text-foreground font-semibold mb-1">Precisa de ajuda?</p>
         <p className="text-sm text-muted-foreground mb-4">Entre em contato com nossa equipe de atendimento.</p>
-        <Button onClick={() => setOpen(true)}>Abrir solicitação</Button>
+        <Button onClick={() => setOpen(true)} className="w-full sm:w-auto">Abrir solicitação</Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nova solicitação</DialogTitle>
             <DialogDescription>Preencha os dados abaixo para abrir uma solicitação de suporte.</DialogDescription>

@@ -28,18 +28,18 @@ export default function ClientProfile() {
     <ClientLayout title="Meu Perfil" description="Seus dados cadastrais na Líder Imóveis.">
       <InternalPageHeader title="Meu Perfil" subtitle="Dados cadastrais da sua conta" />
 
-      <div className="bg-card border border-border rounded-lg p-5 max-w-lg">
+      <div className="bg-card border border-border rounded-lg p-4 sm:p-5 max-w-lg">
         <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
-          <Avatar className="h-14 w-14">
+          <Avatar className="h-14 w-14 shrink-0">
             <AvatarFallback className="bg-primary/10 text-primary text-lg">
               {(profile?.full_name || 'C').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-semibold text-foreground">{profile?.full_name || 'Cliente'}</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
+          <div className="min-w-0">
+            <p className="font-semibold text-foreground truncate">{profile?.full_name || 'Cliente'}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             {roles.length > 0 && (
-              <p className="text-xs text-primary mt-0.5">{roles.map(r => ROLE_LABELS[r]).join(', ')}</p>
+              <p className="text-xs text-primary mt-0.5 truncate">{roles.map(r => ROLE_LABELS[r]).join(', ')}</p>
             )}
           </div>
         </div>
@@ -47,17 +47,17 @@ export default function ClientProfile() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-foreground mb-1">Nome completo</label>
-            <Input value={profile?.full_name || ''} disabled className="h-10" />
+            <Input value={profile?.full_name || ''} disabled className="h-11 text-base sm:text-sm" />
           </div>
           <div>
             <label className="block text-xs font-medium text-foreground mb-1">E-mail</label>
-            <Input value={user?.email || ''} disabled className="h-10" />
+            <Input value={user?.email || ''} disabled className="h-11 text-base sm:text-sm" />
           </div>
           <div>
             <label className="block text-xs font-medium text-foreground mb-1">Telefone</label>
-            <div className="flex gap-2">
-              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="(37) 99999-0000" className="h-10" />
-              <Button size="sm" onClick={handleSave} disabled={saving}>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="(37) 99999-0000" className="h-11 text-base sm:text-sm" />
+              <Button onClick={handleSave} disabled={saving} className="h-11 sm:h-10 w-full sm:w-auto">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar'}
               </Button>
             </div>

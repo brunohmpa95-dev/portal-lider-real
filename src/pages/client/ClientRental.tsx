@@ -103,7 +103,7 @@ const ClientRental = () => {
 
       {/* Manutenção Modal */}
       <Dialog open={modal === 'manutencao'} onOpenChange={o => !o && setModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Solicitar manutenção</DialogTitle>
             <DialogDescription>Descreva o problema para agendar um reparo.</DialogDescription>
@@ -140,7 +140,7 @@ const ClientRental = () => {
 
       {/* Vistoria Modal */}
       <Dialog open={modal === 'vistoria'} onOpenChange={o => !o && setModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Agendar vistoria</DialogTitle>
             <DialogDescription>Selecione o tipo e a data preferencial.</DialogDescription>
@@ -172,7 +172,7 @@ const ClientRental = () => {
 
       {/* Atendimento Modal */}
       <Dialog open={modal === 'atendimento'} onOpenChange={o => !o && setModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Solicitar atendimento</DialogTitle>
             <DialogDescription>Entre em contato com o setor de locação.</DialogDescription>

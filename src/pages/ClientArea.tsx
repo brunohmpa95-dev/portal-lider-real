@@ -5,7 +5,7 @@ import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { COMPANY } from '@/data/constants';
+
 import { ROLE_LABELS } from '@/lib/auth-types';
 
 const ClientArea = () => {
@@ -52,22 +52,6 @@ const ClientArea = () => {
               </div>
             </div>
           </div>
-
-          {/* External system link */}
-          {COMPANY.systemUrl && (
-            <a
-              href={COMPANY.systemUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6 group hover:bg-primary/10 transition-colors"
-            >
-              <div>
-                <p className="font-sans font-semibold text-foreground text-sm">Acessar sistema completo</p>
-                <p className="text-xs text-muted-foreground">Painel com seus contratos, dados e solicitações.</p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-          )}
 
           {/* Actions */}
           <div className="grid sm:grid-cols-2 gap-3">

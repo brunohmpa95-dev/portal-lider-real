@@ -42,9 +42,9 @@ const ClientDashboard = () => {
       <h1 className="text-lg sm:text-xl font-sans font-bold text-foreground mb-1">
         Olá, {profile?.full_name?.split(' ')[0] || 'Cliente'}
       </h1>
-      <p className="text-muted-foreground text-sm mb-6">O que você precisa hoje?</p>
+      <p className="text-muted-foreground text-sm mb-5">O que você precisa hoje?</p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
         {loading ? (
           <div className="col-span-full flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : (
@@ -56,12 +56,12 @@ const ClientDashboard = () => {
         )}
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {shortcuts.map(s => (
           <Link
             key={s.path}
             to={s.path}
-            className="flex items-start gap-3 bg-card border border-border rounded-lg p-4 hover:border-primary/30 hover:shadow-sm transition-all group"
+            className="flex items-start gap-3 bg-card border border-border rounded-lg p-4 min-h-[64px] hover:border-primary/30 hover:shadow-sm active:bg-accent/40 transition-all group"
           >
             <s.icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ const ClientDashboard = () => {
         ))}
       </div>
 
-      <div className="mt-6 bg-muted/50 border border-border rounded-lg p-4 text-center">
+      <div className="mt-5 bg-muted/50 border border-border rounded-lg p-4 text-center">
         <p className="text-xs text-muted-foreground">
           Para dúvidas urgentes, entre em contato pelo WhatsApp ou telefone da Líder Imóveis.
         </p>
