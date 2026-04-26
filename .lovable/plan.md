@@ -1,42 +1,61 @@
 ## Problema
 
-Hoje a descrição do imóvel é salva no banco como texto livre (`properties.description`), mas renderizada em `src/pages/PropertyDetail.tsx` (linha 259) dentro de um `<p>` simples. O HTML colapsa quebras de linha e múltiplos espaços, então tudo vira um parágrafo único — mesmo que o admin tenha digitado em linhas separadas com `-` no início.
+A descrição vem do cadastro como **um parágrafo corrido**: `Apartamento à venda | Belvedere - 3 quartos - 1 suíte ampla com closet - Sala espaçosa - ...`. O `FormattedDescription` atual só reconhece traços no **início de linha**, então renderiza tudo como um bloco de texto sem estrutura visual.
 
-## Objetivo
+## Solução
 
-A descrição deve aparecer no site público **exatamente no formato em que foi cadastrada**: se o corretor digitou uma linha por item começando com `-`, deve aparecer assim. Se digitou parágrafos separados por linha em branco, devem aparecer separados.
+Atualizar `src/lib/format-description.tsx` para também tratar **traços inline** (` - `, ` – `, ` • `) como separadores de itens, e destacar o cabeçalho (parte antes do primeiro separador).
 
-## O que vai mudar
+### Lógica de parsing nova
 
-### 1. Renderização da descrição em `PropertyDetail.tsx`
+Para cada parágrafo (bloco entre linhas em branco) que **não** já esteja em formato de lista por linhas:
 
-Substituir o `<p>` único por um bloco que:
-- Preserva quebras de linha (cada linha do cadastro vira uma linha visual).
-- Detecta automaticamente linhas que começam com `-`, `–`, `•` ou `*` e renderiza como uma lista visual com bullets/traços alinhados.
-- Mantém parágrafos separados quando há linhas em branco entre blocos de texto.
-- Sem nenhum HTML do usuário sendo executado (renderização segura — só texto).
+1. Dividir o texto pelo padrão ` [-–•] ` (espaço-traço-espaço, para não quebrar palavras compostas tipo "pé-direito").
+2. Se resultar em **3+ partes**, tratar como cabeçalho + lista:
+   - **1ª parte** → renderizada como linha de destaque (`font-semibold text-foreground text-base`) acima da lista.
+   - **Demais partes** → itens de uma `<ul>` com traço, igual ao formato já existente.
+3. Se resultar em menos de 3 partes, manter como parágrafo normal (evita quebrar frases curtas que usem traço como pontuação).
+4. Limpar emojis decorativos repetidos no meio (📐 entre métricas) — opcional, mantenho como está se você preferir.
 
-Implementação: pequeno helper que faz `description.split('\n')` e monta um array de blocos (parágrafo ou lista) baseado no padrão das linhas. Renderiza `<ul>` para grupos consecutivos de linhas com marcador, `<p>` para o resto. Aplica `whitespace-pre-wrap` como fallback para preservar espaçamento dentro de cada linha.
+### Comportamento preservado
 
-### 2. Mesma renderização nos painéis internos (consistência)
+- Quem **já cadastra com Enter** entre os itens (formato linha-por-linha com `-` no começo) continua funcionando exatamente igual — o caminho antigo executa primeiro.
+- Texto sem traços continua como parágrafo simples.
+- Nenhum HTML é executado — só texto.
 
-Aplicar o mesmo helper onde a descrição do imóvel for exibida para usuários logados, se houver (ex.: detalhe de imóvel no admin/broker/cliente). Se o detalhe interno só usa `internal_notes`, fica de fora.
+### Exemplo de saída
 
-### 3. Cadastro permanece igual
+**Entrada (do banco):**
+```
+Apartamento à venda | Belvedere - 3 quartos - 1 suíte ampla com closet - Sala espaçosa - Cozinha com armários planejados - Banheiros com armários - Vista em 2 quartos - Prédio com elevador - 3 vagas de garagem 📐 Área total: 235,77m² 📐 Área útil: 129,00m² R$ 685.000,00
 
-O `<Textarea>` em `src/pages/admin/PropertyForm.tsx` já aceita quebras de linha — nenhuma mudança no formulário. Só preciso confirmar que o salvamento não está fazendo `trim` agressivo nas quebras (uma rápida olhada no `handleSubmit` mostrou que faz só `.trim()` nas pontas, o que é ok).
+Imóvel bem distribuído, com excelente padrão e pronto para morar.
+```
 
-## O que NÃO entra
-
-- Editor rich-text (negrito, itálico, links): não foi pedido e exigiria mudança bem maior.
-- Reformatar descrições antigas já salvas: vão se beneficiar automaticamente se já tiverem quebras de linha; se foram salvas como texto corrido, continuam corridas (nada a fazer sem reescrever manualmente).
-- Migração de banco: nenhuma — o campo `description` (text) já comporta tudo.
+**Renderizado:**
+- **Apartamento à venda | Belvedere** *(destaque, em negrito)*
+  - 3 quartos
+  - 1 suíte ampla com closet
+  - Sala espaçosa
+  - Cozinha com armários planejados
+  - Banheiros com armários
+  - Vista em 2 quartos
+  - Prédio com elevador
+  - 3 vagas de garagem 📐 Área total: 235,77m² 📐 Área útil: 129,00m² R$ 685.000,00
+- *(parágrafo normal)* Imóvel bem distribuído, com excelente padrão e pronto para morar.
 
 ## Arquivos afetados
 
-- `src/pages/PropertyDetail.tsx` — trocar o `<p>` único pelo novo render.
-- (Possivelmente) 1 novo arquivo `src/lib/format-description.tsx` ou similar com o helper, para reaproveitar.
+- `src/lib/format-description.tsx` — adicionar lógica de split inline + bloco de cabeçalho destacado.
+
+Nada mais muda: o `PropertyDetail.tsx` já consome o componente e qualquer outra tela que use `FormattedDescription` ganha a melhoria automaticamente.
+
+## O que NÃO entra
+
+- Reescrever as descrições antigas no banco (não precisa — o parser cuida em runtime).
+- Editor rich-text no admin.
+- Botão de pré-visualização no formulário (pode entrar depois se quiser).
 
 ## Risco
 
-Baixo. Mudança puramente visual em um componente, sem alteração de schema, RLS, rotas ou auth.
+Baixo. Mudança isolada num único arquivo de UI, sem schema, sem rotas, sem auth. O caso "frase com traço de pontuação" é mitigado pela regra de **mínimo 3 partes** para ativar o modo lista.
