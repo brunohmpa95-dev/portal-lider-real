@@ -5,7 +5,7 @@ import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { COMPANY } from '@/data/constants';
+
 import { ROLE_LABELS } from '@/lib/auth-types';
 
 const ClientArea = () => {
