@@ -1,6 +1,6 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileText, Headphones, DollarSign, Home, LayoutDashboard, LogOut, Shield, MoreVertical, User } from 'lucide-react';
+import { FileText, Headphones, DollarSign, Home, LayoutDashboard, LogOut, Shield, MoreVertical } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import PageHead from '@/components/shared/PageHead';
 import { Button } from '@/components/ui/button';
