@@ -157,7 +157,7 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
             </aside>
 
             {/* Main content */}
-            <main className="flex-1 min-w-0 pb-24 md:pb-0">{children}</main>
+            <main className="flex-1 min-w-0">{children}</main>
           </div>
         </div>
 
