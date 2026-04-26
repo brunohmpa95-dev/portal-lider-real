@@ -200,7 +200,7 @@ const ClientDocuments = () => {
 
       {/* Boleto Modal */}
       <Dialog open={boletoModal} onOpenChange={setBoletoModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Segunda via de boleto</DialogTitle>
             <DialogDescription>Selecione o mês e ano para buscar boletos.</DialogDescription>
@@ -255,7 +255,7 @@ const ClientDocuments = () => {
 
       {/* Document Request Modal */}
       <Dialog open={docModal} onOpenChange={setDocModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Solicitar documento</DialogTitle>
             <DialogDescription>Selecione o tipo de documento e o período.</DialogDescription>
