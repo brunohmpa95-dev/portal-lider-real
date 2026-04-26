@@ -65,6 +65,7 @@ export default function PropertyForm() {
         description: data.description || '',
         internal_notes: (data as any).internal_notes || '',
         features: (data.features || []).join(', '),
+        description_heading_style: ((data as any).description_heading_style as HeadingStyle) || 'soft',
         is_featured: data.is_featured,
         is_super_featured: data.is_super_featured,
         is_new: data.is_new,
