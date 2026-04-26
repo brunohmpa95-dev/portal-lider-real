@@ -278,10 +278,10 @@ const PropertyDetail = () => {
           </div>
 
           {/* ─── Sidebar ─── */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4">
+          <div className="lg:col-span-1 w-full min-w-0">
+            <div className="lg:sticky lg:top-24 space-y-4 w-full min-w-0">
               {/* Lead form */}
-              <div className="bg-card border border-border rounded-lg p-5">
+              <div className="bg-card border border-border rounded-lg p-5 w-full max-w-full">
                 <h2 className="font-sans font-semibold text-foreground text-sm mb-1">Fale com um especialista</h2>
                 <p className="text-[11px] text-muted-foreground mb-3">
                   {intent === 'buy'
@@ -295,10 +295,10 @@ const PropertyDetail = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-2.5">
-                    <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} className="h-10" />
-                    <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-10" />
-                    <Input name="phone" placeholder="Telefone / WhatsApp" maxLength={20} className="h-10" />
-                    <Textarea name="message" placeholder="Conte o que quer saber (opcional)" rows={2} maxLength={1000} className="resize-none" />
+                    <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} className="h-11 text-base sm:h-10 sm:text-sm" />
+                    <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-11 text-base sm:h-10 sm:text-sm" />
+                    <Input name="phone" placeholder="Telefone / WhatsApp" maxLength={20} className="h-11 text-base sm:h-10 sm:text-sm" />
+                    <Textarea name="message" placeholder="Conte o que quer saber (opcional)" rows={2} maxLength={1000} className="resize-none text-base sm:text-sm" />
                     <div className="flex items-start gap-2">
                       <Checkbox id="consent-lead" checked={consent} onCheckedChange={(v) => setConsent(!!v)} className="mt-0.5" />
                       <label htmlFor="consent-lead" className="text-[11px] text-muted-foreground leading-tight">
