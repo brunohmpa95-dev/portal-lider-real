@@ -55,7 +55,7 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
   return (
     <Layout>
       <PageHead title={title} description={description || 'Acesse a Área do Cliente da Líder Imóveis.'} />
-      <div className="min-h-[80vh] bg-surface-sunken">
+      <div className="min-h-[80vh] bg-surface-sunken pb-20 md:pb-0">
         {/* MOBILE: compact account header (não sticky para não conflitar com Header global) */}
         <div className="md:hidden bg-card border-b border-border">
           <div className="flex items-center justify-between gap-2 px-3 py-2.5">
