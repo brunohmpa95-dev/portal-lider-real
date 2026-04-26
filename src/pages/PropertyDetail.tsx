@@ -257,7 +257,10 @@ const PropertyDetail = () => {
             {property.description && (
               <div className="mb-6">
                 <h2 className="font-sans text-base font-semibold text-foreground mb-2">Descrição</h2>
-                <FormattedDescription text={property.description} />
+                <FormattedDescription
+                  text={property.description}
+                  headingStyle={(property as any).description_heading_style ?? 'soft'}
+                />
               </div>
             )}
 

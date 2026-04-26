@@ -1,61 +1,78 @@
-## Problema
+## Objetivo
 
-A descrição vem do cadastro como **um parágrafo corrido**: `Apartamento à venda | Belvedere - 3 quartos - 1 suíte ampla com closet - Sala espaçosa - ...`. O `FormattedDescription` atual só reconhece traços no **início de linha**, então renderiza tudo como um bloco de texto sem estrutura visual.
+Três melhorias relacionadas à descrição dos imóveis:
 
-## Solução
+1. **Pré-visualização ao vivo** no formulário do admin, idêntica ao que aparece no `PropertyDetail`.
+2. **Parser mais seguro** — não quebrar frases que usam hífen como pontuação ("pé-de-moleque", "bem-vindo", "10-15 minutos", etc.).
+3. **Opção de estilo do cabeçalho** — escolher por imóvel se o destaque vira `H3` (semântico, maior, com peso de subtítulo) ou apenas **destaque visual leve** (negrito sutil inline, sem virar título).
 
-Atualizar `src/lib/format-description.tsx` para também tratar **traços inline** (` - `, ` – `, ` • `) como separadores de itens, e destacar o cabeçalho (parte antes do primeiro separador).
+---
 
-### Lógica de parsing nova
+## 1. Pré-visualização no formulário (`src/pages/admin/PropertyForm.tsx`)
 
-Para cada parágrafo (bloco entre linhas em branco) que **não** já esteja em formato de lista por linhas:
+- Importar `FormattedDescription` de `@/lib/format-description`.
+- Logo abaixo do `<Textarea>` da descrição, adicionar um bloco colapsável **"Pré-visualização"**:
+  - Container com `border rounded-md p-4 bg-muted/30`.
+  - Mostra o texto digitado renderizado pelo mesmo componente do site público.
+  - Atualiza em tempo real (já é controlado por `form.description`).
+  - Se vazio: mostrar placeholder "Digite a descrição para ver a pré-visualização".
+- Não toca em mais nada do formulário.
 
-1. Dividir o texto pelo padrão ` [-–•] ` (espaço-traço-espaço, para não quebrar palavras compostas tipo "pé-direito").
-2. Se resultar em **3+ partes**, tratar como cabeçalho + lista:
-   - **1ª parte** → renderizada como linha de destaque (`font-semibold text-foreground text-base`) acima da lista.
-   - **Demais partes** → itens de uma `<ul>` com traço, igual ao formato já existente.
-3. Se resultar em menos de 3 partes, manter como parágrafo normal (evita quebrar frases curtas que usem traço como pontuação).
-4. Limpar emojis decorativos repetidos no meio (📐 entre métricas) — opcional, mantenho como está se você preferir.
+## 2. Parser mais seguro (`src/lib/format-description.tsx`)
 
-### Comportamento preservado
+Regras adicionais de segurança antes de ativar o modo "cabeçalho + lista":
 
-- Quem **já cadastra com Enter** entre os itens (formato linha-por-linha com `-` no começo) continua funcionando exatamente igual — o caminho antigo executa primeiro.
-- Texto sem traços continua como parágrafo simples.
-- Nenhum HTML é executado — só texto.
+- **Mínimo de partes**: subir o limiar atual de 3 para **4 partes** detectadas pelo separador inline (reduz falsos positivos em frases curtas).
+- **Tamanho mínimo dos itens**: cada parte resultante deve ter pelo menos **3 caracteres** após `trim()`. Se qualquer parte for menor, aborta o modo lista (provavelmente é hífen de pontuação tipo "A - B").
+- **Densidade**: a soma de caracteres dos itens (excluindo o cabeçalho) deve representar pelo menos **40% do parágrafo total**. Evita ativar lista em parágrafos longos com um único traço perdido no meio.
+- **Hífen colado** já está protegido pela regex `\s+[-–•]\s+` (exige espaço dos dois lados), mas vou reforçar com lookbehind/lookahead negativos para não casar quando vier antes de números pequenos colados (ex: "R$ 10-15 mil") — mantemos só ` - `, ` – `, ` • ` entre tokens alfanuméricos longos.
+- **Curto-circuito por listas explícitas**: se o parágrafo já contém qualquer linha que casa com `bulletRe` (`- item` no início), ignora o modo inline e usa só o caminho de bullets explícitos.
 
-### Exemplo de saída
+Resultado: descrições com pontuação ficam intactas; só ativa modo lista quando o padrão "Cabeçalho - item - item - item - item" é claro e consistente.
 
-**Entrada (do banco):**
-```
-Apartamento à venda | Belvedere - 3 quartos - 1 suíte ampla com closet - Sala espaçosa - Cozinha com armários planejados - Banheiros com armários - Vista em 2 quartos - Prédio com elevador - 3 vagas de garagem 📐 Área total: 235,77m² 📐 Área útil: 129,00m² R$ 685.000,00
+## 3. Opção de estilo do cabeçalho (H3 vs destaque leve)
 
-Imóvel bem distribuído, com excelente padrão e pronto para morar.
-```
+### Banco de dados
+- Migração: adicionar coluna `description_heading_style` na tabela `properties`:
+  - Tipo: `text` com `CHECK IN ('h3', 'soft')`.
+  - Default: `'soft'` (comportamento mais conservador, próximo do que já existe).
+  - Nullable: não.
+- Sem mudanças em RLS (a coluna herda as policies existentes).
 
-**Renderizado:**
-- **Apartamento à venda | Belvedere** *(destaque, em negrito)*
-  - 3 quartos
-  - 1 suíte ampla com closet
-  - Sala espaçosa
-  - Cozinha com armários planejados
-  - Banheiros com armários
-  - Vista em 2 quartos
-  - Prédio com elevador
-  - 3 vagas de garagem 📐 Área total: 235,77m² 📐 Área útil: 129,00m² R$ 685.000,00
-- *(parágrafo normal)* Imóvel bem distribuído, com excelente padrão e pronto para morar.
+### Admin (`PropertyForm.tsx`)
+- Adicionar dentro do card "Detalhes" um `<Select>` ou `<RadioGroup>` "Estilo do cabeçalho da descrição":
+  - **Destaque leve** (default) — negrito sutil, mesmo tamanho do corpo.
+  - **Título (H3)** — maior, com peso de subtítulo, semanticamente um `<h3>`.
+- Persiste em `description_heading_style` no payload.
+- A pré-visualização (item 1) usa o valor atual do select para refletir a escolha.
+
+### Componente (`src/lib/format-description.tsx`)
+- Aceitar nova prop `headingStyle?: 'h3' | 'soft'` (default `'soft'`).
+- No bloco `headed-list`:
+  - `'h3'` → renderiza `<h3 className="text-lg font-semibold text-foreground">`.
+  - `'soft'` → mantém o atual (`<p className="text-base font-semibold text-foreground">`), ou ainda mais leve: `<p className="font-medium text-foreground">`.
+
+### PropertyDetail (`src/pages/PropertyDetail.tsx`)
+- Passar `headingStyle={property.description_heading_style}` para `<FormattedDescription>`.
+
+### Tipos
+- `src/integrations/supabase/types.ts` é regenerado automaticamente após a migração — não editar à mão.
+
+---
 
 ## Arquivos afetados
 
-- `src/lib/format-description.tsx` — adicionar lógica de split inline + bloco de cabeçalho destacado.
-
-Nada mais muda: o `PropertyDetail.tsx` já consome o componente e qualquer outra tela que use `FormattedDescription` ganha a melhoria automaticamente.
+- `src/lib/format-description.tsx` — parser mais seguro + prop `headingStyle`.
+- `src/pages/admin/PropertyForm.tsx` — pré-visualização + select de estilo + persistência.
+- `src/pages/PropertyDetail.tsx` — repassar `headingStyle` ao componente.
+- **Nova migração** — coluna `description_heading_style` em `properties`.
 
 ## O que NÃO entra
 
-- Reescrever as descrições antigas no banco (não precisa — o parser cuida em runtime).
-- Editor rich-text no admin.
-- Botão de pré-visualização no formulário (pode entrar depois se quiser).
+- Editor rich-text (markdown, WYSIWYG) — fica para outra rodada se quiser.
+- Migrar descrições antigas — o parser cuida em runtime.
+- Configuração global de estilo padrão — escolha é por imóvel.
 
 ## Risco
 
-Baixo. Mudança isolada num único arquivo de UI, sem schema, sem rotas, sem auth. O caso "frase com traço de pontuação" é mitigado pela regra de **mínimo 3 partes** para ativar o modo lista.
+Baixo. A migração só adiciona coluna com default seguro; nenhuma quebra em registros existentes. O parser fica mais conservador (mais frases ficam como parágrafo simples), nunca mais agressivo. A pré-visualização é puramente visual no admin.
