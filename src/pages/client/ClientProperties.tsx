@@ -50,7 +50,7 @@ export default function ClientProperties() {
       {properties.length === 0 ? (
         <EmptyState icon={Building2} title="Nenhum imóvel vinculado" description="Quando você tiver imóveis em negociação ou contratados, eles aparecerão aqui." />
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {properties.map(p => (
             <div key={p.id} className="bg-card border border-border rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
