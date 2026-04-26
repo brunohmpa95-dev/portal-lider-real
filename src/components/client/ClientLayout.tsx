@@ -26,19 +26,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ROLE_LABELS } from '@/lib/auth-types';
 import { cn } from '@/lib/utils';
 
-// Primary nav (shown in mobile bottom bar). Imóveis foi movido para "Mais" para
-// caber confortavelmente em telas a partir de 320px (5 itens × ~64px).
+// Bottom nav: 4 essenciais + "Mais". Tudo continua acessível pela sidebar no desktop.
 const primaryItems = [
-  { icon: LayoutDashboard, label: 'Painel', shortLabel: 'Painel', path: '/cliente' },
-  { icon: FileText, label: 'Contratos', shortLabel: 'Contratos', path: '/cliente/contratos' },
-  { icon: DollarSign, label: 'Financeiro', shortLabel: 'Finanças', path: '/cliente/financeiro' },
-  { icon: FileText, label: 'Documentos', shortLabel: 'Docs', path: '/cliente/documentos' },
-  { icon: Headphones, label: 'Atendimento', shortLabel: 'Suporte', path: '/cliente/atendimento' },
+  { icon: LayoutDashboard, label: 'Início', path: '/cliente' },
+  { icon: FileText, label: 'Contratos', path: '/cliente/contratos' },
+  { icon: DollarSign, label: 'Financeiro', path: '/cliente/financeiro' },
+  { icon: Headphones, label: 'Suporte', path: '/cliente/atendimento' },
 ];
 const secondaryItems = [
+  { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
   { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
 ];
-const allItems = [...primaryItems, ...secondaryItems];
+// Sidebar desktop mantém todos os itens em ordem natural.
+const allItems = [
+  { icon: LayoutDashboard, label: 'Início', path: '/cliente' },
+  { icon: FileText, label: 'Contratos', path: '/cliente/contratos' },
+  { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
+  { icon: DollarSign, label: 'Financeiro', path: '/cliente/financeiro' },
+  { icon: Headphones, label: 'Suporte', path: '/cliente/atendimento' },
+  { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
+];
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -56,18 +63,18 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
     <Layout>
       <PageHead title={title} description={description || 'Acesse a Área do Cliente da Líder Imóveis.'} />
       <div className="min-h-[80vh] bg-surface-sunken pb-20 md:pb-0">
-        {/* MOBILE: compact account header (não sticky para não conflitar com Header global) */}
+        {/* MOBILE: header de conta enxuto (apenas saudação + menu) */}
         <div className="md:hidden bg-card border-b border-border">
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 px-4 py-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
                 {initial}
               </div>
               <div className="min-w-0">
+                <p className="text-[11px] text-muted-foreground leading-tight">Olá,</p>
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">
                   {profile?.full_name?.split(' ')[0] || 'Cliente'}
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate leading-tight">{user?.email}</p>
               </div>
             </div>
             <DropdownMenu>
@@ -167,7 +174,7 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           aria-label="Navegação principal do cliente"
         >
-          <div className="grid grid-cols-6">
+          <div className="grid grid-cols-5">
             {primaryItems.map(item => {
               const isActive = location.pathname === item.path;
               return (
@@ -175,13 +182,13 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    'flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] text-[11px] font-medium transition-colors',
                     isActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span className="leading-none truncate max-w-full px-0.5">{item.shortLabel}</span>
+                  <item.icon className="h-[22px] w-[22px]" />
+                  <span className="leading-none truncate max-w-full px-0.5">{item.label}</span>
                 </Link>
               );
             })}
@@ -189,12 +196,12 @@ const ClientLayout = ({ children, title = 'Área do Cliente', description }: Cli
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[56px] text-[10px] font-medium transition-colors',
+                    'flex flex-col items-center justify-center gap-1 py-2 min-h-[60px] text-[11px] font-medium transition-colors',
                     isMoreActive ? 'text-primary' : 'text-muted-foreground active:bg-accent/40'
                   )}
                   aria-label="Mais opções"
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="h-[22px] w-[22px]" />
                   <span className="leading-none">Mais</span>
                 </button>
               </DropdownMenuTrigger>
