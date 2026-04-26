@@ -930,6 +930,9 @@ export type Database = {
       properties: {
         Row: {
           address: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_reason: string | null
           area: number
           assigned_broker_id: string | null
           bathrooms: number
@@ -964,6 +967,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_reason?: string | null
           area?: number
           assigned_broker_id?: string | null
           bathrooms?: number
@@ -998,6 +1004,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_reason?: string | null
           area?: number
           assigned_broker_id?: string | null
           bathrooms?: number
