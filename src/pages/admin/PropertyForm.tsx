@@ -14,6 +14,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import PropertyImageUpload from '@/components/admin/PropertyImageUpload';
 import { useNeighborhoods } from '@/hooks/useNeighborhoods';
+import { FormattedDescription, type HeadingStyle } from '@/lib/format-description';
 
 const defaultForm = {
   code: '', title: '', type: 'casa', purpose: 'sale', status: 'draft',
@@ -21,6 +22,7 @@ const defaultForm = {
   bedrooms: '0', suites: '0', bathrooms: '0', parking_spots: '0',
   neighborhood: '', city: 'Itaúna', state: 'MG', address: '',
   description: '', internal_notes: '', features: '',
+  description_heading_style: 'soft' as HeadingStyle,
   is_featured: false, is_super_featured: false, is_new: true,
   images: [] as string[],
 };
