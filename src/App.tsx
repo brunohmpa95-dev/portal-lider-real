@@ -53,6 +53,7 @@ import LeadForm from "@/pages/admin/LeadForm";
 import LeadDetail from "@/pages/admin/LeadDetail";
 import PropertiesList from "@/pages/admin/PropertiesList";
 import PropertyForm from "@/pages/admin/PropertyForm";
+import PropertyImport from "@/pages/admin/PropertyImport";
 import Agenda from "@/pages/admin/Agenda";
 import Team from "@/pages/admin/Team";
 import Partners from "@/pages/admin/Partners";
@@ -152,6 +153,7 @@ const App = () => (
                 <Route path="leads/new" element={<LeadForm />} />
                 <Route path="leads/:id" element={<LeadDetail />} />
                 <Route path="properties" element={<PropertiesList />} />
+                <Route path="properties/import" element={<PropertyImport />} />
                 <Route path="bairros" element={<AdminNeighborhoods />} />
                 <Route path="properties/new" element={<PropertyForm />} />
                 <Route path="properties/:id" element={<PropertyForm />} />
