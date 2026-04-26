@@ -3,11 +3,17 @@ import { Fragment } from 'react';
 /**
  * Renderiza a descrição preservando o formato cadastrado:
  * - Linhas iniciadas por -, –, • ou * viram itens de lista com traço.
- * - Parágrafos corridos com 3+ separadores ` - ` / ` – ` / ` • ` viram
- *   cabeçalho de destaque + lista de itens.
+ * - Parágrafos corridos com padrão claro de "cabeçalho - item - item - item - item"
+ *   viram cabeçalho + lista (com regras de segurança contra hífen de pontuação).
  * - Linhas em branco separam parágrafos.
  * - Demais linhas mantêm a quebra original (whitespace-pre-wrap).
+ *
+ * Prop `headingStyle`:
+ *   - 'soft' (default): cabeçalho como destaque visual leve (negrito).
+ *   - 'h3': cabeçalho como título semântico H3.
  */
+
+export type HeadingStyle = 'soft' | 'h3';
 
 type Block =
   | { kind: 'list'; items: string[] }
@@ -19,14 +25,38 @@ const bulletRe = /^\s*([-–•*])\s+(.*)$/;
 // Separador inline: espaço + (- | – | •) + espaço. Evita quebrar palavras compostas.
 const inlineSepRe = /\s+[-–•]\s+/;
 
+const MIN_PARTS = 4;          // exige pelo menos 4 partes (1 cabeçalho + 3 itens)
+const MIN_ITEM_LEN = 3;       // cada parte precisa ter no mínimo 3 chars
+const MIN_DENSITY = 0.4;      // itens devem somar pelo menos 40% do parágrafo
+
 function splitInlineList(line: string): { heading: string; items: string[] } | null {
-  const parts = line.split(inlineSepRe).map(p => p.trim()).filter(Boolean);
-  if (parts.length < 3) return null;
+  // Curto-circuito: se já tem bullet em qualquer linha, não tenta inline
+  if (bulletRe.test(line)) return null;
+
+  const parts = line.split(inlineSepRe).map((p) => p.trim()).filter(Boolean);
+  if (parts.length < MIN_PARTS) return null;
+
+  // Cada parte precisa ser razoavelmente longa (descarta "A - B - C")
+  if (parts.some((p) => p.length < MIN_ITEM_LEN)) return null;
+
   const [heading, ...items] = parts;
+  // Densidade: soma dos itens deve ser proporcionalmente significativa
+  const itemsLen = items.reduce((acc, p) => acc + p.length, 0);
+  const totalLen = line.length;
+  if (totalLen > 0 && itemsLen / totalLen < MIN_DENSITY) return null;
+
   return { heading, items };
 }
 
-export function FormattedDescription({ text, className = '' }: { text: string; className?: string }) {
+export function FormattedDescription({
+  text,
+  className = '',
+  headingStyle = 'soft',
+}: {
+  text: string;
+  className?: string;
+  headingStyle?: HeadingStyle;
+}) {
   if (!text) return null;
 
   const lines = text.replace(/\r\n/g, '\n').split('\n');
@@ -45,7 +75,6 @@ export function FormattedDescription({ text, className = '' }: { text: string; c
       else blocks.push({ kind: 'list', items: [m[2]] });
       continue;
     }
-    // Tenta detectar lista inline: "Cabeçalho - item - item - item"
     const inline = splitInlineList(line);
     if (inline) {
       blocks.push({ kind: 'headed-list', heading: inline.heading, items: inline.items });
@@ -74,7 +103,11 @@ export function FormattedDescription({ text, className = '' }: { text: string; c
         if (b.kind === 'headed-list') {
           return (
             <div key={i} className="space-y-2">
-              <p className="text-base font-semibold text-foreground">{b.heading}</p>
+              {headingStyle === 'h3' ? (
+                <h3 className="text-lg font-semibold text-foreground">{b.heading}</h3>
+              ) : (
+                <p className="font-medium text-foreground">{b.heading}</p>
+              )}
               <ul className="space-y-1.5">
                 {b.items.map((item, j) => (
                   <li key={j} className="flex gap-2">
