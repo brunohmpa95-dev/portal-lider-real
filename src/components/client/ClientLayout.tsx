@@ -37,10 +37,13 @@ const secondaryItems = [
   { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
   { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
 ];
+// Sidebar desktop mantém todos os itens em ordem natural.
 const allItems = [
-  ...primaryItems.slice(0, 1),
+  { icon: LayoutDashboard, label: 'Início', path: '/cliente' },
+  { icon: FileText, label: 'Contratos', path: '/cliente/contratos' },
   { icon: FileText, label: 'Documentos', path: '/cliente/documentos' },
-  ...primaryItems.slice(1),
+  { icon: DollarSign, label: 'Financeiro', path: '/cliente/financeiro' },
+  { icon: Headphones, label: 'Suporte', path: '/cliente/atendimento' },
   { icon: Home, label: 'Imóveis', path: '/cliente/imoveis' },
 ];
 
