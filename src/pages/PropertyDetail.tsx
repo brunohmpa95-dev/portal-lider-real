@@ -21,6 +21,7 @@ import { formatPrice } from '@/data/properties';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
+import { FormattedDescription } from '@/lib/format-description';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
@@ -256,7 +257,7 @@ const PropertyDetail = () => {
             {property.description && (
               <div className="mb-6">
                 <h2 className="font-sans text-base font-semibold text-foreground mb-2">Descrição</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
+                <FormattedDescription text={property.description} />
               </div>
             )}
 
