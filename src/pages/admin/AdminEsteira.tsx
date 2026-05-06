@@ -424,21 +424,32 @@ export default function AdminEsteira() {
 
           {/* ============ AUTOMATION ============ */}
           <TabsContent value="automation" className="space-y-3">
+            <div className="flex justify-end">
+              <AutomationDialog onSaved={() => window.location.reload()} />
+            </div>
             {autoRules.length === 0 && (
               <Card><CardContent className="p-6 text-center text-muted-foreground">
-                Nenhuma automação configurada. Em breve: criação por evento (mudança de estágio, sem resposta, etc.).
+                Nenhuma automação configurada. Crie a primeira para reagir automaticamente a eventos.
               </CardContent></Card>
             )}
             {autoRules.map(a => (
               <Card key={a.id}>
                 <CardContent className="p-4 flex items-start justify-between gap-2">
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold">{a.name}</p>
-                    <p className="text-xs text-muted-foreground">{a.trigger_event} → {a.action_type}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.trigger_event}
+                      {a.trigger_to_stage ? ` → ${a.trigger_to_stage}` : ''}
+                      {' · '}{a.action_type}
+                    </p>
+                    {a.description && <p className="text-xs text-muted-foreground mt-1">{a.description}</p>}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Switch checked={a.is_active} onCheckedChange={v => toggleAuto(a.id, v)} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAuto(a.id)}>
+                    <AutomationDialog rule={a} onSaved={() => window.location.reload()} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                      if (confirm(`Excluir automação "${a.name}"?`)) removeAuto(a.id);
+                    }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
