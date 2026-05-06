@@ -151,6 +151,106 @@ export default function Settings() {
           <Button onClick={handleSave}>Salvar Configurações</Button>
         </TabsContent>
 
+        <TabsContent value="whatsapp" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" /> Integração WhatsApp
+              </CardTitle>
+              <CardDescription>
+                Captura cliques nos botões de WhatsApp do site e gera leads automaticamente no CRM.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {waLoading || !wa ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <Label className="text-sm">Integração ativa</Label>
+                      <p className="text-xs text-muted-foreground">Quando desativada, nenhum lead é criado por clique.</p>
+                    </div>
+                    <Switch checked={!!wa.is_active} onCheckedChange={(v) => setWaField('is_active', v)} />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div>
+                      <Label className="text-sm">Criar lead automaticamente</Label>
+                      <p className="text-xs text-muted-foreground">Cada clique relevante vira um lead com origem WhatsApp.</p>
+                    </div>
+                    <Switch checked={!!wa.auto_create_lead} onCheckedChange={(v) => setWaField('auto_create_lead', v)} />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label>Número (E.164, só dígitos)</Label>
+                      <Input
+                        value={wa.phone_e164 || ''}
+                        onChange={(e) => setWaField('phone_e164', e.target.value.replace(/\D/g, ''))}
+                        placeholder="5537999000000"
+                      />
+                      <p className="text-[11px] text-muted-foreground">Inclui DDI 55 + DDD + número.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Exibição</Label>
+                      <Input
+                        value={wa.display_phone || ''}
+                        onChange={(e) => setWaField('display_phone', e.target.value)}
+                        placeholder="(37) 99900-0000"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label>Mensagem padrão</Label>
+                    <Textarea
+                      rows={3}
+                      value={wa.default_message || ''}
+                      onChange={(e) => setWaField('default_message', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label>Setor responsável</Label>
+                      <Select value={wa.responsible_sector || 'vendas'} onValueChange={(v) => setWaField('responsible_sector', v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="vendas">Vendas</SelectItem>
+                          <SelectItem value="locacao">Locação</SelectItem>
+                          <SelectItem value="atendimento">Atendimento</SelectItem>
+                          <SelectItem value="captacao">Captação</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Provedor</Label>
+                      <Select value={wa.provider || 'web'} onValueChange={(v) => setWaField('provider', v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="web">Link wa.me (atual)</SelectItem>
+                          <SelectItem value="cloud_api" disabled>Cloud API (FASE 2)</SelectItem>
+                          <SelectItem value="twilio" disabled>Twilio (FASE 2)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button onClick={saveWhatsApp} disabled={waSaving}>
+                      {waSaving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                      Salvar WhatsApp
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="system" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
