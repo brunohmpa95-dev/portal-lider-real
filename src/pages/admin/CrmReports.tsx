@@ -12,6 +12,8 @@ import {
   PieChart, Pie, Cell, LineChart, Line, Legend,
 } from 'recharts';
 import { toast } from '@/hooks/use-toast';
+import { ErrorState, CardsSkeleton } from '@/components/admin/StateViews';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['hsl(var(--primary))', '#60a5fa', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#8b5cf6', '#14b8a6'];
 
