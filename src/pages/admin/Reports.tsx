@@ -190,19 +190,22 @@ export default function Reports() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Imóveis por Tipo</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-base">Imóveis por Tipo</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => exportReport('top_offered')} title="Exportar imóveis mais ofertados"><Download className="h-4 w-4" /></Button>
+          </CardHeader>
           <CardContent>
             {propertiesByType.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={propertiesByType}>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={propertiesByType} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
+            ) : <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
           </CardContent>
         </Card>
 
