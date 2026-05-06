@@ -293,15 +293,21 @@ export default function AdminEsteira() {
           <StatCard icon={AlertTriangle} label="SLA violado" value={ls ? '…' : stats.breached} tone="danger" />
         </div>
 
-        <Tabs defaultValue="rules" className="space-y-4">
+        <Tabs defaultValue="panel" className="space-y-4">
           <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
             <TabsList className="inline-flex">
+              <TabsTrigger value="panel">Painel</TabsTrigger>
               <TabsTrigger value="rules">Regras</TabsTrigger>
               <TabsTrigger value="sla">SLA</TabsTrigger>
               <TabsTrigger value="automation">Automações</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
           </div>
+
+          {/* ============ PANEL (operational, realtime) ============ */}
+          <TabsContent value="panel" className="space-y-4">
+            <PanelTab />
+          </TabsContent>
 
           {/* ============ RULES ============ */}
           <TabsContent value="rules" className="space-y-3">
