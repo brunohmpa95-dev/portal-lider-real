@@ -724,6 +724,93 @@ export default function LeadDetail() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Cliente vinculado */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <UserCheck className="h-4 w-4" /> Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {client ? (
+                <>
+                  <p className="font-medium">{client.full_name || client.profiles?.full_name || '—'}</p>
+                  {(client.email || client.phone || client.profiles?.phone) && (
+                    <p className="text-xs text-muted-foreground">
+                      {client.email || ''}{client.email && (client.phone || client.profiles?.phone) ? ' · ' : ''}
+                      {client.phone || client.profiles?.phone || ''}
+                    </p>
+                  )}
+                  {client.cpf_cnpj && <p className="text-xs text-muted-foreground font-mono">{client.cpf_cnpj}</p>}
+                  <Button asChild variant="outline" size="sm" className="w-full mt-2">
+                    <Link to="/admin/clientes">Ver clientes</Link>
+                  </Button>
+                  {relatedLeads.length > 0 && (
+                    <div className="pt-3 border-t mt-3">
+                      <p className="text-xs font-medium mb-2">Histórico de oportunidades ({relatedLeads.length})</p>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {relatedLeads.map((r) => (
+                          <Link key={r.id} to={`/admin/leads/${r.id}`}
+                                className="block text-xs p-2 rounded hover:bg-muted/50 border">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="truncate">{r.name}</span>
+                              <Badge variant="outline" className="text-[10px]">
+                                {LEAD_FUNNEL_STAGES.find((s) => s.value === r.funnel_stage)?.label || r.funnel_stage}
+                              </Badge>
+                            </div>
+                            <p className="text-muted-foreground mt-0.5">
+                              {sourceLabel(r.source)} · {new Date(r.created_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Este lead ainda não está vinculado a um cliente.
+                  </p>
+                  <Button onClick={convertToClient} size="sm" className="w-full">
+                    <UserCheck className="h-4 w-4 mr-1" /> Converter em cliente
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Possíveis duplicatas */}
+          {duplicates.length > 0 && (
+            <Card className="border-amber-500/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <AlertCircle className="h-4 w-4" /> Possíveis duplicatas ({duplicates.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Outros leads com mesmo e-mail ou telefone. Verifique antes de converter.
+                </p>
+                {duplicates.map((d) => (
+                  <Link key={d.id} to={`/admin/leads/${d.id}`}
+                        className="block text-xs p-2 rounded hover:bg-muted/50 border">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-medium">{d.name}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {LEAD_FUNNEL_STAGES.find((s) => s.value === d.funnel_stage)?.label || d.funnel_stage}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground mt-0.5">
+                      {sourceLabel(d.source)} · {new Date(d.created_at).toLocaleDateString('pt-BR')}
+                      {d.client_id && ' · já é cliente'}
+                    </p>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
