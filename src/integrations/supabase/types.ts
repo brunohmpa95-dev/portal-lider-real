@@ -1885,6 +1885,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          appointment_type: string | null
           assigned_to: string | null
           client_profile_id: string | null
           completed_at: string | null
@@ -1902,6 +1903,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          appointment_type?: string | null
           assigned_to?: string | null
           client_profile_id?: string | null
           completed_at?: string | null
@@ -1919,6 +1921,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          appointment_type?: string | null
           assigned_to?: string | null
           client_profile_id?: string | null
           completed_at?: string | null
