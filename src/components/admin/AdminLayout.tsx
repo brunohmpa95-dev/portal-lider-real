@@ -143,28 +143,32 @@ function AdminHeader() {
   };
 
   return (
-    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 gap-4">
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="h-11 w-11">
+    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 sm:px-4 gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <SidebarTrigger className="h-11 w-11 shrink-0">
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
-        <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/admin" className="hover:text-foreground transition-colors">
+        <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground min-w-0 overflow-hidden">
+          <Link to="/admin" className="hover:text-foreground transition-colors shrink-0">
             Admin
           </Link>
           {breadcrumbs.map((bc, i) => (
-            <span key={i} className="flex items-center gap-1">
-              <ChevronRight className="h-3 w-3" />
+            <span key={i} className="flex items-center gap-1 min-w-0">
+              <ChevronRight className="h-3 w-3 shrink-0" />
               {bc.path ? (
-                <Link to={bc.path} className="hover:text-foreground transition-colors">
+                <Link to={bc.path} className="hover:text-foreground transition-colors truncate">
                   {bc.label}
                 </Link>
               ) : (
-                <span className="text-foreground font-medium">{bc.label}</span>
+                <span className="text-foreground font-medium truncate">{bc.label}</span>
               )}
             </span>
           ))}
         </nav>
+        {/* Mobile: mostra apenas última crumb */}
+        <span className="sm:hidden text-sm font-medium text-foreground truncate">
+          {breadcrumbs[breadcrumbs.length - 1]?.label || 'Admin'}
+        </span>
       </div>
 
       <div className="flex items-center gap-2">
