@@ -22,13 +22,15 @@ const ROLE_LABELS: Record<string, string> = {
 interface Permission { code: string; module: string; action: string; description: string | null; }
 
 export default function AdminPermissions() {
+  const { roles } = useAuth();
+  const isSuperadmin = roles.includes('superadmin');
   const [perms, setPerms] = useState<Permission[]>([]);
   const [matrix, setMatrix] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeRole, setActiveRole] = useState<string>('corretor');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (isSuperadmin) load(); else setLoading(false); }, [isSuperadmin]);
 
   async function load() {
     setLoading(true);
