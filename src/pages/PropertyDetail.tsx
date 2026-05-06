@@ -244,14 +244,17 @@ const PropertyDetail = () => {
 
             {/* ─── Mobile WhatsApp CTA ─── */}
             {isMobile && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <WhatsAppCTA
+                intent={intent}
+                propertyId={property.id}
+                propertyCode={property.code}
+                propertyTitle={property.title}
+                neighborhood={property.neighborhood}
+                source="property-detail-mobile"
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors mb-6"
               >
                 <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — chamar no WhatsApp' : 'Quero alugar — chamar no WhatsApp'}
-              </a>
+              </WhatsAppCTA>
             )}
 
             {/* ─── Description ─── */}
