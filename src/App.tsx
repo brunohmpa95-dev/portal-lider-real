@@ -72,6 +72,7 @@ import AdminNeighborhoods from "@/pages/admin/Neighborhoods";
 import AdminTasks from "@/pages/admin/AdminTasks";
 import AdminPermissions from "@/pages/admin/AdminPermissions";
 import AdminGestao from "@/pages/admin/AdminGestao";
+import AdminEsteira from "@/pages/admin/AdminEsteira";
 
 const queryClient = new QueryClient();
 
@@ -173,6 +174,7 @@ const App = () => (
                 <Route path="partners" element={<Partners />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="gestao" element={<AdminGestao />} />
+                <Route path="esteira" element={<AdminEsteira />} />
                 <Route path="permissoes" element={<AdminPermissions />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<AdminProfile />} />

@@ -145,6 +145,35 @@ export type Database = {
         }
         Relationships: []
       }
+      broker_rotation_state: {
+        Row: {
+          last_index: number
+          last_user_id: string | null
+          rule_id: string
+          updated_at: string
+        }
+        Insert: {
+          last_index?: number
+          last_user_id?: string | null
+          rule_id: string
+          updated_at?: string
+        }
+        Update: {
+          last_index?: number
+          last_user_id?: string | null
+          rule_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broker_rotation_state_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: true
+            referencedRelation: "lead_distribution_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brokers: {
         Row: {
           bank_info: string | null
@@ -828,6 +857,150 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          trigger_event: string
+          trigger_from_stage: string | null
+          trigger_to_stage: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_event: string
+          trigger_from_stage?: string | null
+          trigger_to_stage?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_event?: string
+          trigger_from_stage?: string | null
+          trigger_to_stage?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lead_distribution_logs: {
+        Row: {
+          action: string
+          assigned_user_id: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          metadata: Json
+          previous_user_id: string | null
+          reason: string | null
+          rule_id: string | null
+        }
+        Insert: {
+          action: string
+          assigned_user_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          metadata?: Json
+          previous_user_id?: string | null
+          reason?: string | null
+          rule_id?: string | null
+        }
+        Update: {
+          action?: string
+          assigned_user_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          metadata?: Json
+          previous_user_id?: string | null
+          reason?: string | null
+          rule_id?: string | null
+        }
+        Relationships: []
+      }
+      lead_distribution_rules: {
+        Row: {
+          create_task: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          eligible_user_ids: string[]
+          id: string
+          is_active: boolean
+          match_neighborhoods: string[] | null
+          match_property_types: string[] | null
+          match_purposes: string[] | null
+          match_sources: string[] | null
+          max_price: number | null
+          min_price: number | null
+          mode: string
+          name: string
+          notify_assignee: boolean
+          priority: number
+          updated_at: string
+        }
+        Insert: {
+          create_task?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          eligible_user_ids?: string[]
+          id?: string
+          is_active?: boolean
+          match_neighborhoods?: string[] | null
+          match_property_types?: string[] | null
+          match_purposes?: string[] | null
+          match_sources?: string[] | null
+          max_price?: number | null
+          min_price?: number | null
+          mode?: string
+          name: string
+          notify_assignee?: boolean
+          priority?: number
+          updated_at?: string
+        }
+        Update: {
+          create_task?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          eligible_user_ids?: string[]
+          id?: string
+          is_active?: boolean
+          match_neighborhoods?: string[] | null
+          match_property_types?: string[] | null
+          match_purposes?: string[] | null
+          match_sources?: string[] | null
+          max_price?: number | null
+          min_price?: number | null
+          mode?: string
+          name?: string
+          notify_assignee?: boolean
+          priority?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_interactions: {
         Row: {
           content: string | null
@@ -887,6 +1060,75 @@ export type Database = {
           is_active?: boolean
           name?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      lead_sla_config: {
+        Row: {
+          created_at: string
+          first_response_minutes: number
+          id: string
+          is_active: boolean
+          match_purposes: string[] | null
+          match_sources: string[] | null
+          name: string
+          no_interaction_hours: number
+          on_breach_actions: string[]
+          updated_at: string
+          warning_minutes: number
+        }
+        Insert: {
+          created_at?: string
+          first_response_minutes?: number
+          id?: string
+          is_active?: boolean
+          match_purposes?: string[] | null
+          match_sources?: string[] | null
+          name: string
+          no_interaction_hours?: number
+          on_breach_actions?: string[]
+          updated_at?: string
+          warning_minutes?: number
+        }
+        Update: {
+          created_at?: string
+          first_response_minutes?: number
+          id?: string
+          is_active?: boolean
+          match_purposes?: string[] | null
+          match_sources?: string[] | null
+          name?: string
+          no_interaction_hours?: number
+          on_breach_actions?: string[]
+          updated_at?: string
+          warning_minutes?: number
+        }
+        Relationships: []
+      }
+      lead_sla_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          lead_id: string
+          metadata: Json
+          sla_config_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          lead_id: string
+          metadata?: Json
+          sla_config_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          lead_id?: string
+          metadata?: Json
+          sla_config_id?: string | null
         }
         Relationships: []
       }
@@ -1296,7 +1538,10 @@ export type Database = {
         Row: {
           assigned_to: string | null
           created_at: string
+          distributed_at: string | null
+          distribution_rule_id: string | null
           email: string
+          first_response_at: string | null
           funnel_stage: string
           id: string
           interest_bedrooms: number | null
@@ -1306,6 +1551,7 @@ export type Database = {
           interest_property_type: string | null
           interest_purpose: string | null
           internal_notes: string | null
+          last_interaction_at: string | null
           lost_at: string | null
           lost_notes: string | null
           lost_reason_id: string | null
@@ -1315,6 +1561,8 @@ export type Database = {
           phone: string | null
           priority: string
           property_id: string | null
+          redistribution_count: number
+          sla_status: string
           source: string | null
           status: string
           tags: string[] | null
@@ -1323,7 +1571,10 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           created_at?: string
+          distributed_at?: string | null
+          distribution_rule_id?: string | null
           email: string
+          first_response_at?: string | null
           funnel_stage?: string
           id?: string
           interest_bedrooms?: number | null
@@ -1333,6 +1584,7 @@ export type Database = {
           interest_property_type?: string | null
           interest_purpose?: string | null
           internal_notes?: string | null
+          last_interaction_at?: string | null
           lost_at?: string | null
           lost_notes?: string | null
           lost_reason_id?: string | null
@@ -1342,6 +1594,8 @@ export type Database = {
           phone?: string | null
           priority?: string
           property_id?: string | null
+          redistribution_count?: number
+          sla_status?: string
           source?: string | null
           status?: string
           tags?: string[] | null
@@ -1350,7 +1604,10 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           created_at?: string
+          distributed_at?: string | null
+          distribution_rule_id?: string | null
           email?: string
+          first_response_at?: string | null
           funnel_stage?: string
           id?: string
           interest_bedrooms?: number | null
@@ -1360,6 +1617,7 @@ export type Database = {
           interest_property_type?: string | null
           interest_purpose?: string | null
           internal_notes?: string | null
+          last_interaction_at?: string | null
           lost_at?: string | null
           lost_notes?: string | null
           lost_reason_id?: string | null
@@ -1369,6 +1627,8 @@ export type Database = {
           phone?: string | null
           priority?: string
           property_id?: string | null
+          redistribution_count?: number
+          sla_status?: string
           source?: string | null
           status?: string
           tags?: string[] | null
@@ -1739,6 +1999,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_distribution_rules: { Args: { _lead_id: string }; Returns: string }
       get_my_permissions: { Args: never; Returns: string[] }
       get_my_roles: {
         Args: never
@@ -1772,6 +2033,10 @@ export type Database = {
           _target_type: string
         }
         Returns: undefined
+      }
+      redistribute_lead: {
+        Args: { _lead_id: string; _reason?: string }
+        Returns: string
       }
     }
     Enums: {
