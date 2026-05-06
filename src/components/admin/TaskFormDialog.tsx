@@ -224,6 +224,27 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Tipo de compromisso</Label>
+            <Select
+              value={form.appointment_type ?? '__none__'}
+              onValueChange={(v) => setForm((f) => ({ ...f, appointment_type: v === '__none__' ? null : (v as Task['appointment_type']) }))}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum (tarefa comum)</SelectItem>
+                <SelectItem value="visit">Visita</SelectItem>
+                <SelectItem value="meeting">Reunião</SelectItem>
+                <SelectItem value="call">Ligação agendada</SelectItem>
+                <SelectItem value="whatsapp">WhatsApp agendado</SelectItem>
+                <SelectItem value="followup">Retorno</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.appointment_type && (
+              <p className="text-[11px] text-muted-foreground">Aparece na agenda quando houver data/hora.</p>
+            )}
+          </div>
+
           {isEdit && (
             <div className="space-y-1.5">
               <Label>Status</Label>
