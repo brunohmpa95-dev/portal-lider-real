@@ -122,6 +122,9 @@ export default function LeadDetail() {
     toast({ title: 'Lead convertido', description: 'Cliente vinculado com sucesso' });
     loadLead();
   }
+
+  async function forceRedistribute() {
+    if (!confirm('Forçar redistribuição deste lead?')) return;
     const { error } = await supabase.functions.invoke('lead-distributor', {
       body: { action: 'redistribute', lead_id: id, reason: 'manual_force' },
     });
