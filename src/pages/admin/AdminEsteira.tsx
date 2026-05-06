@@ -7,7 +7,11 @@ import {
   useDistributionLogs,
   useEsteiraStats,
   useSlaConfig,
+  useLeadsAtRisk,
 } from '@/hooks/useEsteira';
+import { AutomationDialog } from '@/components/admin/AutomationDialog';
+import { SlaBadge } from '@/components/admin/SlaBadge';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
