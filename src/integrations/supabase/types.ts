@@ -857,6 +857,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_automation_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          event_type: string
+          from_stage: string | null
+          id: string
+          last_error: string | null
+          lead_id: string
+          payload: Json
+          processed_at: string | null
+          to_stage: string | null
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          event_type: string
+          from_stage?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id: string
+          payload?: Json
+          processed_at?: string | null
+          to_stage?: string | null
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          event_type?: string
+          from_stage?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id?: string
+          payload?: Json
+          processed_at?: string | null
+          to_stage?: string | null
+        }
+        Relationships: []
+      }
       lead_automation_rules: {
         Row: {
           action_config: Json
