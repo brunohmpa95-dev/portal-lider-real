@@ -7,9 +7,14 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTasks, useTaskMutations, type TaskFilter, type Task } from '@/hooks/useTasks';
 import TaskFormDialog from '@/components/admin/TaskFormDialog';
-import { Loader2, Plus, Pencil, Trash2, AlertCircle, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, AlertCircle, CheckCircle2, Clock, ExternalLink, ListTodo } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { EmptyState, ListSkeleton } from '@/components/admin/StateViews';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const TABS: { value: TaskFilter; label: string }[] = [
   { value: 'mine', label: 'Minhas' },
@@ -33,6 +38,7 @@ export default function AdminTasks() {
   const { update, remove } = useTaskMutations();
   const [editing, setEditing] = useState<Task | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Task | null>(null);
 
   // Indicadores: agregados em consultas leves separadas (independem do filtro)
   const [counts, setCounts] = useState({ overdue: 0, today: 0, doneToday: 0 });
@@ -76,13 +82,15 @@ export default function AdminTasks() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Excluir esta tarefa?')) return;
+  async function confirmDelete() {
+    if (!deleting) return;
     try {
-      await remove.mutateAsync(id);
+      await remove.mutateAsync(deleting.id);
       toast({ title: 'Tarefa excluída' });
     } catch (e: any) {
-      toast({ title: 'Erro', description: e.message, variant: 'destructive' });
+      toast({ title: 'Erro ao excluir', description: e.message, variant: 'destructive' });
+    } finally {
+      setDeleting(null);
     }
   }
 
