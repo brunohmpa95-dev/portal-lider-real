@@ -129,11 +129,12 @@ export const PROPERTY_STATUS_OPTIONS = [
 export const LEAD_FUNNEL_STAGES = [
   { value: 'new', label: 'Novo' },
   { value: 'contact', label: 'Contato' },
+  { value: 'qualification', label: 'Qualificação' },
   { value: 'visit', label: 'Visita' },
   { value: 'proposal', label: 'Proposta' },
   { value: 'negotiation', label: 'Negociação' },
-  { value: 'closed', label: 'Fechado' },
-  { value: 'lost', label: 'Perdido' },
+  { value: 'closed', label: 'Fechado (ganho)' },
+  { value: 'lost', label: 'Fechado (perdido)' },
 ];
 
 export const LEAD_PRIORITY_OPTIONS = [
