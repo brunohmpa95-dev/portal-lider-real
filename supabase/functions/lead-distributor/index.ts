@@ -42,9 +42,9 @@ async function createSlaTask(userId: string, leadId: string, leadName: string) {
     assigned_to: userId,
     priority: "urgent",
     due_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    related_lead_id: leadId,
-    status: "todo",
-  }).then(() => null).catch(() => null); // tasks table pode não ter related_lead_id, ignora erro
+    lead_id: leadId,
+    status: "pending",
+  });
 }
 
 async function checkSLA() {

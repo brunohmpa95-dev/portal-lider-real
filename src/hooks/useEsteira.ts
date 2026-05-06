@@ -169,3 +169,66 @@ export function useEsteiraStats() {
 
   return { stats, loading };
 }
+
+// ===================== LEADS AT RISK (realtime) =====================
+export interface LeadAtRisk {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  source: string | null;
+  funnel_stage: string;
+  assigned_to: string | null;
+  distributed_at: string | null;
+  first_response_at: string | null;
+  last_interaction_at: string | null;
+  sla_status: string;
+  created_at: string;
+  redistribution_count: number;
+}
+
+export function useLeadsAtRisk() {
+  const [leads, setLeads] = useState<LeadAtRisk[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    // últimos 7 dias com algum risco ou sem atribuição
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from('property_leads')
+      .select('id,name,email,phone,source,funnel_stage,assigned_to,distributed_at,first_response_at,last_interaction_at,sla_status,created_at,redistribution_count')
+      .gte('created_at', since)
+      .neq('funnel_stage', 'closed')
+      .neq('funnel_stage', 'lost')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    setLeads((data as any) || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel('esteira-leads')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'property_leads' }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [load]);
+
+  // Categoriza
+  const categorized = {
+    unassigned: leads.filter(l => !l.assigned_to),
+    breached: leads.filter(l => l.sla_status === 'breached' && !l.first_response_at),
+    warning: leads.filter(l => l.sla_status === 'warning' && !l.first_response_at),
+    stale: leads.filter(l => {
+      if (!l.last_interaction_at) return false;
+      const ageH = (Date.now() - new Date(l.last_interaction_at).getTime()) / 3600000;
+      return ageH > 24 && l.first_response_at && !['closed','lost'].includes(l.funnel_stage);
+    }),
+  };
+
+  return { leads, categorized, loading, reload: load };
+}

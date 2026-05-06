@@ -7,7 +7,11 @@ import {
   useDistributionLogs,
   useEsteiraStats,
   useSlaConfig,
+  useLeadsAtRisk,
 } from '@/hooks/useEsteira';
+import { AutomationDialog } from '@/components/admin/AutomationDialog';
+import { SlaBadge } from '@/components/admin/SlaBadge';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -240,6 +244,79 @@ function RuleDialog({
 }
 
 // =================== MAIN PAGE ===================
+// =================== PANEL TAB (operational, realtime) ===================
+function PanelTab() {
+  const { categorized, loading, reload } = useLeadsAtRisk();
+
+  const distribute = async (leadId: string, action: 'distribute' | 'redistribute') => {
+    const { error } = await supabase.functions.invoke('lead-distributor', {
+      body: { action, lead_id: leadId, reason: 'manual' },
+    });
+    if (error) toast.error(error.message);
+    else { toast.success(action === 'distribute' ? 'Atribuído' : 'Redistribuído'); reload(); }
+  };
+
+  const Section = ({ title, leads, tone, action }: any) => (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center justify-between">
+          <span>{title}</span>
+          <Badge variant="outline">{leads.length}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead nesta categoria.</p>}
+        {leads.slice(0, 8).map((l: any) => (
+          <div key={l.id} className="border rounded-md p-2 space-y-1">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{l.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {l.email} {l.phone && `· ${l.phone}`}
+                </p>
+              </div>
+              <SlaBadge status={l.sla_status} distributedAt={l.distributed_at} firstResponseAt={l.first_response_at} />
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <Link to={`/admin/leads/${l.id}`}>Abrir</Link>
+              </Button>
+              {!l.assigned_to && (
+                <Button size="sm" variant="outline" className="h-8 text-xs"
+                  onClick={() => distribute(l.id, 'distribute')}>
+                  Atribuir
+                </Button>
+              )}
+              {l.assigned_to && action === 'redistribute' && (
+                <Button size="sm" variant="outline" className="h-8 text-xs"
+                  onClick={() => distribute(l.id, 'redistribute')}>
+                  Redistribuir
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+        {leads.length > 8 && (
+          <p className="text-xs text-muted-foreground text-center pt-1">
+            +{leads.length - 8} outros leads
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando painel…</p>;
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <Section title="Sem atribuição" leads={categorized.unassigned} tone="muted" action="distribute" />
+      <Section title="SLA violado" leads={categorized.breached} tone="danger" action="redistribute" />
+      <Section title="Em atenção" leads={categorized.warning} tone="warning" action="redistribute" />
+      <Section title="Parados (24h+)" leads={categorized.stale} tone="muted" action="redistribute" />
+    </div>
+  );
+}
+
 export default function AdminEsteira() {
   const { rules, loading: lr, remove, toggle, reload } = useDistributionRules();
   const { stats, loading: ls } = useEsteiraStats();
@@ -289,15 +366,21 @@ export default function AdminEsteira() {
           <StatCard icon={AlertTriangle} label="SLA violado" value={ls ? '…' : stats.breached} tone="danger" />
         </div>
 
-        <Tabs defaultValue="rules" className="space-y-4">
+        <Tabs defaultValue="panel" className="space-y-4">
           <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
             <TabsList className="inline-flex">
+              <TabsTrigger value="panel">Painel</TabsTrigger>
               <TabsTrigger value="rules">Regras</TabsTrigger>
               <TabsTrigger value="sla">SLA</TabsTrigger>
               <TabsTrigger value="automation">Automações</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
           </div>
+
+          {/* ============ PANEL (operational, realtime) ============ */}
+          <TabsContent value="panel" className="space-y-4">
+            <PanelTab />
+          </TabsContent>
 
           {/* ============ RULES ============ */}
           <TabsContent value="rules" className="space-y-3">
@@ -414,21 +497,32 @@ export default function AdminEsteira() {
 
           {/* ============ AUTOMATION ============ */}
           <TabsContent value="automation" className="space-y-3">
+            <div className="flex justify-end">
+              <AutomationDialog onSaved={() => window.location.reload()} />
+            </div>
             {autoRules.length === 0 && (
               <Card><CardContent className="p-6 text-center text-muted-foreground">
-                Nenhuma automação configurada. Em breve: criação por evento (mudança de estágio, sem resposta, etc.).
+                Nenhuma automação configurada. Crie a primeira para reagir automaticamente a eventos.
               </CardContent></Card>
             )}
             {autoRules.map(a => (
               <Card key={a.id}>
                 <CardContent className="p-4 flex items-start justify-between gap-2">
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold">{a.name}</p>
-                    <p className="text-xs text-muted-foreground">{a.trigger_event} → {a.action_type}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.trigger_event}
+                      {a.trigger_to_stage ? ` → ${a.trigger_to_stage}` : ''}
+                      {' · '}{a.action_type}
+                    </p>
+                    {a.description && <p className="text-xs text-muted-foreground mt-1">{a.description}</p>}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Switch checked={a.is_active} onCheckedChange={v => toggleAuto(a.id, v)} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAuto(a.id)}>
+                    <AutomationDialog rule={a} onSaved={() => window.location.reload()} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                      if (confirm(`Excluir automação "${a.name}"?`)) removeAuto(a.id);
+                    }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>

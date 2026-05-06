@@ -20,7 +20,8 @@ import LostReasonDialog from '@/components/admin/LostReasonDialog';
 import TaskFormDialog from '@/components/admin/TaskFormDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar, RefreshCw } from 'lucide-react';
+import { SlaBadge } from '@/components/admin/SlaBadge';
 
 export default function LeadDetail() {
   const { id } = useParams<{ id: string }>();
@@ -306,6 +307,8 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
+          <SlaTimelineCard leadId={lead.id} lead={lead} />
+
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">Ações Rápidas</CardTitle></CardHeader>
             <CardContent className="space-y-2">
@@ -397,5 +400,75 @@ function InterestEditor({ lead, neighborhoods, onSave }: { lead: any; neighborho
         interest_bedrooms: s.interest_bedrooms ? Number(s.interest_bedrooms) : null,
       })}>Salvar interesse</Button>
     </div>
+  );
+}
+
+function SlaTimelineCard({ leadId, lead }: { leadId: string; lead: any }) {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    const [logs, sla] = await Promise.all([
+      supabase.from('lead_distribution_logs' as any).select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(30),
+      supabase.from('lead_sla_events' as any).select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(30),
+    ]);
+    const merged = [
+      ...((logs.data as any[]) || []).map(l => ({ ...l, _kind: 'log' })),
+      ...((sla.data as any[]) || []).map(s => ({ ...s, _kind: 'sla' })),
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setEvents(merged);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [leadId]);
+
+  const forceRedistribute = async () => {
+    if (!confirm('Forçar redistribuição deste lead?')) return;
+    const { error } = await supabase.functions.invoke('lead-distributor', {
+      body: { action: 'redistribute', lead_id: leadId, reason: 'manual_force' },
+    });
+    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Redistribuído' }); load(); }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center justify-between gap-2">
+          <span>SLA & Distribuição</span>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={forceRedistribute} title="Redistribuir">
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap gap-2 items-center">
+          <SlaBadge status={lead.sla_status} distributedAt={lead.distributed_at} firstResponseAt={lead.first_response_at} />
+          {lead.redistribution_count > 0 && (
+            <Badge variant="outline">Redistribuído {lead.redistribution_count}x</Badge>
+          )}
+        </div>
+        {loading && <p className="text-xs text-muted-foreground">Carregando histórico…</p>}
+        {!loading && events.length === 0 && (
+          <p className="text-xs text-muted-foreground">Nenhum evento de distribuição ainda.</p>
+        )}
+        <div className="space-y-2 max-h-72 overflow-y-auto">
+          {events.map(e => (
+            <div key={`${e._kind}-${e.id}`} className="text-xs border-l-2 border-border pl-2 py-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="text-[10px]">
+                  {e._kind === 'sla' ? `SLA: ${e.event_type}` : e.action}
+                </Badge>
+                <span className="text-muted-foreground">
+                  {new Date(e.created_at).toLocaleString('pt-BR')}
+                </span>
+              </div>
+              {e.reason && <p className="mt-0.5 text-muted-foreground">{e.reason}</p>}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
