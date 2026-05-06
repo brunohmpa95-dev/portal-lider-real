@@ -56,12 +56,13 @@ export default function LeadDetail() {
 
   async function loadLead() {
     setLoading(true);
-    const [leadRes, intRes, distRes, slaRes, agentsRes] = await Promise.all([
+    const [leadRes, intRes, distRes, slaRes, agentsRes, visitsRes] = await Promise.all([
       supabase.from('property_leads').select('*').eq('id', id!).single(),
       supabase.from('lead_interactions' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }),
       supabase.from('lead_distribution_logs' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
       supabase.from('lead_sla_events' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
       supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
+      supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes').eq('lead_id', id!).order('scheduled_at', { ascending: true }),
     ]);
     if (leadRes.data) {
       setLead(leadRes.data);
