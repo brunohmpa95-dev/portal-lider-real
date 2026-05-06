@@ -14,6 +14,7 @@ import { useNeighborhoodNames } from '@/hooks/useNeighborhoods';
 import { Search, ChevronLeft, ChevronRight, SlidersHorizontal, X, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
+import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
 
 interface PropertyListingPageProps {
   purpose: 'sale' | 'rent';
