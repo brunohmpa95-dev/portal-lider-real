@@ -9,7 +9,7 @@ import { useTaskMutations, type Task } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Phone, MessageSquare, Calendar, FileText, RefreshCw, Plus } from 'lucide-react';
+import { Loader2, Phone, MessageSquare, Calendar, FileText, RefreshCw, Plus, Users } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -31,15 +31,16 @@ const STATUSES: { value: Task['status']; label: string }[] = [
   { value: 'cancelled', label: 'Cancelada' },
 ];
 
-type TemplateKey = 'call' | 'whatsapp' | 'visit' | 'proposal' | 'followup' | 'custom';
+type TemplateKey = 'call' | 'whatsapp' | 'visit' | 'meeting' | 'proposal' | 'followup' | 'custom';
 
-const TEMPLATES: { key: TemplateKey; label: string; icon: any; title: string; description: string; priority: Task['priority']; offsetHours: number }[] = [
-  { key: 'call',     label: 'Ligar',           icon: Phone,        title: 'Ligar para o lead',          description: '',                                            priority: 'high',   offsetHours: 2 },
-  { key: 'whatsapp', label: 'Responder WhatsApp', icon: MessageSquare, title: 'Responder no WhatsApp',  description: '',                                            priority: 'high',   offsetHours: 1 },
-  { key: 'visit',    label: 'Agendar visita',  icon: Calendar,     title: 'Agendar visita ao imóvel',   description: 'Confirmar data/horário e enviar confirmação.', priority: 'high',   offsetHours: 24 },
-  { key: 'proposal', label: 'Enviar proposta', icon: FileText,     title: 'Enviar proposta',            description: 'Preparar e enviar proposta personalizada.',    priority: 'urgent', offsetHours: 24 },
-  { key: 'followup', label: 'Cobrar retorno', icon: RefreshCw,     title: 'Cobrar retorno do lead',     description: 'Lead sem resposta — fazer follow-up.',         priority: 'normal', offsetHours: 48 },
-  { key: 'custom',   label: 'Personalizada',  icon: Plus,          title: '',                            description: '',                                            priority: 'normal', offsetHours: 0 },
+const TEMPLATES: { key: TemplateKey; label: string; icon: any; title: string; description: string; priority: Task['priority']; offsetHours: number; appointmentType: Task['appointment_type'] }[] = [
+  { key: 'call',     label: 'Ligar',             icon: Phone,         title: 'Ligar para o lead',          description: '',                                            priority: 'high',   offsetHours: 2,  appointmentType: 'call' },
+  { key: 'whatsapp', label: 'Responder WhatsApp', icon: MessageSquare, title: 'Responder no WhatsApp',     description: '',                                            priority: 'high',   offsetHours: 1,  appointmentType: 'whatsapp' },
+  { key: 'visit',    label: 'Agendar visita',    icon: Calendar,      title: 'Agendar visita ao imóvel',   description: 'Confirmar data/horário e enviar confirmação.', priority: 'high',   offsetHours: 24, appointmentType: 'visit' },
+  { key: 'meeting',  label: 'Reunião',           icon: Users,         title: 'Reunião com o lead',         description: '',                                            priority: 'high',   offsetHours: 24, appointmentType: 'meeting' },
+  { key: 'proposal', label: 'Enviar proposta',   icon: FileText,      title: 'Enviar proposta',            description: 'Preparar e enviar proposta personalizada.',    priority: 'urgent', offsetHours: 24, appointmentType: null },
+  { key: 'followup', label: 'Cobrar retorno',    icon: RefreshCw,     title: 'Cobrar retorno do lead',     description: 'Lead sem resposta — fazer follow-up.',         priority: 'normal', offsetHours: 48, appointmentType: 'followup' },
+  { key: 'custom',   label: 'Personalizada',    icon: Plus,           title: '',                            description: '',                                            priority: 'normal', offsetHours: 0,  appointmentType: null },
 ];
 
 function formatLocalDateTime(d: Date) {
@@ -59,6 +60,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
     priority: 'normal' as Task['priority'],
     status: 'pending' as Task['status'],
     assigned_to: '' as string,
+    appointment_type: null as Task['appointment_type'],
   });
   const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
 
@@ -71,6 +73,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       priority: (initial?.priority as Task['priority']) || 'normal',
       status: (initial?.status as Task['status']) || 'pending',
       assigned_to: (initial?.assigned_to as string) || user?.id || '',
+      appointment_type: (initial?.appointment_type as Task['appointment_type']) || null,
     });
     // Carrega corretores/agentes (uma vez por abertura)
     supabase
@@ -85,7 +88,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
   function applyTemplate(key: TemplateKey) {
     const t = TEMPLATES.find((x) => x.key === key)!;
     if (key === 'custom') {
-      setForm((f) => ({ ...f, title: '', description: '', due_at: '', priority: 'normal' }));
+      setForm((f) => ({ ...f, title: '', description: '', due_at: '', priority: 'normal', appointment_type: null }));
       return;
     }
     const due = new Date(Date.now() + t.offsetHours * 3600 * 1000);
@@ -95,6 +98,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       description: t.description || f.description,
       priority: t.priority,
       due_at: formatLocalDateTime(due),
+      appointment_type: t.appointmentType,
     }));
   }
 
@@ -110,6 +114,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       priority: form.priority,
       status: form.status,
       assigned_to: form.assigned_to || null,
+      appointment_type: form.appointment_type,
       lead_id: initial?.lead_id ?? defaultLeadId ?? null,
     };
     try {
@@ -217,6 +222,27 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Tipo de compromisso</Label>
+            <Select
+              value={form.appointment_type ?? '__none__'}
+              onValueChange={(v) => setForm((f) => ({ ...f, appointment_type: v === '__none__' ? null : (v as Task['appointment_type']) }))}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum (tarefa comum)</SelectItem>
+                <SelectItem value="visit">Visita</SelectItem>
+                <SelectItem value="meeting">Reunião</SelectItem>
+                <SelectItem value="call">Ligação agendada</SelectItem>
+                <SelectItem value="whatsapp">WhatsApp agendado</SelectItem>
+                <SelectItem value="followup">Retorno</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.appointment_type && (
+              <p className="text-[11px] text-muted-foreground">Aparece na agenda quando houver data/hora.</p>
+            )}
           </div>
 
           {isEdit && (

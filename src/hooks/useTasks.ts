@@ -16,9 +16,18 @@ export interface Task {
   property_id: string | null;
   contract_id: string | null;
   completed_at: string | null;
+  appointment_type: 'visit' | 'meeting' | 'call' | 'whatsapp' | 'followup' | null;
   created_at: string;
   updated_at: string;
 }
+
+export const APPOINTMENT_TYPE_LABEL: Record<string, string> = {
+  visit: 'Visita',
+  meeting: 'Reunião',
+  call: 'Ligação',
+  whatsapp: 'WhatsApp',
+  followup: 'Retorno',
+};
 
 export type TaskFilter = 'all' | 'mine' | 'team' | 'overdue' | 'today' | 'week' | 'done';
 

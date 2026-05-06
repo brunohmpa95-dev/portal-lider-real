@@ -44,6 +44,7 @@ export default function LeadDetail() {
   const [slaEvents, setSlaEvents] = useState<any[]>([]);
   const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
   const [property, setProperty] = useState<any>(null);
+  const [visits, setVisits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingLost, setPendingLost] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
@@ -55,12 +56,13 @@ export default function LeadDetail() {
 
   async function loadLead() {
     setLoading(true);
-    const [leadRes, intRes, distRes, slaRes, agentsRes] = await Promise.all([
+    const [leadRes, intRes, distRes, slaRes, agentsRes, visitsRes] = await Promise.all([
       supabase.from('property_leads').select('*').eq('id', id!).single(),
       supabase.from('lead_interactions' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }),
       supabase.from('lead_distribution_logs' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
       supabase.from('lead_sla_events' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
       supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
+      supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes').eq('lead_id', id!).order('scheduled_at', { ascending: true }),
     ]);
     if (leadRes.data) {
       setLead(leadRes.data);
@@ -79,6 +81,7 @@ export default function LeadDetail() {
     setDistLogs((distRes as any).data || []);
     setSlaEvents((slaRes as any).data || []);
     setAgents((agentsRes.data as any) || []);
+    setVisits(((visitsRes as any).data) || []);
     setLoading(false);
   }
 
@@ -405,6 +408,53 @@ export default function LeadDetail() {
               )}
             </CardContent>
           </Card>
+
+          {/* Próximos compromissos (agenda) */}
+          {(() => {
+            const now = Date.now();
+            const upcomingVisits = visits
+              .filter((v) => v.status === 'scheduled' && new Date(v.scheduled_at).getTime() >= now)
+              .map((v) => ({ id: v.id, kind: 'Visita', when: v.scheduled_at, note: v.notes as string | null }));
+            const upcomingTasks = (tasks as any[])
+              .filter((t) => t.appointment_type && t.due_at && t.status === 'pending' && new Date(t.due_at).getTime() >= now)
+              .map((t) => ({
+                id: t.id,
+                kind:
+                  t.appointment_type === 'visit' ? 'Visita' :
+                  t.appointment_type === 'meeting' ? 'Reunião' :
+                  t.appointment_type === 'call' ? 'Ligação' :
+                  t.appointment_type === 'whatsapp' ? 'WhatsApp' : 'Retorno',
+                when: t.due_at,
+                note: t.title as string,
+              }));
+            const all = [...upcomingVisits, ...upcomingTasks].sort((a, b) => +new Date(a.when) - +new Date(b.when)).slice(0, 6);
+            if (all.length === 0) return null;
+            return (
+              <Card>
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">Próximos compromissos</CardTitle>
+                  <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+                    <Link to="/admin/agenda">Ver agenda</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {all.map((c) => (
+                      <li key={`${c.kind}-${c.id}`} className="flex items-start gap-2 p-2 rounded border">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{c.kind}</Badge>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{c.note || c.kind}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {new Date(c.when).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Tarefas */}
           <Card>
