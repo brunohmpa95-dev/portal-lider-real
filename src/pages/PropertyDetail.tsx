@@ -21,6 +21,7 @@ import { formatPrice } from '@/data/properties';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
+import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
 import { FormattedDescription } from '@/lib/format-description';
 
 /* ─── Attribute pill ─── */
