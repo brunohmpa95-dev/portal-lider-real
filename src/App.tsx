@@ -74,6 +74,7 @@ import AdminPermissions from "@/pages/admin/AdminPermissions";
 import AdminGestao from "@/pages/admin/AdminGestao";
 import AdminEsteira from "@/pages/admin/AdminEsteira";
 import AdminDistributionRules from "@/pages/admin/AdminDistributionRules";
+import CrmReports from "@/pages/admin/CrmReports";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +175,7 @@ const App = () => (
                 <Route path="team" element={<Team />} />
                 <Route path="partners" element={<Partners />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="reports/crm" element={<CrmReports />} />
                 <Route path="gestao" element={<AdminGestao />} />
                 <Route path="esteira" element={<AdminEsteira />} />
                 <Route path="distribuicao" element={<AdminDistributionRules />} />

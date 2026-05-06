@@ -111,9 +111,14 @@ export default function Reports() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h1 className="text-xl sm:text-2xl font-bold">Relatórios</h1>
-        <Button variant="outline" size="sm" onClick={() => exportReport('channel_performance')} className="min-h-11">
-          <Download className="h-4 w-4 mr-1" /> Performance por canal
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="default" size="sm" asChild className="min-h-11">
+            <a href="/admin/reports/crm">Relatórios CRM →</a>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportReport('channel_performance')} className="min-h-11">
+            <Download className="h-4 w-4 mr-1" /> Performance por canal
+          </Button>
+        </div>
       </div>
 
       {/* Summary cards */}
