@@ -236,8 +236,6 @@ function getBreadcrumbs(pathname: string) {
     '/admin/profile': [{ label: 'Meu Perfil' }],
     '/admin/notifications': [{ label: 'Notificações' }],
     '/admin/permissoes': [{ label: 'Permissões' }],
-    '/admin/auditoria': [{ label: 'Auditoria' }],
-    '/admin/financeiro': [{ label: 'Financeiro' }],
     '/admin/tarefas': [{ label: 'Tarefas' }],
     '/admin/bairros': [{ label: 'Bairros' }],
     '/admin/gestao': [{ label: 'Dashboard Gerencial' }],
