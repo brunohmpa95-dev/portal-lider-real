@@ -32,6 +32,63 @@ export default function Settings() {
     toast({ title: 'Configurações salvas', description: 'As alterações foram aplicadas.' });
   }
 
+  // ---- WhatsApp settings (persistido) ----
+  const [wa, setWa] = useState<any>(null);
+  const [waLoading, setWaLoading] = useState(true);
+  const [waSaving, setWaSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('whatsapp_settings' as any)
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setWa(
+        data || {
+          is_active: true,
+          phone_e164: '5537999000000',
+          display_phone: '(37) 99900-0000',
+          default_message: 'Olá! Vim pelo site da Líder Imóveis Itaúna.',
+          responsible_sector: 'vendas',
+          auto_create_lead: true,
+          provider: 'web',
+        },
+      );
+      setWaLoading(false);
+    })();
+  }, []);
+
+  function setWaField<K extends string>(k: K, v: any) {
+    setWa((s: any) => ({ ...s, [k]: v }));
+  }
+
+  async function saveWhatsApp() {
+    if (!wa) return;
+    setWaSaving(true);
+    const payload: any = {
+      is_active: !!wa.is_active,
+      phone_e164: String(wa.phone_e164 || '').replace(/\D/g, ''),
+      display_phone: wa.display_phone || null,
+      default_message: wa.default_message || '',
+      responsible_sector: wa.responsible_sector || 'vendas',
+      auto_create_lead: !!wa.auto_create_lead,
+      provider: wa.provider || 'web',
+    };
+    let error;
+    if (wa.id) {
+      ({ error } = await supabase.from('whatsapp_settings' as any).update(payload).eq('id', wa.id));
+    } else {
+      const ins = await supabase.from('whatsapp_settings' as any).insert(payload).select().single();
+      error = ins.error;
+      if (ins.data) setWa(ins.data);
+    }
+    setWaSaving(false);
+    if (error) toast({ title: 'Erro ao salvar WhatsApp', description: error.message, variant: 'destructive' });
+    else toast({ title: 'WhatsApp atualizado' });
+  }
+
   return (
     <div className="space-y-4 max-w-3xl">
       <h1 className="text-2xl font-bold">Configurações</h1>
@@ -39,6 +96,7 @@ export default function Settings() {
       <Tabs defaultValue="company">
         <TabsList>
           <TabsTrigger value="company">Empresa</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           <TabsTrigger value="system">Sistema</TabsTrigger>
           <TabsTrigger value="security">Segurança</TabsTrigger>
         </TabsList>
