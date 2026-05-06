@@ -210,19 +210,22 @@ export default function Reports() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Evolução de Leads</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-base">Evolução de Leads</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => exportReport('leads_by_broker')} title="Exportar leads por corretor"><Download className="h-4 w-4" /></Button>
+          </CardHeader>
           <CardContent>
             {leadsOverTime.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={leadsOverTime}>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={leadsOverTime} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="leads" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="leads" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
-            ) : <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
+            ) : <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
           </CardContent>
         </Card>
       </div>
