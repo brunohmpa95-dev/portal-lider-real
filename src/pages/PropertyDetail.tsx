@@ -319,22 +319,28 @@ const PropertyDetail = () => {
               {/* WhatsApp — desktop only (mobile has inline CTA above) */}
               {!isMobile && (
                 <div className="space-y-2">
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <WhatsAppCTA
+                    intent={intent}
+                    propertyId={property.id}
+                    propertyCode={property.code}
+                    propertyTitle={property.title}
+                    neighborhood={property.neighborhood}
+                    source="property-detail-sidebar"
                     className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors"
                   >
                     <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — WhatsApp' : 'Quero alugar — WhatsApp'}
-                  </a>
-                  <a
-                    href={visitWhatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  </WhatsAppCTA>
+                  <WhatsAppCTA
+                    intent="visit"
+                    propertyId={property.id}
+                    propertyCode={property.code}
+                    propertyTitle={property.title}
+                    neighborhood={property.neighborhood}
+                    source="property-detail-visit"
                     className="flex items-center justify-center gap-2 w-full border border-border bg-background py-2.5 rounded-lg text-xs font-medium text-foreground hover:bg-secondary transition-colors"
                   >
                     Agendar visita pelo WhatsApp
-                  </a>
+                  </WhatsAppCTA>
                 </div>
               )}
             </div>
