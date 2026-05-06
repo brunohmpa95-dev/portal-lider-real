@@ -44,6 +44,7 @@ export default function LeadDetail() {
   const [slaEvents, setSlaEvents] = useState<any[]>([]);
   const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
   const [property, setProperty] = useState<any>(null);
+  const [visits, setVisits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingLost, setPendingLost] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
