@@ -44,7 +44,7 @@ export default function AdminAudit() {
       .from('audit_log')
       .select('id, action, resource, target_type, target_id, result, user_id, created_at, metadata')
       .order('created_at', { ascending: false })
-      .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
+      .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE); // pede 1 a mais para detectar próxima página
 
     if (resource !== 'all') q = q.eq('resource', resource);
     if (period !== 'all') {
