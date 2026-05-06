@@ -4,6 +4,10 @@ import InternalPageHeader from '@/components/shared/InternalPageHeader';
 import { Loader2, KeyRound, Save } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const ROLES = ['cliente', 'corretor_parceiro', 'corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'] as const;
@@ -20,6 +24,7 @@ export default function AdminPermissions() {
   const [matrix, setMatrix] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeRole, setActiveRole] = useState<string>('corretor');
 
   useEffect(() => { load(); }, []);
 
@@ -35,6 +40,7 @@ export default function AdminPermissions() {
   }
 
   function toggle(role: string, code: string) {
+    if (role === 'superadmin') return;
     const key = `${role}::${code}`;
     const next = new Set(matrix);
     if (next.has(key)) next.delete(key); else next.add(key);
@@ -66,9 +72,78 @@ export default function AdminPermissions() {
     <div>
       <InternalPageHeader title="Permissões" subtitle="Matriz de perfis × permissões. Alterações são auditadas." />
       <div className="flex justify-end mb-4">
-        <Button onClick={save} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving ? 'Salvando...' : 'Salvar alterações'}</Button>
+        <Button onClick={save} disabled={saving} className="min-h-11">
+          <Save className="h-4 w-4 mr-2" />{saving ? 'Salvando...' : 'Salvar alterações'}
+        </Button>
       </div>
-      <div className="bg-card border border-border rounded-lg overflow-x-auto">
+
+      {/* MOBILE: Tabs por role + accordion por módulo */}
+      <div className="lg:hidden">
+        <Tabs value={activeRole} onValueChange={setActiveRole}>
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <TabsList className="inline-flex w-auto">
+              {ROLES.map((r) => (
+                <TabsTrigger key={r} value={r} className="text-xs whitespace-nowrap">
+                  {ROLE_LABELS[r]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {ROLES.map((role) => (
+            <TabsContent key={role} value={role} className="mt-3">
+              {role === 'superadmin' && (
+                <p className="text-xs text-muted-foreground mb-3 p-3 rounded-md bg-muted/40">
+                  Superadmin sempre tem todas as permissões.
+                </p>
+              )}
+              <Accordion type="multiple" defaultValue={Object.keys(grouped)}>
+                {Object.entries(grouped).map(([mod, list]) => {
+                  const checkedCount = list.filter((p) => matrix.has(`${role}::${p.code}`)).length;
+                  return (
+                    <AccordionItem key={mod} value={mod} className="border border-border rounded-lg mb-2 px-3">
+                      <AccordionTrigger className="hover:no-underline py-3">
+                        <div className="flex items-center justify-between w-full pr-2">
+                          <span className="font-semibold uppercase text-xs">{mod}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {checkedCount}/{list.length}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2 pb-2">
+                          {list.map((p) => (
+                            <label
+                              key={p.code}
+                              className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/40 cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={matrix.has(`${role}::${p.code}`)}
+                                onCheckedChange={() => toggle(role, p.code)}
+                                disabled={role === 'superadmin'}
+                                className="mt-0.5"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-mono text-xs">{p.code}</div>
+                                {p.description && (
+                                  <div className="text-xs text-muted-foreground mt-0.5">{p.description}</div>
+                                )}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+
+      {/* DESKTOP: Matriz */}
+      <div className="hidden lg:block bg-card border border-border rounded-lg overflow-x-auto">
         <table className="w-full text-xs">
           <thead className="bg-muted/50 sticky top-0">
             <tr>
@@ -95,7 +170,11 @@ export default function AdminPermissions() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground mt-3 flex items-center gap-2"><KeyRound className="h-3 w-3" />Superadmin sempre tem todas as permissões e não pode ser alterado nesta interface.</p>
+
+      <p className="text-xs text-muted-foreground mt-3 flex items-center gap-2">
+        <KeyRound className="h-3 w-3" />
+        Superadmin sempre tem todas as permissões e não pode ser alterado nesta interface.
+      </p>
     </div>
   );
 }

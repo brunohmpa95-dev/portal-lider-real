@@ -145,7 +145,7 @@ function AdminHeader() {
   return (
     <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 gap-4">
       <div className="flex items-center gap-3">
-        <SidebarTrigger>
+        <SidebarTrigger className="h-11 w-11">
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
         <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground">
@@ -235,6 +235,11 @@ function getBreadcrumbs(pathname: string) {
     '/admin/settings': [{ label: 'Configurações' }],
     '/admin/profile': [{ label: 'Meu Perfil' }],
     '/admin/notifications': [{ label: 'Notificações' }],
+    '/admin/permissoes': [{ label: 'Permissões' }],
+    '/admin/tarefas': [{ label: 'Tarefas' }],
+    '/admin/bairros': [{ label: 'Bairros' }],
+    '/admin/gestao': [{ label: 'Dashboard Gerencial' }],
+    '/admin/properties/import': [{ label: 'Imóveis', path: '/admin/properties' }, { label: 'Importar' }],
   };
 
   if (map[pathname]) return map[pathname];

@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, Building2, TrendingUp, CalendarDays, BarChart3, PieChart as PieIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Users, Building2, TrendingUp, CalendarDays, Download } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line,
 } from 'recharts';
 
 const COLORS = ['hsl(var(--primary))', '#60a5fa', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#8b5cf6'];
+
+async function exportReport(report: string) {
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-report', {
+      body: { report, format: 'csv', filters: {} },
+    });
+    if (error) throw error;
+    const blob = new Blob([data as string], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${report}_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exportado');
+  } catch (e: any) {
+    toast.error(e.message || 'Erro ao exportar');
+  }
+}
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
@@ -125,7 +146,10 @@ export default function Reports() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Leads por Origem</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-base">Leads por Origem</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => exportReport('leads_by_source')}><Download className="h-4 w-4" /></Button>
+          </CardHeader>
           <CardContent>
             {leadsBySource.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
@@ -141,7 +165,10 @@ export default function Reports() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Funil de Vendas</CardTitle></CardHeader>
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-base">Funil de Vendas</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => exportReport('funnel_conversion')}><Download className="h-4 w-4" /></Button>
+          </CardHeader>
           <CardContent>
             {leadsByStage.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
