@@ -60,6 +60,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
     priority: 'normal' as Task['priority'],
     status: 'pending' as Task['status'],
     assigned_to: '' as string,
+    appointment_type: null as Task['appointment_type'],
   });
   const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
 
@@ -72,6 +73,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       priority: (initial?.priority as Task['priority']) || 'normal',
       status: (initial?.status as Task['status']) || 'pending',
       assigned_to: (initial?.assigned_to as string) || user?.id || '',
+      appointment_type: (initial?.appointment_type as Task['appointment_type']) || null,
     });
     // Carrega corretores/agentes (uma vez por abertura)
     supabase
@@ -86,7 +88,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
   function applyTemplate(key: TemplateKey) {
     const t = TEMPLATES.find((x) => x.key === key)!;
     if (key === 'custom') {
-      setForm((f) => ({ ...f, title: '', description: '', due_at: '', priority: 'normal' }));
+      setForm((f) => ({ ...f, title: '', description: '', due_at: '', priority: 'normal', appointment_type: null }));
       return;
     }
     const due = new Date(Date.now() + t.offsetHours * 3600 * 1000);
@@ -96,6 +98,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       description: t.description || f.description,
       priority: t.priority,
       due_at: formatLocalDateTime(due),
+      appointment_type: t.appointmentType,
     }));
   }
 
