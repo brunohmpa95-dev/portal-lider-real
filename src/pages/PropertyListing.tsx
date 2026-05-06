@@ -223,14 +223,13 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
                 Cadastramos seu interesse e avisamos quando entrar um imóvel com o seu perfil em Itaúna.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-                <a
-                  href={buildWhatsAppLink(intent)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <WhatsAppCTA
+                  intent={intent}
+                  source="listing-no-results-cta"
                   className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-[#20BD5A] transition-colors w-full sm:w-auto"
                 >
                   <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-                </a>
+                </WhatsAppCTA>
                 <Link to="/contato" className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full">Cadastrar interesse</Button>
                 </Link>
