@@ -570,8 +570,16 @@ export default function LeadsList() {
     if (filtered.length === 0) {
       return (
         <Card>
-          <CardContent className="text-center py-12 text-sm text-muted-foreground">
-            Nenhum lead encontrado com os filtros atuais.
+          <CardContent className="p-0">
+            <EmptyState
+              title="Nenhum lead encontrado"
+              description="Ajuste os filtros ou cadastre um novo lead para começar."
+              action={
+                <Button asChild size="sm">
+                  <Link to="/admin/leads/new"><Plus className="h-4 w-4 mr-1" /> Novo Lead</Link>
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       );
@@ -690,14 +698,9 @@ export default function LeadsList() {
       </Card>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <Card><CardContent className="p-3 sm:p-4"><ListSkeleton rows={6} /></CardContent></Card>
       ) : error ? (
-        <Card>
-          <CardContent className="text-center py-12 space-y-3">
-            <p className="text-sm text-destructive">Erro ao carregar leads: {error}</p>
-            <Button size="sm" variant="outline" onClick={loadAll}>Tentar novamente</Button>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="p-0"><ErrorState description={error} onRetry={loadAll} /></CardContent></Card>
       ) : viewMode === 'kanban' ? (
         isMobile ? renderKanbanMobile() : renderKanbanDesktop()
       ) : (
