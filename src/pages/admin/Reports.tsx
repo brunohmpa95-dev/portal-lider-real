@@ -109,10 +109,15 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Relatórios</h1>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-bold">Relatórios</h1>
+        <Button variant="outline" size="sm" onClick={() => exportReport('channel_performance')} className="min-h-11">
+          <Download className="h-4 w-4 mr-1" /> Performance por canal
+        </Button>
+      </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-blue-600 mb-1" />
@@ -144,23 +149,23 @@ export default function Reports() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <Card>
           <CardHeader className="pb-2 flex-row items-center justify-between">
             <CardTitle className="text-base">Leads por Origem</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => exportReport('leads_by_source')}><Download className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => exportReport('leads_by_source')} title="Exportar CSV"><Download className="h-4 w-4" /></Button>
           </CardHeader>
           <CardContent>
             {leadsBySource.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
-                  <Pie data={leadsBySource} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                  <Pie data={leadsBySource} cx="50%" cy="50%" outerRadius="75%" dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
                     {leadsBySource.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-            ) : <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
+            ) : <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
           </CardContent>
         </Card>
 
