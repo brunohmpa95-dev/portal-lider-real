@@ -1576,6 +1576,8 @@ export type Database = {
       property_leads: {
         Row: {
           assigned_to: string | null
+          channel: string | null
+          client_id: string | null
           created_at: string
           distributed_at: string | null
           distribution_rule_id: string | null
@@ -1605,10 +1607,14 @@ export type Database = {
           source: string | null
           status: string
           tags: string[] | null
+          temperature: string
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           assigned_to?: string | null
+          channel?: string | null
+          client_id?: string | null
           created_at?: string
           distributed_at?: string | null
           distribution_rule_id?: string | null
@@ -1638,10 +1644,14 @@ export type Database = {
           source?: string | null
           status?: string
           tags?: string[] | null
+          temperature?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           assigned_to?: string | null
+          channel?: string | null
+          client_id?: string | null
           created_at?: string
           distributed_at?: string | null
           distribution_rule_id?: string | null
@@ -1671,7 +1681,9 @@ export type Database = {
           source?: string | null
           status?: string
           tags?: string[] | null
+          temperature?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: [
           {
