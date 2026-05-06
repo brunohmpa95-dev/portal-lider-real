@@ -245,14 +245,13 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
             <p className="text-muted-foreground text-sm mb-4">Tente ajustar os filtros ou fale com a gente — temos imóveis fora do site também.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
               <Button variant="outline" size="sm" onClick={resetFilters}>Limpar filtros</Button>
-              <a
-                href={buildWhatsAppLink(intent)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <WhatsAppCTA
+                intent={intent}
+                source="listing-empty-cta"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
                 <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-              </a>
+              </WhatsAppCTA>
             </div>
           </div>
         )}
