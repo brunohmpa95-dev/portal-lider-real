@@ -2060,6 +2060,120 @@ export type Database = {
           },
         ]
       }
+      whatsapp_clicks: {
+        Row: {
+          id: string
+          intent: string
+          lead_id: string | null
+          message_sent: string | null
+          metadata: Json
+          neighborhood: string | null
+          occurred_at: string
+          page: string | null
+          property_code: string | null
+          property_id: string | null
+          property_title: string | null
+          referrer: string | null
+          url: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          id?: string
+          intent?: string
+          lead_id?: string | null
+          message_sent?: string | null
+          metadata?: Json
+          neighborhood?: string | null
+          occurred_at?: string
+          page?: string | null
+          property_code?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          referrer?: string | null
+          url?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          id?: string
+          intent?: string
+          lead_id?: string | null
+          message_sent?: string | null
+          metadata?: Json
+          neighborhood?: string | null
+          occurred_at?: string
+          page?: string | null
+          property_code?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          referrer?: string | null
+          url?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_settings: {
+        Row: {
+          auto_create_lead: boolean
+          created_at: string
+          default_message: string
+          display_phone: string | null
+          id: string
+          is_active: boolean
+          phone_e164: string
+          provider: string
+          provider_config: Json
+          responsible_sector: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_create_lead?: boolean
+          created_at?: string
+          default_message?: string
+          display_phone?: string | null
+          id?: string
+          is_active?: boolean
+          phone_e164?: string
+          provider?: string
+          provider_config?: Json
+          responsible_sector?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_create_lead?: boolean
+          created_at?: string
+          default_message?: string
+          display_phone?: string | null
+          id?: string
+          is_active?: boolean
+          phone_e164?: string
+          provider?: string
+          provider_config?: Json
+          responsible_sector?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
