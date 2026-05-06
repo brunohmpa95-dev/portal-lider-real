@@ -176,16 +176,16 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             {leadsByStage.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={leadsByStage} layout="vertical">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={leadsByStage} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={70} tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
+            ) : <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">Sem dados</div>}
           </CardContent>
         </Card>
 
