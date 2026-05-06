@@ -221,42 +221,57 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          assigned_to: string | null
           birth_date: string | null
           city: string | null
           cpf_cnpj: string | null
           created_at: string
+          email: string | null
+          full_name: string | null
           id: string
           notes: string | null
-          profile_id: string
+          phone: string | null
+          profile_id: string | null
           rg_ie: string | null
+          source_lead_id: string | null
           state: string | null
           updated_at: string
           zip_code: string | null
         }
         Insert: {
           address?: string | null
+          assigned_to?: string | null
           birth_date?: string | null
           city?: string | null
           cpf_cnpj?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           notes?: string | null
-          profile_id: string
+          phone?: string | null
+          profile_id?: string | null
           rg_ie?: string | null
+          source_lead_id?: string | null
           state?: string | null
           updated_at?: string
           zip_code?: string | null
         }
         Update: {
           address?: string | null
+          assigned_to?: string | null
           birth_date?: string | null
           city?: string | null
           cpf_cnpj?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           notes?: string | null
-          profile_id?: string
+          phone?: string | null
+          profile_id?: string | null
           rg_ie?: string | null
+          source_lead_id?: string | null
           state?: string | null
           updated_at?: string
           zip_code?: string | null
@@ -267,6 +282,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_source_lead_id_fkey"
+            columns: ["source_lead_id"]
+            isOneToOne: false
+            referencedRelation: "property_leads"
             referencedColumns: ["id"]
           },
         ]
@@ -2180,6 +2202,11 @@ export type Database = {
     }
     Functions: {
       apply_distribution_rules: { Args: { _lead_id: string }; Returns: string }
+      convert_lead_to_client: { Args: { _lead_id: string }; Returns: string }
+      find_existing_client: {
+        Args: { _cpf?: string; _email?: string; _phone?: string }
+        Returns: string
+      }
       get_my_permissions: { Args: never; Returns: string[] }
       get_my_roles: {
         Args: never
