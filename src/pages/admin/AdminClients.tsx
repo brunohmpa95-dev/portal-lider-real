@@ -53,7 +53,15 @@ export default function AdminClients() {
   const filtered = clients.filter(c => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return (c.profiles?.full_name?.toLowerCase().includes(q) || c.cpf_cnpj?.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q));
+    const name = c.full_name || c.profiles?.full_name || '';
+    const phone = c.phone || c.profiles?.phone || '';
+    return (
+      name.toLowerCase().includes(q) ||
+      c.cpf_cnpj?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      phone.toLowerCase().includes(q) ||
+      c.city?.toLowerCase().includes(q)
+    );
   });
 
   const active = filtered.filter(c => c.profiles?.is_active !== false);
@@ -82,7 +90,7 @@ export default function AdminClients() {
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar por nome, CPF ou cidade..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <Input placeholder="Buscar por nome, e-mail, telefone, CPF ou cidade..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
 
@@ -95,19 +103,29 @@ export default function AdminClients() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Nome</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">CPF/CNPJ</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Telefone</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Cidade</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden sm:table-cell">Contato</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden md:table-cell">CPF/CNPJ</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden lg:table-cell">Cidade</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Leads</th>
                   <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map(c => (
                   <tr key={c.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{c.profiles?.full_name || '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell font-mono text-xs">{c.cpf_cnpj || '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{c.profiles?.phone || '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{c.city || '—'}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {c.full_name || c.profiles?.full_name || '—'}
+                      {!c.profile_id && (
+                        <span className="ml-2 text-[10px] uppercase tracking-wide text-muted-foreground border rounded px-1 py-0.5">sem login</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell text-xs">
+                      <div>{c.email || '—'}</div>
+                      <div>{c.phone || c.profiles?.phone || '—'}</div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell font-mono text-xs">{c.cpf_cnpj || '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{c.city || '—'}</td>
+                    <td className="px-4 py-3 text-right font-medium">{c.leads_count ?? 0}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={c.profiles?.is_active !== false ? 'active' : 'inactive'} />
                     </td>
