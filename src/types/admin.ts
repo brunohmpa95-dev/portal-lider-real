@@ -187,6 +187,7 @@ export const INTERACTION_TYPE_OPTIONS = [
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'visit', label: 'Visita' },
   { value: 'meeting', label: 'Reunião' },
+  { value: 'stage_change', label: 'Etapa alterada' },
 ];
 
 export const PROPERTY_TYPE_OPTIONS = [
