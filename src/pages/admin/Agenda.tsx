@@ -77,36 +77,40 @@ export default function Agenda() {
       ]);
       if (vErr || tErr) throw new Error(vErr?.message || tErr?.message);
 
-    const visitItems: AgendaItem[] = ((visits as any[]) || []).map((v) => ({
-      id: v.id,
-      source: 'visit',
-      type: 'visit',
-      scheduled_at: v.scheduled_at,
-      duration_minutes: v.duration_minutes,
-      title: 'Visita ao imóvel',
-      notes: v.notes,
-      status: v.status,
-      lead_id: v.lead_id,
-      property_id: v.property_id,
-      agent_id: v.agent_id,
-    }));
+      const visitItems: AgendaItem[] = ((visits as any[]) || []).map((v) => ({
+        id: v.id,
+        source: 'visit',
+        type: 'visit',
+        scheduled_at: v.scheduled_at,
+        duration_minutes: v.duration_minutes,
+        title: 'Visita ao imóvel',
+        notes: v.notes,
+        status: v.status,
+        lead_id: v.lead_id,
+        property_id: v.property_id,
+        agent_id: v.agent_id,
+      }));
 
-    const taskItems: AgendaItem[] = ((tasks as any[]) || []).map((t) => ({
-      id: t.id,
-      source: 'task',
-      type: t.appointment_type,
-      scheduled_at: t.due_at,
-      duration_minutes: null,
-      title: t.title,
-      notes: t.description,
-      status: t.status === 'done' ? 'completed' : t.status === 'cancelled' ? 'cancelled' : 'scheduled',
-      lead_id: t.lead_id,
-      property_id: t.property_id,
-      agent_id: t.assigned_to,
-    }));
+      const taskItems: AgendaItem[] = ((tasks as any[]) || []).map((t) => ({
+        id: t.id,
+        source: 'task',
+        type: t.appointment_type,
+        scheduled_at: t.due_at,
+        duration_minutes: null,
+        title: t.title,
+        notes: t.description,
+        status: t.status === 'done' ? 'completed' : t.status === 'cancelled' ? 'cancelled' : 'scheduled',
+        lead_id: t.lead_id,
+        property_id: t.property_id,
+        agent_id: t.assigned_to,
+      }));
 
-    setItems([...visitItems, ...taskItems].sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at)));
-    setLoading(false);
+      setItems([...visitItems, ...taskItems].sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at)));
+    } catch (e: any) {
+      setLoadError(e?.message || 'Erro ao carregar agenda');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function createVisit(e: React.FormEvent) {
