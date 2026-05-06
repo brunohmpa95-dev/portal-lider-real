@@ -1,27 +1,34 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  LEAD_FUNNEL_STAGES, LEAD_PRIORITY_OPTIONS, LEAD_SOURCE_OPTIONS, INTERACTION_TYPE_OPTIONS,
+  LEAD_FUNNEL_STAGES, LEAD_PRIORITY_OPTIONS, LEAD_SOURCE_OPTIONS, LEAD_TEMPERATURE_OPTIONS,
+  LEAD_CHANNEL_OPTIONS, INTERACTION_TYPE_OPTIONS,
   PROPERTY_PURPOSE_OPTIONS, PROPERTY_TYPE_OPTIONS,
 } from '@/types/admin';
 import { useNeighborhoods } from '@/hooks/useNeighborhoods';
 import { useTasks, useTaskMutations } from '@/hooks/useTasks';
 import LostReasonDialog from '@/components/admin/LostReasonDialog';
 import TaskFormDialog from '@/components/admin/TaskFormDialog';
+import QuickInteractionDialog from '@/components/admin/QuickInteractionDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar, RefreshCw } from 'lucide-react';
+import {
+  ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar,
+  RefreshCw, User, Flame, MoveRight, CalendarPlus, ListTodo, FileText, Sparkles,
+  CheckCircle2, XCircle, UserCheck, ArrowRightLeft,
+} from 'lucide-react';
 import { SlaBadge } from '@/components/admin/SlaBadge';
+import { temperatureColor, funnelStageColor, channelLabel, sourceLabel } from '@/lib/leads';
+
+const NONE = '__none__';
 
 export default function LeadDetail() {
   const { id } = useParams<{ id: string }>();
@@ -33,30 +40,53 @@ export default function LeadDetail() {
 
   const [lead, setLead] = useState<any>(null);
   const [interactions, setInteractions] = useState<any[]>([]);
+  const [distLogs, setDistLogs] = useState<any[]>([]);
+  const [slaEvents, setSlaEvents] = useState<any[]>([]);
+  const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
+  const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [newInteraction, setNewInteraction] = useState({ type: 'note', content: '' });
   const [pendingLost, setPendingLost] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editInterest, setEditInterest] = useState(false);
+  const [interactionDefaultType, setInteractionDefaultType] =
+    useState<null | 'note' | 'call' | 'whatsapp' | 'visit' | 'meeting' | 'email'>(null);
 
   useEffect(() => { if (id) loadLead(); }, [id]);
 
   async function loadLead() {
     setLoading(true);
-    const [leadRes, intRes] = await Promise.all([
+    const [leadRes, intRes, distRes, slaRes, agentsRes] = await Promise.all([
       supabase.from('property_leads').select('*').eq('id', id!).single(),
       supabase.from('lead_interactions' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }),
+      supabase.from('lead_distribution_logs' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
+      supabase.from('lead_sla_events' as any).select('*').eq('lead_id', id!).order('created_at', { ascending: false }).limit(50),
+      supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
     ]);
-    if (leadRes.data) setLead(leadRes.data);
+    if (leadRes.data) {
+      setLead(leadRes.data);
+      if ((leadRes.data as any).property_id) {
+        const { data: prop } = await supabase
+          .from('properties')
+          .select('id, code, title, neighborhood, price, purpose, type')
+          .eq('id', (leadRes.data as any).property_id)
+          .maybeSingle();
+        setProperty(prop);
+      } else {
+        setProperty(null);
+      }
+    }
     setInteractions((intRes as any).data || []);
+    setDistLogs((distRes as any).data || []);
+    setSlaEvents((slaRes as any).data || []);
+    setAgents((agentsRes.data as any) || []);
     setLoading(false);
   }
 
   async function updateField(field: string, value: any) {
-    const { error } = await supabase.from('property_leads').update({ [field]: value } as any).eq('id', id!);
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
+    const patch = { [field]: value } as any;
+    const { error } = await supabase.from('property_leads').update(patch).eq('id', id!);
+    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    else {
       setLead((prev: any) => ({ ...prev, [field]: value }));
       toast({ title: 'Atualizado' });
     }
@@ -69,26 +99,11 @@ export default function LeadDetail() {
 
   async function confirmLost(reasonId: string, notes: string) {
     const { error } = await supabase.from('property_leads').update({
-      funnel_stage: 'lost',
-      lost_reason_id: reasonId,
-      lost_notes: notes || null,
+      funnel_stage: 'lost', lost_reason_id: reasonId, lost_notes: notes || null,
     } as any).eq('id', id!);
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Lead marcado como perdido' });
-      loadLead();
-    }
-    setPendingLost(false);
-  }
-
-  async function addInteraction() {
-    if (!newInteraction.content.trim()) return;
-    const { error } = await supabase.from('lead_interactions' as any).insert({
-      lead_id: id, user_id: user?.id, interaction_type: newInteraction.type, content: newInteraction.content.trim(),
-    });
     if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    else { setNewInteraction({ type: 'note', content: '' }); loadLead(); }
+    else { toast({ title: 'Lead marcado como perdido' }); loadLead(); }
+    setPendingLost(false);
   }
 
   async function saveInterest(patch: any) {
@@ -97,78 +112,237 @@ export default function LeadDetail() {
     else { setLead((p: any) => ({ ...p, ...patch })); setEditInterest(false); toast({ title: 'Interesse atualizado' }); }
   }
 
+  async function forceRedistribute() {
+    if (!confirm('Forçar redistribuição deste lead?')) return;
+    const { error } = await supabase.functions.invoke('lead-distributor', {
+      body: { action: 'redistribute', lead_id: id, reason: 'manual_force' },
+    });
+    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Redistribuído' }); loadLead(); }
+  }
+
+  // ==== Timeline unificada ====
+  type TimelineEvent = {
+    id: string;
+    when: string;
+    icon: React.ReactNode;
+    title: string;
+    detail?: string;
+    color: string; // tailwind classes
+  };
+
+  const timeline: TimelineEvent[] = useMemo(() => {
+    if (!lead) return [];
+    const ev: TimelineEvent[] = [];
+
+    // Criação
+    ev.push({
+      id: 'created',
+      when: lead.created_at,
+      icon: <Sparkles className="h-3.5 w-3.5" />,
+      title: 'Lead criado',
+      detail: lead.source ? `Origem: ${sourceLabel(lead.source)}` : undefined,
+      color: 'bg-blue-100 text-blue-700',
+    });
+
+    // Distribuição / atribuição
+    distLogs.forEach((d) => {
+      const titleMap: Record<string, string> = {
+        assigned: 'Corretor atribuído',
+        redistributed: 'Lead redistribuído',
+        manual_suggest: 'Sugestão manual de atribuição',
+        no_match: 'Sem regra correspondente',
+      };
+      ev.push({
+        id: `dist-${d.id}`,
+        when: d.created_at,
+        icon: <UserCheck className="h-3.5 w-3.5" />,
+        title: titleMap[d.action] || d.action,
+        detail: d.reason || undefined,
+        color: 'bg-violet-100 text-violet-700',
+      });
+    });
+
+    // SLA
+    slaEvents.forEach((s) => {
+      const breach = s.event_type?.includes('breach');
+      ev.push({
+        id: `sla-${s.id}`,
+        when: s.created_at,
+        icon: <AlertCircle className="h-3.5 w-3.5" />,
+        title: `SLA: ${s.event_type}`,
+        color: breach ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700',
+      });
+    });
+
+    // Interações (inclui visitas/ligações/WhatsApp)
+    interactions.forEach((i) => {
+      const label = INTERACTION_TYPE_OPTIONS.find((o) => o.value === i.interaction_type)?.label || i.interaction_type;
+      const iconMap: Record<string, React.ReactNode> = {
+        call: <Phone className="h-3.5 w-3.5" />,
+        whatsapp: <MessageSquare className="h-3.5 w-3.5" />,
+        email: <Mail className="h-3.5 w-3.5" />,
+        visit: <Calendar className="h-3.5 w-3.5" />,
+        meeting: <User className="h-3.5 w-3.5" />,
+        note: <FileText className="h-3.5 w-3.5" />,
+      };
+      ev.push({
+        id: `int-${i.id}`,
+        when: i.created_at,
+        icon: iconMap[i.interaction_type] || <FileText className="h-3.5 w-3.5" />,
+        title: label,
+        detail: i.content || undefined,
+        color: 'bg-cyan-100 text-cyan-700',
+      });
+    });
+
+    // Tarefas concluídas
+    tasks.filter((t) => t.status === 'done' && t.completed_at).forEach((t) => {
+      ev.push({
+        id: `task-done-${t.id}`,
+        when: t.completed_at!,
+        icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+        title: `Tarefa concluída: ${t.title}`,
+        color: 'bg-green-100 text-green-700',
+      });
+    });
+
+    // Perdido
+    if (lead.funnel_stage === 'lost' && lead.lost_at) {
+      ev.push({
+        id: 'lost',
+        when: lead.lost_at,
+        icon: <XCircle className="h-3.5 w-3.5" />,
+        title: 'Lead marcado como perdido',
+        detail: lead.lost_notes || undefined,
+        color: 'bg-red-100 text-red-700',
+      });
+    }
+
+    return ev.sort((a, b) => new Date(b.when).getTime() - new Date(a.when).getTime());
+  }, [lead, distLogs, slaEvents, interactions, tasks]);
+
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!lead) return <div className="text-center py-12 text-muted-foreground">Lead não encontrado</div>;
 
   const followupOverdue = lead.next_followup_at && new Date(lead.next_followup_at) < new Date();
   const interestNbName = neighborhoods.find((n) => n.id === lead.interest_neighborhood_id)?.name;
-
   const fmtPrice = (v: number | null) => v ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v) : '—';
+  const assignedAgent = agents.find((a) => a.user_id === lead.assigned_to);
+  const waNumber = (lead.whatsapp || lead.phone || '').replace(/\D/g, '');
 
   return (
-    <div className="space-y-4 max-w-5xl">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/leads')}>
+    <div className="space-y-4 max-w-6xl">
+      {/* ==== HEADER ==== */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/leads')} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold truncate">{lead.name}</h1>
-          <p className="text-sm text-muted-foreground truncate">{lead.email}</p>
-        </div>
-        {lead.next_followup_at && (
-          <Badge variant={followupOverdue ? 'destructive' : 'outline'} className="gap-1">
-            <Calendar className="h-3 w-3" />
-            Follow-up: {new Date(lead.next_followup_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-            {followupOverdue && <AlertCircle className="h-3 w-3 ml-1" />}
-          </Badge>
-        )}
+        <h1 className="text-xl sm:text-2xl font-bold truncate flex-1">{lead.name}</h1>
       </div>
+
+      <Card>
+        <CardContent className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className={`${funnelStageColor(lead.funnel_stage)}`}>
+              {LEAD_FUNNEL_STAGES.find((s) => s.value === lead.funnel_stage)?.label || lead.funnel_stage}
+            </Badge>
+            <Badge variant="outline" className={temperatureColor(lead.temperature)}>
+              <Flame className="h-3 w-3 mr-1" />
+              {LEAD_TEMPERATURE_OPTIONS.find((t) => t.value === lead.temperature)?.label || 'Frio'}
+            </Badge>
+            {lead.source && <Badge variant="secondary">{sourceLabel(lead.source)}</Badge>}
+            {lead.channel && <Badge variant="outline">{channelLabel(lead.channel)}</Badge>}
+            <SlaBadge status={lead.sla_status} distributedAt={lead.distributed_at} firstResponseAt={lead.first_response_at} />
+            {lead.next_followup_at && (
+              <Badge variant={followupOverdue ? 'destructive' : 'outline'} className="gap-1">
+                <Calendar className="h-3 w-3" />
+                Follow-up {new Date(lead.next_followup_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <div className="min-w-0">
+              <Label className="text-xs text-muted-foreground">E-mail</Label>
+              <a href={`mailto:${lead.email}`} className="block font-medium truncate text-primary hover:underline">{lead.email}</a>
+            </div>
+            <div className="min-w-0">
+              <Label className="text-xs text-muted-foreground">Telefone</Label>
+              <p className="font-medium truncate">{lead.phone || '—'}</p>
+            </div>
+            <div className="min-w-0">
+              <Label className="text-xs text-muted-foreground">WhatsApp</Label>
+              <p className="font-medium truncate">{lead.whatsapp || (lead.phone ? `${lead.phone} *` : '—')}</p>
+            </div>
+            <div className="min-w-0">
+              <Label className="text-xs text-muted-foreground">Corretor responsável</Label>
+              <Select value={lead.assigned_to || NONE} onValueChange={(v) => updateField('assigned_to', v === NONE ? null : v)}>
+                <SelectTrigger className="h-8"><SelectValue placeholder="Sem corretor" /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value={NONE}>Sem corretor</SelectItem>
+                  {agents.map((a) => (
+                    <SelectItem key={a.user_id} value={a.user_id}>{a.full_name || 'Sem nome'}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Ações rápidas no header */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {waNumber && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={`https://wa.me/55${waNumber}`} target="_blank" rel="noopener noreferrer">
+                  <MessageSquare className="h-4 w-4 mr-1" /> Abrir WhatsApp
+                </a>
+              </Button>
+            )}
+            {lead.phone && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={`tel:${lead.phone}`}><Phone className="h-4 w-4 mr-1" /> Ligar</a>
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => setInteractionDefaultType('call')}>
+              <Phone className="h-4 w-4 mr-1" /> Registrar ligação
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setInteractionDefaultType('whatsapp')}>
+              <MessageSquare className="h-4 w-4 mr-1" /> Registrar WhatsApp
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setInteractionDefaultType('visit')}>
+              <CalendarPlus className="h-4 w-4 mr-1" /> Registrar visita
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setTaskDialogOpen(true)}>
+              <ListTodo className="h-4 w-4 mr-1" /> Criar tarefa
+            </Button>
+            <Button size="sm" variant="outline" onClick={forceRedistribute}>
+              <ArrowRightLeft className="h-4 w-4 mr-1" /> Redistribuir
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
-          {/* Dados */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base">Dados do Lead</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Telefone</Label>
-                  <p className="text-sm font-medium">{lead.phone || '—'}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Origem</Label>
-                  <p className="text-sm font-medium">{LEAD_SOURCE_OPTIONS.find((s) => s.value === lead.source)?.label || lead.source}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Cadastrado em</Label>
-                  <p className="text-sm font-medium">{new Date(lead.created_at).toLocaleDateString('pt-BR')}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Atualizado em</Label>
-                  <p className="text-sm font-medium">{new Date(lead.updated_at).toLocaleDateString('pt-BR')}</p>
-                </div>
-              </div>
-              {lead.message && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Mensagem</Label>
-                  <p className="text-sm mt-1 p-3 bg-muted rounded-lg">{lead.message}</p>
-                </div>
-              )}
-              {lead.internal_notes && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Notas Internas</Label>
-                  <p className="text-sm mt-1 p-3 bg-amber-50 border border-amber-200 rounded-lg">{lead.internal_notes}</p>
-                </div>
-              )}
-              {lead.funnel_stage === 'lost' && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Motivo da perda</Label>
-                  {lead.lost_notes && <p className="text-sm mt-1 p-3 bg-red-50 border border-red-200 rounded-lg">{lead.lost_notes}</p>}
-                  {lead.lost_at && <p className="text-[11px] text-muted-foreground mt-1">Em {new Date(lead.lost_at).toLocaleString('pt-BR')}</p>}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Imóvel de interesse vinculado */}
+          {property && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base">Imóvel relacionado</CardTitle></CardHeader>
+              <CardContent>
+                <Link to={`/admin/properties/${property.id}`} className="block hover:bg-muted/50 -m-2 p-2 rounded">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{property.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {property.code} · {property.neighborhood || '—'} · {property.purpose === 'rent' ? 'Aluguel' : 'Venda'}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">{fmtPrice(property.price)}</Badge>
+                  </div>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Interesse */}
           <Card>
@@ -224,66 +398,91 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
-          {/* Interações */}
+          {/* Observações */}
+          {(lead.message || lead.internal_notes || lead.funnel_stage === 'lost') && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base">Observações</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {lead.message && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Mensagem do lead</Label>
+                    <p className="text-sm mt-1 p-3 bg-muted rounded-lg whitespace-pre-wrap">{lead.message}</p>
+                  </div>
+                )}
+                {lead.internal_notes && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Notas internas</Label>
+                    <p className="text-sm mt-1 p-3 bg-amber-50 border border-amber-200 rounded-lg whitespace-pre-wrap">{lead.internal_notes}</p>
+                  </div>
+                )}
+                {lead.funnel_stage === 'lost' && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Motivo da perda</Label>
+                    {lead.lost_notes && <p className="text-sm mt-1 p-3 bg-red-50 border border-red-200 rounded-lg">{lead.lost_notes}</p>}
+                    {lead.lost_at && <p className="text-[11px] text-muted-foreground mt-1">Em {new Date(lead.lost_at).toLocaleString('pt-BR')}</p>}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* TIMELINE UNIFICADA */}
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base">Histórico de Interações</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Select value={newInteraction.type} onValueChange={(v) => setNewInteraction((p) => ({ ...p, type: v }))}>
-                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {INTERACTION_TYPE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Input
-                  placeholder="Descreva a interação..."
-                  className="flex-1"
-                  value={newInteraction.content}
-                  onChange={(e) => setNewInteraction((p) => ({ ...p, content: e.target.value }))}
-                  onKeyDown={(e) => e.key === 'Enter' && addInteraction()}
-                />
-                <Button size="sm" onClick={addInteraction}><Plus className="h-4 w-4" /></Button>
-              </div>
-              <Separator />
-              {interactions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma interação registrada</p>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Histórico</CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setInteractionDefaultType('note')}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {timeline.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento ainda</p>
               ) : (
-                <div className="space-y-3">
-                  {interactions.map((int: any) => (
-                    <div key={int.id} className="flex gap-3 p-3 rounded-lg border border-border">
-                      <div className="p-1.5 rounded bg-muted">
-                        {int.interaction_type === 'call' ? <Phone className="h-3.5 w-3.5" /> :
-                         int.interaction_type === 'email' ? <Mail className="h-3.5 w-3.5" /> :
-                         <MessageSquare className="h-3.5 w-3.5" />}
+                <ol className="relative border-l border-border ml-2 space-y-4">
+                  {timeline.map((e) => (
+                    <li key={e.id} className="ml-4">
+                      <span className={`absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full ring-4 ring-background ${e.color}`}>
+                        {e.icon}
+                      </span>
+                      <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                        <p className="text-sm font-medium">{e.title}</p>
+                        <span className="text-[11px] text-muted-foreground shrink-0">
+                          {new Date(e.when).toLocaleString('pt-BR')}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-xs">
-                            {INTERACTION_TYPE_OPTIONS.find((o) => o.value === int.interaction_type)?.label || int.interaction_type}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{new Date(int.created_at).toLocaleString('pt-BR')}</span>
-                        </div>
-                        <p className="text-sm mt-1">{int.content}</p>
-                      </div>
-                    </div>
+                      {e.detail && (
+                        <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap break-words">
+                          {e.detail}
+                        </p>
+                      )}
+                    </li>
                   ))}
-                </div>
+                </ol>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar */}
+        {/* SIDEBAR */}
         <div className="space-y-4">
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base">Status</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Status & próximas ações</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Etapa do Funil</Label>
+                <Label className="text-xs">Etapa do funil</Label>
                 <Select value={lead.funnel_stage} onValueChange={handleStageChange}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {LEAD_FUNNEL_STAGES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Temperatura</Label>
+                <Select value={lead.temperature || 'cold'} onValueChange={(v) => updateField('temperature', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {LEAD_TEMPERATURE_OPTIONS.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -307,23 +506,42 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
-          <SlaTimelineCard leadId={lead.id} lead={lead} />
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center justify-between gap-2">
+                <span>SLA & Distribuição</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={forceRedistribute} title="Redistribuir">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs">
+              <div className="flex flex-wrap gap-2 items-center">
+                <SlaBadge status={lead.sla_status} distributedAt={lead.distributed_at} firstResponseAt={lead.first_response_at} />
+                {lead.redistribution_count > 0 && (
+                  <Badge variant="outline">Redistribuído {lead.redistribution_count}x</Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground">
+                Distribuído: {lead.distributed_at ? new Date(lead.distributed_at).toLocaleString('pt-BR') : '—'}
+              </p>
+              <p className="text-muted-foreground">
+                1ª resposta: {lead.first_response_at ? new Date(lead.first_response_at).toLocaleString('pt-BR') : '—'}
+              </p>
+              <p className="text-muted-foreground">
+                Última interação: {lead.last_interaction_at ? new Date(lead.last_interaction_at).toLocaleString('pt-BR') : '—'}
+              </p>
+            </CardContent>
+          </Card>
 
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base">Ações Rápidas</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              {lead.phone && (
-                <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-                  <a href={`https://wa.me/55${lead.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                    <MessageSquare className="h-4 w-4 mr-2" /> WhatsApp
-                  </a>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Mover etapa</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 gap-2">
+              {LEAD_FUNNEL_STAGES.filter((s) => s.value !== lead.funnel_stage).map((s) => (
+                <Button key={s.value} variant="outline" size="sm" className="justify-start text-xs" onClick={() => handleStageChange(s.value)}>
+                  <MoveRight className="h-3.5 w-3.5 mr-1" /> {s.label}
                 </Button>
-              )}
-              <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-                <a href={`mailto:${lead.email}`}>
-                  <Mail className="h-4 w-4 mr-2" /> Enviar e-mail
-                </a>
-              </Button>
+              ))}
             </CardContent>
           </Card>
         </div>
@@ -336,11 +554,17 @@ export default function LeadDetail() {
         onConfirm={confirmLost}
       />
       <TaskFormDialog open={taskDialogOpen} onClose={() => { setTaskDialogOpen(false); }} defaultLeadId={id} />
+      <QuickInteractionDialog
+        leadId={id || null}
+        leadName={lead.name}
+        open={!!interactionDefaultType}
+        onOpenChange={(o) => { if (!o) setInteractionDefaultType(null); }}
+        defaultType={interactionDefaultType || 'note'}
+        onDone={loadLead}
+      />
     </div>
   );
 }
-
-const NONE = '__none__';
 
 function InterestEditor({ lead, neighborhoods, onSave }: { lead: any; neighborhoods: any[]; onSave: (p: any) => void }) {
   const [s, setS] = useState({
@@ -400,75 +624,5 @@ function InterestEditor({ lead, neighborhoods, onSave }: { lead: any; neighborho
         interest_bedrooms: s.interest_bedrooms ? Number(s.interest_bedrooms) : null,
       })}>Salvar interesse</Button>
     </div>
-  );
-}
-
-function SlaTimelineCard({ leadId, lead }: { leadId: string; lead: any }) {
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    setLoading(true);
-    const [logs, sla] = await Promise.all([
-      supabase.from('lead_distribution_logs' as any).select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(30),
-      supabase.from('lead_sla_events' as any).select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(30),
-    ]);
-    const merged = [
-      ...((logs.data as any[]) || []).map(l => ({ ...l, _kind: 'log' })),
-      ...((sla.data as any[]) || []).map(s => ({ ...s, _kind: 'sla' })),
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setEvents(merged);
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, [leadId]);
-
-  const forceRedistribute = async () => {
-    if (!confirm('Forçar redistribuição deste lead?')) return;
-    const { error } = await supabase.functions.invoke('lead-distributor', {
-      body: { action: 'redistribute', lead_id: leadId, reason: 'manual_force' },
-    });
-    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    else { toast({ title: 'Redistribuído' }); load(); }
-  };
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center justify-between gap-2">
-          <span>SLA & Distribuição</span>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={forceRedistribute} title="Redistribuir">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap gap-2 items-center">
-          <SlaBadge status={lead.sla_status} distributedAt={lead.distributed_at} firstResponseAt={lead.first_response_at} />
-          {lead.redistribution_count > 0 && (
-            <Badge variant="outline">Redistribuído {lead.redistribution_count}x</Badge>
-          )}
-        </div>
-        {loading && <p className="text-xs text-muted-foreground">Carregando histórico…</p>}
-        {!loading && events.length === 0 && (
-          <p className="text-xs text-muted-foreground">Nenhum evento de distribuição ainda.</p>
-        )}
-        <div className="space-y-2 max-h-72 overflow-y-auto">
-          {events.map(e => (
-            <div key={`${e._kind}-${e.id}`} className="text-xs border-l-2 border-border pl-2 py-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="outline" className="text-[10px]">
-                  {e._kind === 'sla' ? `SLA: ${e.event_type}` : e.action}
-                </Badge>
-                <span className="text-muted-foreground">
-                  {new Date(e.created_at).toLocaleString('pt-BR')}
-                </span>
-              </div>
-              {e.reason && <p className="mt-0.5 text-muted-foreground">{e.reason}</p>}
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
