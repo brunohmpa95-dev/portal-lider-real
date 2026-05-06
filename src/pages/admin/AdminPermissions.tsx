@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import InternalPageHeader from '@/components/shared/InternalPageHeader';
-import { Loader2, KeyRound, Save } from 'lucide-react';
+import { Loader2, KeyRound, Save, ShieldOff } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import EmptyState from '@/components/shared/EmptyState';
 
 const ROLES = ['cliente', 'corretor_parceiro', 'corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'] as const;
 const ROLE_LABELS: Record<string, string> = {
