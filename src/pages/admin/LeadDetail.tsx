@@ -556,7 +556,7 @@ export default function LeadDetail() {
             </CardHeader>
             <CardContent>
               {tasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma tarefa</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma tarefa pendente — clique em <strong>Nova</strong> para criar.</p>
               ) : (
                 <ul className="space-y-2">
                   {tasks.map((t) => (
@@ -639,7 +639,9 @@ export default function LeadDetail() {
                 </span>
               </div>
               {filteredTimeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {timeline.length === 0 ? 'Nenhuma interação registrada ainda.' : 'Nenhum evento para os filtros selecionados.'}
+                </p>
               ) : (
                 <ol className="relative border-l border-border ml-2 space-y-4">
                   {filteredTimeline.map((e) => (
