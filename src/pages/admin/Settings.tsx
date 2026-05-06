@@ -258,9 +258,19 @@ export default function Settings() {
               <CardDescription>Ajustes gerais de funcionamento</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="border rounded-md p-4 flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="font-medium text-sm">Distribuição de leads</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Configure regras de atribuição automática (rodízio, corretor do imóvel, manual).
+                  </p>
+                </div>
+                <a href="/admin/distribuicao" className="text-sm text-primary hover:underline whitespace-nowrap">
+                  Abrir regras →
+                </a>
+              </div>
               <p className="text-sm text-muted-foreground">
-                Configurações de sistema como notificações automáticas, integrações e personalização
-                serão implementadas conforme a operação avança.
+                Outras configurações de sistema serão adicionadas conforme a operação avança.
               </p>
             </CardContent>
           </Card>
