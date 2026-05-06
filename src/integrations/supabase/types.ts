@@ -2214,6 +2214,27 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_whatsapp_click: {
+        Args: {
+          _intent: string
+          _message_sent?: string
+          _metadata?: Json
+          _neighborhood?: string
+          _page?: string
+          _property_code?: string
+          _property_id?: string
+          _property_title?: string
+          _referrer?: string
+          _url?: string
+          _utm_campaign?: string
+          _utm_content?: string
+          _utm_medium?: string
+          _utm_source?: string
+          _utm_term?: string
+          _visitor_id?: string
+        }
+        Returns: Json
+      }
       redistribute_lead: {
         Args: { _lead_id: string; _reason?: string }
         Returns: string
