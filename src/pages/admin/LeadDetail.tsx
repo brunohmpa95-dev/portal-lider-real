@@ -128,24 +128,31 @@ export default function LeadDetail() {
     icon: React.ReactNode;
     title: string;
     detail?: string;
-    color: string; // tailwind classes
+    color: string;
+    kind: 'created' | 'distribution' | 'sla' | 'interaction' | 'task' | 'lost';
+    interactionType?: string;
+  };
+
+  const OUTCOME_LABEL: Record<string, string> = {
+    sucesso: 'Sucesso / contato efetivo',
+    sem_resposta: 'Sem resposta',
+    reagendar: 'Reagendar',
+    interessado: 'Interessado',
+    nao_interessado: 'Não interessado',
+    aguardando_cliente: 'Aguardando cliente',
   };
 
   const timeline: TimelineEvent[] = useMemo(() => {
     if (!lead) return [];
     const ev: TimelineEvent[] = [];
 
-    // Criação
     ev.push({
-      id: 'created',
-      when: lead.created_at,
-      icon: <Sparkles className="h-3.5 w-3.5" />,
-      title: 'Lead criado',
+      id: 'created', when: lead.created_at, kind: 'created',
+      icon: <Sparkles className="h-3.5 w-3.5" />, title: 'Lead criado',
       detail: lead.source ? `Origem: ${sourceLabel(lead.source)}` : undefined,
       color: 'bg-blue-100 text-blue-700',
     });
 
-    // Distribuição / atribuição
     distLogs.forEach((d) => {
       const titleMap: Record<string, string> = {
         assigned: 'Corretor atribuído',
@@ -154,8 +161,7 @@ export default function LeadDetail() {
         no_match: 'Sem regra correspondente',
       };
       ev.push({
-        id: `dist-${d.id}`,
-        when: d.created_at,
+        id: `dist-${d.id}`, when: d.created_at, kind: 'distribution',
         icon: <UserCheck className="h-3.5 w-3.5" />,
         title: titleMap[d.action] || d.action,
         detail: d.reason || undefined,
@@ -163,19 +169,16 @@ export default function LeadDetail() {
       });
     });
 
-    // SLA
     slaEvents.forEach((s) => {
       const breach = s.event_type?.includes('breach');
       ev.push({
-        id: `sla-${s.id}`,
-        when: s.created_at,
+        id: `sla-${s.id}`, when: s.created_at, kind: 'sla',
         icon: <AlertCircle className="h-3.5 w-3.5" />,
         title: `SLA: ${s.event_type}`,
         color: breach ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700',
       });
     });
 
-    // Interações (inclui visitas/ligações/WhatsApp)
     interactions.forEach((i) => {
       const label = INTERACTION_TYPE_OPTIONS.find((o) => o.value === i.interaction_type)?.label || i.interaction_type;
       const iconMap: Record<string, React.ReactNode> = {
@@ -188,32 +191,42 @@ export default function LeadDetail() {
         stage_change: <MoveRight className="h-3.5 w-3.5" />,
       };
       const isStage = i.interaction_type === 'stage_change';
+      // Compõe detalhe enriquecido
+      const parts: string[] = [];
+      if (i.content) parts.push(i.content);
+      if (i.outcome) parts.push(`Resultado: ${OUTCOME_LABEL[i.outcome] || i.outcome}`);
+      if (i.next_step) {
+        const when = i.next_step_at
+          ? ` (até ${new Date(i.next_step_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })})`
+          : '';
+        parts.push(`Próximo passo: ${i.next_step}${when}`);
+      }
+      if (i.funnel_stage_at_time && !isStage) {
+        const stageLbl = LEAD_FUNNEL_STAGES.find((s) => s.value === i.funnel_stage_at_time)?.label;
+        if (stageLbl) parts.push(`Etapa: ${stageLbl}`);
+      }
       ev.push({
-        id: `int-${i.id}`,
-        when: i.created_at,
+        id: `int-${i.id}`, when: i.created_at, kind: 'interaction',
+        interactionType: i.interaction_type,
         icon: iconMap[i.interaction_type] || <FileText className="h-3.5 w-3.5" />,
         title: label,
-        detail: i.content || undefined,
+        detail: parts.length ? parts.join('\n') : undefined,
         color: isStage ? 'bg-purple-100 text-purple-700' : 'bg-cyan-100 text-cyan-700',
       });
     });
 
-    // Tarefas concluídas
     tasks.filter((t) => t.status === 'done' && t.completed_at).forEach((t) => {
       ev.push({
-        id: `task-done-${t.id}`,
-        when: t.completed_at!,
+        id: `task-done-${t.id}`, when: t.completed_at!, kind: 'task',
         icon: <CheckCircle2 className="h-3.5 w-3.5" />,
         title: `Tarefa concluída: ${t.title}`,
         color: 'bg-green-100 text-green-700',
       });
     });
 
-    // Perdido
     if (lead.funnel_stage === 'lost' && lead.lost_at) {
       ev.push({
-        id: 'lost',
-        when: lead.lost_at,
+        id: 'lost', when: lead.lost_at, kind: 'lost',
         icon: <XCircle className="h-3.5 w-3.5" />,
         title: 'Lead marcado como perdido',
         detail: lead.lost_notes || undefined,
@@ -223,6 +236,30 @@ export default function LeadDetail() {
 
     return ev.sort((a, b) => new Date(b.when).getTime() - new Date(a.when).getTime());
   }, [lead, distLogs, slaEvents, interactions, tasks]);
+
+  // Filtros do histórico
+  const [historyTypeFilter, setHistoryTypeFilter] = useState<string>('all');
+  const [historyPeriodFilter, setHistoryPeriodFilter] = useState<string>('all');
+
+  const filteredTimeline = useMemo(() => {
+    const now = Date.now();
+    const periodMs: Record<string, number | null> = {
+      all: null, '7d': 7 * 86400000, '30d': 30 * 86400000, '90d': 90 * 86400000,
+    };
+    const cutoff = periodMs[historyPeriodFilter];
+    return timeline.filter((e) => {
+      if (historyTypeFilter !== 'all') {
+        if (historyTypeFilter === 'system') {
+          if (e.kind === 'interaction') return false;
+        } else {
+          if (e.kind !== 'interaction' || e.interactionType !== historyTypeFilter) return false;
+        }
+      }
+      if (cutoff && new Date(e.when).getTime() < now - cutoff) return false;
+      return true;
+    });
+  }, [timeline, historyTypeFilter, historyPeriodFilter]);
+
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!lead) return <div className="text-center py-12 text-muted-foreground">Lead não encontrado</div>;
