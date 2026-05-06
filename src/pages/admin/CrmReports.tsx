@@ -223,7 +223,25 @@ export default function CrmReports() {
   }
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    return (
+      <div className="space-y-4">
+        <InternalPageHeader title="Relatórios CRM" subtitle="Carregando..." />
+        <CardsSkeleton cards={6} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[320px] rounded-lg" />
+          <Skeleton className="h-[320px] rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-4">
+        <InternalPageHeader title="Relatórios CRM" />
+        <Card><CardContent className="p-0"><ErrorState description={loadError} onRetry={load} /></CardContent></Card>
+      </div>
+    );
   }
 
   return (
