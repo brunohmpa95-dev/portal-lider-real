@@ -5,7 +5,6 @@ import { Property } from '@/data/types';
 import { formatPrice } from '@/data/properties';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { COMPANY } from '@/data/constants';
 import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
 
 interface PremiumPropertyCardProps {
