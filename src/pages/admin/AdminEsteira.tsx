@@ -244,6 +244,79 @@ function RuleDialog({
 }
 
 // =================== MAIN PAGE ===================
+// =================== PANEL TAB (operational, realtime) ===================
+function PanelTab() {
+  const { categorized, loading, reload } = useLeadsAtRisk();
+
+  const distribute = async (leadId: string, action: 'distribute' | 'redistribute') => {
+    const { error } = await supabase.functions.invoke('lead-distributor', {
+      body: { action, lead_id: leadId, reason: 'manual' },
+    });
+    if (error) toast.error(error.message);
+    else { toast.success(action === 'distribute' ? 'Atribuído' : 'Redistribuído'); reload(); }
+  };
+
+  const Section = ({ title, leads, tone, action }: any) => (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center justify-between">
+          <span>{title}</span>
+          <Badge variant="outline">{leads.length}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead nesta categoria.</p>}
+        {leads.slice(0, 8).map((l: any) => (
+          <div key={l.id} className="border rounded-md p-2 space-y-1">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{l.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {l.email} {l.phone && `· ${l.phone}`}
+                </p>
+              </div>
+              <SlaBadge status={l.sla_status} distributedAt={l.distributed_at} firstResponseAt={l.first_response_at} />
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <Link to={`/admin/leads/${l.id}`}>Abrir</Link>
+              </Button>
+              {!l.assigned_to && (
+                <Button size="sm" variant="outline" className="h-8 text-xs"
+                  onClick={() => distribute(l.id, 'distribute')}>
+                  Atribuir
+                </Button>
+              )}
+              {l.assigned_to && action === 'redistribute' && (
+                <Button size="sm" variant="outline" className="h-8 text-xs"
+                  onClick={() => distribute(l.id, 'redistribute')}>
+                  Redistribuir
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+        {leads.length > 8 && (
+          <p className="text-xs text-muted-foreground text-center pt-1">
+            +{leads.length - 8} outros leads
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando painel…</p>;
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <Section title="Sem atribuição" leads={categorized.unassigned} tone="muted" action="distribute" />
+      <Section title="SLA violado" leads={categorized.breached} tone="danger" action="redistribute" />
+      <Section title="Em atenção" leads={categorized.warning} tone="warning" action="redistribute" />
+      <Section title="Parados (24h+)" leads={categorized.stale} tone="muted" action="redistribute" />
+    </div>
+  );
+}
+
 export default function AdminEsteira() {
   const { rules, loading: lr, remove, toggle, reload } = useDistributionRules();
   const { stats, loading: ls } = useEsteiraStats();
