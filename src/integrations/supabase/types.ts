@@ -1044,25 +1044,37 @@ export type Database = {
         Row: {
           content: string | null
           created_at: string
+          funnel_stage_at_time: string | null
           id: string
           interaction_type: string
           lead_id: string
+          next_step: string | null
+          next_step_at: string | null
+          outcome: string | null
           user_id: string
         }
         Insert: {
           content?: string | null
           created_at?: string
+          funnel_stage_at_time?: string | null
           id?: string
           interaction_type?: string
           lead_id: string
+          next_step?: string | null
+          next_step_at?: string | null
+          outcome?: string | null
           user_id: string
         }
         Update: {
           content?: string | null
           created_at?: string
+          funnel_stage_at_time?: string | null
           id?: string
           interaction_type?: string
           lead_id?: string
+          next_step?: string | null
+          next_step_at?: string | null
+          outcome?: string | null
           user_id?: string
         }
         Relationships: [
