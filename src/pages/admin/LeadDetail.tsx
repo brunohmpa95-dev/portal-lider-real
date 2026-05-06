@@ -26,6 +26,8 @@ import {
   CheckCircle2, XCircle, UserCheck, ArrowRightLeft,
 } from 'lucide-react';
 import { SlaBadge } from '@/components/admin/SlaBadge';
+import { EmptyState } from '@/components/admin/StateViews';
+import { Skeleton } from '@/components/ui/skeleton';
 import { temperatureColor, funnelStageColor, channelLabel, sourceLabel } from '@/lib/leads';
 
 const NONE = '__none__';
