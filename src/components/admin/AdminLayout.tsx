@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
+import { ADMIN_NAV_SECTIONS, ADMIN_SECONDARY_NAV, filterNavByRoles, filterSectionsByRoles } from '@/lib/admin-nav';
 import {
   SidebarProvider,
   Sidebar,
@@ -33,7 +33,7 @@ function AdminSidebarContent() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const mainItems = filterNavByRoles(ADMIN_NAV_ITEMS, roles);
+  const sections = filterSectionsByRoles(ADMIN_NAV_SECTIONS, roles);
   const secondaryItems = filterNavByRoles(ADMIN_SECONDARY_NAV, roles);
 
   const isActive = (path: string) => {
@@ -60,27 +60,29 @@ function AdminSidebarContent() {
       </div>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.path)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.path}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {sections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.path)}
+                      tooltip={item.title}
+                    >
+                      <Link to={item.path}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
         <SidebarGroup>
           <SidebarGroupLabel>Conta</SidebarGroupLabel>
