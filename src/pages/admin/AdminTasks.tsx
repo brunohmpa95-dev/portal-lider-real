@@ -144,9 +144,18 @@ export default function AdminTasks() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            <div className="p-3 sm:p-4"><ListSkeleton rows={5} /></div>
           ) : tasks.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">Nenhuma tarefa nesta visão</div>
+            <EmptyState
+              icon={<ListTodo className="h-6 w-6" />}
+              title="Nenhuma tarefa nesta visão"
+              description="Crie uma nova tarefa ou ajuste a aba selecionada."
+              action={
+                <Button size="sm" onClick={() => { setEditing(null); setDialogOpen(true); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Nova tarefa
+                </Button>
+              }
+            />
           ) : (
             <ul className="divide-y">
               {tasks.map((t) => (
@@ -158,7 +167,7 @@ export default function AdminTasks() {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`font-medium text-sm ${t.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>{t.title}</p>
+                      <p className={`font-medium text-sm break-words ${t.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>{t.title}</p>
                       {isOverdue(t) && (
                         <Badge variant="destructive" className="text-[10px] h-5 gap-1">
                           <AlertCircle className="h-3 w-3" /> Atrasada
@@ -170,14 +179,14 @@ export default function AdminTasks() {
                       {t.lead_id && leadMap[t.lead_id] && (
                         <Link
                           to={`/admin/leads/${t.lead_id}`}
-                          className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5"
+                          className="text-[11px] text-primary hover:underline inline-flex items-center gap-0.5 max-w-[180px] truncate"
                         >
-                          <ExternalLink className="h-3 w-3" />
-                          {leadMap[t.lead_id]}
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{leadMap[t.lead_id]}</span>
                         </Link>
                       )}
                     </div>
-                    {t.description && <p className="text-xs text-muted-foreground mt-1 break-words">{t.description}</p>}
+                    {t.description && <p className="text-xs text-muted-foreground mt-1 break-words line-clamp-2">{t.description}</p>}
                     {t.due_at && (
                       <p className="text-[11px] text-muted-foreground mt-1">
                         Vencimento: {new Date(t.due_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -188,7 +197,7 @@ export default function AdminTasks() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditing(t); setDialogOpen(true); }} aria-label="Editar">
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(t.id)} aria-label="Excluir">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(t)} aria-label="Excluir">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -200,6 +209,23 @@ export default function AdminTasks() {
       </Card>
 
       <TaskFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} initial={editing} />
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir tarefa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A tarefa <span className="font-medium">"{deleting?.title}"</span> será removida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
