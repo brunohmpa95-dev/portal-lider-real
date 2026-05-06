@@ -60,27 +60,29 @@ function AdminSidebarContent() {
       </div>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.path)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.path}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {sections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.path)}
+                      tooltip={item.title}
+                    >
+                      <Link to={item.path}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
         <SidebarGroup>
           <SidebarGroupLabel>Conta</SidebarGroupLabel>
