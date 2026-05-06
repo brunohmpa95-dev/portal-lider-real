@@ -11,6 +11,8 @@ import {
   LEAD_SOURCE_OPTIONS,
   LEAD_PRIORITY_OPTIONS,
   LEAD_FUNNEL_STAGES,
+  LEAD_TEMPERATURE_OPTIONS,
+  LEAD_CHANNEL_OPTIONS,
   PROPERTY_TYPE_OPTIONS,
   PROPERTY_PURPOSE_OPTIONS,
 } from '@/types/admin';
@@ -28,9 +30,12 @@ export default function LeadForm() {
     name: '',
     email: '',
     phone: '',
+    whatsapp: '',
     message: '',
     source: 'website',
+    channel: 'form_site',
     priority: 'normal',
+    temperature: 'cold',
     funnel_stage: 'new',
     internal_notes: '',
     interest_purpose: '',
@@ -55,9 +60,12 @@ export default function LeadForm() {
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim() || null,
+      whatsapp: form.whatsapp.trim() || null,
       message: form.message.trim() || null,
       source: form.source,
+      channel: form.channel,
       priority: form.priority,
+      temperature: form.temperature,
       funnel_stage: form.funnel_stage,
       internal_notes: form.internal_notes.trim() || null,
       interest_purpose: form.interest_purpose || null,
@@ -110,11 +118,33 @@ export default function LeadForm() {
                   <Input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
+                  <Label>WhatsApp</Label>
+                  <Input value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} placeholder="Se diferente do telefone" />
+                </div>
+                <div className="space-y-1.5">
                   <Label>Origem</Label>
                   <Select value={form.source} onValueChange={(v) => set('source', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {LEAD_SOURCE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Canal</Label>
+                  <Select value={form.channel} onValueChange={(v) => set('channel', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_CHANNEL_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Temperatura</Label>
+                  <Select value={form.temperature} onValueChange={(v) => set('temperature', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_TEMPERATURE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
