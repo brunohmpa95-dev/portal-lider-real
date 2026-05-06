@@ -70,6 +70,7 @@ import AdminFinancial from "@/pages/admin/AdminFinancial";
 import AdminAudit from "@/pages/admin/AdminAudit";
 import AdminNeighborhoods from "@/pages/admin/Neighborhoods";
 import AdminTasks from "@/pages/admin/AdminTasks";
+import AdminPermissions from "@/pages/admin/AdminPermissions";
 
 const queryClient = new QueryClient();
 
