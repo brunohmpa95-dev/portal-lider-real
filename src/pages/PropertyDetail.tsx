@@ -114,8 +114,7 @@ const PropertyDetail = () => {
   };
 
   const intent = property.purpose === 'sale' ? 'buy' : 'rent';
-  const whatsappUrl = buildWhatsAppLink(intent, { propertyCode: property.code, propertyTitle: property.title });
-  const visitWhatsappUrl = buildWhatsAppLink('visit', { propertyCode: property.code, propertyTitle: property.title });
+
 
   return (
     <Layout>
