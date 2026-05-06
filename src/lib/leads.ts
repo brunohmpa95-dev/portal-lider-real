@@ -30,8 +30,9 @@ export function funnelStageColor(stage?: string | null): string {
   switch (stage) {
     case 'new': return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30';
     case 'contact': return 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30';
-    case 'visit': return 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30';
-    case 'proposal': return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30';
+    case 'qualification': return 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30';
+    case 'visit': return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30';
+    case 'proposal': return 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30';
     case 'negotiation': return 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30';
     case 'closed': return 'bg-primary/15 text-primary border-primary/30';
     case 'lost': return 'bg-destructive/15 text-destructive border-destructive/30';
