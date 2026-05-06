@@ -33,7 +33,7 @@ function AdminSidebarContent() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const mainItems = filterNavByRoles(ADMIN_NAV_ITEMS, roles);
+  const sections = filterSectionsByRoles(ADMIN_NAV_SECTIONS, roles);
   const secondaryItems = filterNavByRoles(ADMIN_SECONDARY_NAV, roles);
 
   const isActive = (path: string) => {
