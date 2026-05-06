@@ -13,9 +13,13 @@ interface ClientRow {
   id: string;
   cpf_cnpj: string | null;
   city: string | null;
-  profile_id: string;
+  profile_id: string | null;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
   created_at: string;
   profiles?: { full_name: string | null; phone: string | null; is_active: boolean } | null;
+  leads_count?: number;
 }
 
 export default function AdminClients() {
@@ -29,10 +33,20 @@ export default function AdminClients() {
     setLoading(true);
     const { data, error } = await supabase
       .from('clients')
-      .select('id, cpf_cnpj, city, profile_id, created_at, profiles(full_name, phone, is_active)')
+      .select('id, cpf_cnpj, city, profile_id, full_name, email, phone, created_at, profiles(full_name, phone, is_active)' as any)
       .order('created_at', { ascending: false });
     if (error) { toast.error('Erro ao carregar clientes'); console.error(error); }
-    setClients((data as any[]) || []);
+    const rows = (data as any[]) || [];
+    // Contar leads por cliente
+    if (rows.length) {
+      const ids = rows.map((c) => c.id);
+      const { data: leads } = await supabase.from('property_leads')
+        .select('client_id').in('client_id', ids);
+      const counts: Record<string, number> = {};
+      (leads || []).forEach((l: any) => { counts[l.client_id] = (counts[l.client_id] || 0) + 1; });
+      rows.forEach((c) => { c.leads_count = counts[c.id] || 0; });
+    }
+    setClients(rows);
     setLoading(false);
   }
 
