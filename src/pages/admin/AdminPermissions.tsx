@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import InternalPageHeader from '@/components/shared/InternalPageHeader';
-import { Loader2, KeyRound, Save } from 'lucide-react';
+import { Loader2, KeyRound, Save, ShieldOff } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import EmptyState from '@/components/shared/EmptyState';
 
 const ROLES = ['cliente', 'corretor_parceiro', 'corretor', 'locacao', 'vendas', 'financeiro', 'administrativo', 'superadmin'] as const;
 const ROLE_LABELS: Record<string, string> = {
@@ -20,13 +22,15 @@ const ROLE_LABELS: Record<string, string> = {
 interface Permission { code: string; module: string; action: string; description: string | null; }
 
 export default function AdminPermissions() {
+  const { roles } = useAuth();
+  const isSuperadmin = roles.includes('superadmin');
   const [perms, setPerms] = useState<Permission[]>([]);
   const [matrix, setMatrix] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeRole, setActiveRole] = useState<string>('corretor');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (isSuperadmin) load(); else setLoading(false); }, [isSuperadmin]);
 
   async function load() {
     setLoading(true);
@@ -61,6 +65,19 @@ export default function AdminPermissions() {
       toast.success(`Permissões atualizadas (${toAdd.length} adicionadas, ${toRemove.length} removidas)`);
     } catch (e: any) { toast.error(e.message || 'Erro ao salvar'); }
     setSaving(false);
+  }
+
+  if (!isSuperadmin) {
+    return (
+      <div>
+        <InternalPageHeader title="Permissões" subtitle="Acesso restrito" />
+        <EmptyState
+          icon={ShieldOff}
+          title="Acesso restrito"
+          description="Apenas superadministradores podem visualizar e editar permissões."
+        />
+      </div>
+    );
   }
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -153,8 +170,8 @@ export default function AdminPermissions() {
           </thead>
           <tbody>
             {Object.entries(grouped).map(([module, list]) => (
-              <>
-                <tr key={module} className="bg-muted/30"><td colSpan={ROLES.length + 1} className="px-3 py-1.5 font-semibold uppercase text-muted-foreground">{module}</td></tr>
+              <Fragment key={module}>
+                <tr className="bg-muted/30"><td colSpan={ROLES.length + 1} className="px-3 py-1.5 font-semibold uppercase text-muted-foreground">{module}</td></tr>
                 {list.map((p) => (
                   <tr key={p.code} className="border-b border-border hover:bg-muted/20">
                     <td className="px-3 py-2"><div className="font-mono text-xs">{p.code}</div>{p.description && <div className="text-muted-foreground text-xs">{p.description}</div>}</td>
@@ -165,7 +182,7 @@ export default function AdminPermissions() {
                     ))}
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
