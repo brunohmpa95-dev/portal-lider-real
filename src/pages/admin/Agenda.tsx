@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { APPOINTMENT_TYPE_LABEL } from '@/hooks/useTasks';
 import { Plus, Loader2, CalendarDays, Clock, ExternalLink, Phone, MessageSquare, Users, RefreshCw, Calendar as CalIcon } from 'lucide-react';
+import { EmptyState, ErrorState, ListSkeleton } from '@/components/admin/StateViews';
 
 type AgendaItem = {
   id: string;
@@ -48,6 +49,7 @@ export default function Agenda() {
   const { user } = useAuth();
   const [items, setItems] = useState<AgendaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -62,15 +64,18 @@ export default function Agenda() {
 
   async function loadAll() {
     setLoading(true);
-    const [{ data: visits }, { data: tasks }] = await Promise.all([
-      supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes, lead_id, property_id, agent_id').order('scheduled_at', { ascending: true }),
-      supabase
-        .from('tasks' as any)
-        .select('id, title, due_at, status, description, lead_id, property_id, assigned_to, appointment_type')
-        .not('appointment_type', 'is', null)
-        .not('due_at', 'is', null)
-        .order('due_at', { ascending: true }),
-    ]);
+    setLoadError(null);
+    try {
+      const [{ data: visits, error: vErr }, { data: tasks, error: tErr }] = await Promise.all([
+        supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes, lead_id, property_id, agent_id').order('scheduled_at', { ascending: true }),
+        supabase
+          .from('tasks' as any)
+          .select('id, title, due_at, status, description, lead_id, property_id, assigned_to, appointment_type')
+          .not('appointment_type', 'is', null)
+          .not('due_at', 'is', null)
+          .order('due_at', { ascending: true }),
+      ]);
+      if (vErr || tErr) throw new Error(vErr?.message || tErr?.message);
 
     const visitItems: AgendaItem[] = ((visits as any[]) || []).map((v) => ({
       id: v.id,
