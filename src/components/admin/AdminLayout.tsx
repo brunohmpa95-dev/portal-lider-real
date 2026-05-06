@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { ADMIN_NAV_ITEMS, ADMIN_SECONDARY_NAV, filterNavByRoles } from '@/lib/admin-nav';
+import { ADMIN_NAV_SECTIONS, ADMIN_SECONDARY_NAV, filterNavByRoles, filterSectionsByRoles } from '@/lib/admin-nav';
 import {
   SidebarProvider,
   Sidebar,
