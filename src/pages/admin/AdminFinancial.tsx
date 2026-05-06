@@ -110,13 +110,15 @@ export default function AdminFinancial() {
       <InternalPageHeader title="Financeiro" subtitle="Lançamentos, contas, categorias e comissões" />
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 mb-4">
-          <TabsTrigger value="summary">Resumo</TabsTrigger>
-          <TabsTrigger value="transactions">Lançamentos</TabsTrigger>
-          <TabsTrigger value="categories">Categorias</TabsTrigger>
-          <TabsTrigger value="accounts" className="hidden md:inline-flex">Contas</TabsTrigger>
-          <TabsTrigger value="commissions" className="hidden md:inline-flex">Comissões</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 mb-4">
+          <TabsList className="inline-flex w-auto">
+            <TabsTrigger value="summary" className="text-xs sm:text-sm">Resumo</TabsTrigger>
+            <TabsTrigger value="transactions" className="text-xs sm:text-sm">Lançamentos</TabsTrigger>
+            <TabsTrigger value="categories" className="text-xs sm:text-sm">Categorias</TabsTrigger>
+            <TabsTrigger value="accounts" className="text-xs sm:text-sm">Contas</TabsTrigger>
+            <TabsTrigger value="commissions" className="text-xs sm:text-sm">Comissões</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* RESUMO */}
         <TabsContent value="summary" className="space-y-4">
