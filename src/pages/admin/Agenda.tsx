@@ -138,12 +138,15 @@ export default function Agenda() {
   async function updateStatus(item: AgendaItem, status: string) {
     if (item.source === 'visit') {
       const { error } = await supabase.from('visits' as any).update({ status }).eq('id', item.id);
-      if (!error) setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'visit' ? { ...x, status } : x));
+      if (error) { toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' }); return; }
+      setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'visit' ? { ...x, status } : x));
     } else {
       const taskStatus = status === 'completed' ? 'done' : status === 'cancelled' ? 'cancelled' : 'pending';
       const { error } = await supabase.from('tasks' as any).update({ status: taskStatus }).eq('id', item.id);
-      if (!error) setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'task' ? { ...x, status } : x));
+      if (error) { toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' }); return; }
+      setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'task' ? { ...x, status } : x));
     }
+    toast({ title: status === 'completed' ? 'Compromisso concluído' : status === 'cancelled' ? 'Compromisso cancelado' : 'Atualizado' });
   }
 
   const filtered = useMemo(
@@ -207,13 +210,21 @@ export default function Agenda() {
       </p>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <Card><CardContent className="p-4"><ListSkeleton rows={4} /></CardContent></Card>
+      ) : loadError ? (
+        <Card><CardContent className="p-0"><ErrorState description={loadError} onRetry={loadAll} /></CardContent></Card>
       ) : (
         <>
           <div>
             <h2 className="text-lg font-semibold mb-3">Próximos compromissos ({upcoming.length})</h2>
             {upcoming.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Nenhum compromisso agendado</CardContent></Card>
+              <Card><CardContent className="p-0">
+                <EmptyState
+                  icon={<CalendarDays className="h-6 w-6" />}
+                  title="Nenhum compromisso agendado"
+                  description="Crie uma visita ou agende um follow-up no detalhe do lead."
+                />
+              </CardContent></Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcoming.map((v) => {
