@@ -185,14 +185,16 @@ export default function LeadDetail() {
         visit: <Calendar className="h-3.5 w-3.5" />,
         meeting: <User className="h-3.5 w-3.5" />,
         note: <FileText className="h-3.5 w-3.5" />,
+        stage_change: <MoveRight className="h-3.5 w-3.5" />,
       };
+      const isStage = i.interaction_type === 'stage_change';
       ev.push({
         id: `int-${i.id}`,
         when: i.created_at,
         icon: iconMap[i.interaction_type] || <FileText className="h-3.5 w-3.5" />,
         title: label,
         detail: i.content || undefined,
-        color: 'bg-cyan-100 text-cyan-700',
+        color: isStage ? 'bg-purple-100 text-purple-700' : 'bg-cyan-100 text-cyan-700',
       });
     });
 
