@@ -2060,6 +2060,120 @@ export type Database = {
           },
         ]
       }
+      whatsapp_clicks: {
+        Row: {
+          id: string
+          intent: string
+          lead_id: string | null
+          message_sent: string | null
+          metadata: Json
+          neighborhood: string | null
+          occurred_at: string
+          page: string | null
+          property_code: string | null
+          property_id: string | null
+          property_title: string | null
+          referrer: string | null
+          url: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          id?: string
+          intent?: string
+          lead_id?: string | null
+          message_sent?: string | null
+          metadata?: Json
+          neighborhood?: string | null
+          occurred_at?: string
+          page?: string | null
+          property_code?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          referrer?: string | null
+          url?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          id?: string
+          intent?: string
+          lead_id?: string | null
+          message_sent?: string | null
+          metadata?: Json
+          neighborhood?: string | null
+          occurred_at?: string
+          page?: string | null
+          property_code?: string | null
+          property_id?: string | null
+          property_title?: string | null
+          referrer?: string | null
+          url?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_settings: {
+        Row: {
+          auto_create_lead: boolean
+          created_at: string
+          default_message: string
+          display_phone: string | null
+          id: string
+          is_active: boolean
+          phone_e164: string
+          provider: string
+          provider_config: Json
+          responsible_sector: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_create_lead?: boolean
+          created_at?: string
+          default_message?: string
+          display_phone?: string | null
+          id?: string
+          is_active?: boolean
+          phone_e164?: string
+          provider?: string
+          provider_config?: Json
+          responsible_sector?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_create_lead?: boolean
+          created_at?: string
+          default_message?: string
+          display_phone?: string | null
+          id?: string
+          is_active?: boolean
+          phone_e164?: string
+          provider?: string
+          provider_config?: Json
+          responsible_sector?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2099,6 +2213,27 @@ export type Database = {
           _target_type: string
         }
         Returns: undefined
+      }
+      record_whatsapp_click: {
+        Args: {
+          _intent: string
+          _message_sent?: string
+          _metadata?: Json
+          _neighborhood?: string
+          _page?: string
+          _property_code?: string
+          _property_id?: string
+          _property_title?: string
+          _referrer?: string
+          _url?: string
+          _utm_campaign?: string
+          _utm_content?: string
+          _utm_medium?: string
+          _utm_source?: string
+          _utm_term?: string
+          _visitor_id?: string
+        }
+        Returns: Json
       }
       redistribute_lead: {
         Args: { _lead_id: string; _reason?: string }

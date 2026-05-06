@@ -13,7 +13,7 @@ import { PROPERTY_TYPES, BEDROOM_OPTIONS } from '@/data/constants';
 import { useNeighborhoodNames } from '@/hooks/useNeighborhoods';
 import { Search, ChevronLeft, ChevronRight, SlidersHorizontal, X, MessageCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { buildWhatsAppLink } from '@/lib/whatsapp';
+import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
 
 interface PropertyListingPageProps {
   purpose: 'sale' | 'rent';
@@ -222,14 +222,13 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
                 Cadastramos seu interesse e avisamos quando entrar um imóvel com o seu perfil em Itaúna.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-                <a
-                  href={buildWhatsAppLink(intent)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <WhatsAppCTA
+                  intent={intent}
+                  source="listing-no-results-cta"
                   className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-[#20BD5A] transition-colors w-full sm:w-auto"
                 >
                   <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-                </a>
+                </WhatsAppCTA>
                 <Link to="/contato" className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full">Cadastrar interesse</Button>
                 </Link>
@@ -245,14 +244,13 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
             <p className="text-muted-foreground text-sm mb-4">Tente ajustar os filtros ou fale com a gente — temos imóveis fora do site também.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
               <Button variant="outline" size="sm" onClick={resetFilters}>Limpar filtros</Button>
-              <a
-                href={buildWhatsAppLink(intent)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <WhatsAppCTA
+                intent={intent}
+                source="listing-empty-cta"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
               >
                 <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-              </a>
+              </WhatsAppCTA>
             </div>
           </div>
         )}

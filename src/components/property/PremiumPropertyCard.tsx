@@ -5,7 +5,7 @@ import { Property } from '@/data/types';
 import { formatPrice } from '@/data/properties';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { COMPANY } from '@/data/constants';
+import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
 
 interface PremiumPropertyCardProps {
   property: Property;
@@ -70,16 +70,19 @@ const PremiumPropertyCard = ({ property }: PremiumPropertyCardProps) => (
               Ver detalhes <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <a
-            href={`${COMPANY.whatsappLink}?text=${encodeURIComponent(`Olá! Tenho interesse no imóvel ${property.code} - ${property.title}`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <WhatsAppCTA
+            intent={property.purpose === 'sale' ? 'buy' : 'rent'}
+            propertyId={property.id}
+            propertyCode={property.code}
+            propertyTitle={property.title}
+            neighborhood={property.neighborhood}
+            source="premium-card"
             className="flex-1"
           >
             <Button variant="outline" className="gap-2 w-full">
               <MessageCircle className="h-4 w-4" /> WhatsApp
             </Button>
-          </a>
+          </WhatsAppCTA>
         </div>
       </div>
     </div>
