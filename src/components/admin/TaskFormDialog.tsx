@@ -114,6 +114,7 @@ export default function TaskFormDialog({ open, onClose, initial, defaultLeadId }
       priority: form.priority,
       status: form.status,
       assigned_to: form.assigned_to || null,
+      appointment_type: form.appointment_type,
       lead_id: initial?.lead_id ?? defaultLeadId ?? null,
     };
     try {
