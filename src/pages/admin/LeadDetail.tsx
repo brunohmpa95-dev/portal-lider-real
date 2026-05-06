@@ -326,8 +326,29 @@ export default function LeadDetail() {
   }, [timeline, historyTypeFilter, historyPeriodFilter]);
 
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  if (!lead) return <div className="text-center py-12 text-muted-foreground">Lead não encontrado</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4 max-w-6xl">
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-64 rounded-lg lg:col-span-2" />
+          <Skeleton className="h-64 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+  if (!lead) {
+    return (
+      <Card><CardContent className="p-0">
+        <EmptyState
+          icon={<AlertCircle className="h-6 w-6" />}
+          title="Lead não encontrado"
+          description="Verifique se o link está correto ou retorne para a lista."
+          action={<Button asChild size="sm" variant="outline"><Link to="/admin/leads"><ArrowLeft className="h-4 w-4 mr-1" /> Voltar para leads</Link></Button>}
+        />
+      </CardContent></Card>
+    );
+  }
 
   const followupOverdue = lead.next_followup_at && new Date(lead.next_followup_at) < new Date();
   const interestNbName = neighborhoods.find((n) => n.id === lead.interest_neighborhood_id)?.name;
