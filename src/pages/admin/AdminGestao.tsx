@@ -125,7 +125,7 @@ export default function AdminGestao() {
         <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
             <KPICard title="Leads" value={leadStats.total} icon={Users} />
             <KPICard title="Fechados" value={leadStats.won} icon={Award} />
             <KPICard title="Conversão" value={`${leadStats.conversion}%`} icon={Target} />
