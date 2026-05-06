@@ -85,6 +85,57 @@ export default function LeadDetail() {
     setSlaEvents((slaRes as any).data || []);
     setAgents((agentsRes.data as any) || []);
     setVisits(((visitsRes as any).data) || []);
+
+    // Cliente vinculado e leads relacionados (mesmo cliente OU mesmo email/telefone)
+    const leadData: any = leadRes.data;
+    if (leadData) {
+      let clientRow: any = null;
+      if (leadData.client_id) {
+        const { data: c } = await supabase.from('clients' as any)
+          .select('id, full_name, email, phone, cpf_cnpj, profile_id, profiles(full_name, phone)')
+          .eq('id', leadData.client_id).maybeSingle();
+        clientRow = c;
+      }
+      setClient(clientRow);
+
+      // Leads do mesmo cliente (histórico de oportunidades)
+      if (leadData.client_id) {
+        const { data: rel } = await supabase.from('property_leads')
+          .select('id, name, funnel_stage, status, source, created_at, property_id')
+          .eq('client_id', leadData.client_id)
+          .neq('id', leadData.id)
+          .order('created_at', { ascending: false }).limit(20);
+        setRelatedLeads(rel || []);
+      } else {
+        setRelatedLeads([]);
+      }
+
+      // Duplicatas potenciais por email/telefone (lead ainda sem cliente)
+      if (!leadData.client_id) {
+        const conds: string[] = [];
+        if (leadData.email && !leadData.email.endsWith('@anon.lider.local')) {
+          conds.push(`email.ilike.${leadData.email}`);
+        }
+        const phoneDigits = (leadData.whatsapp || leadData.phone || '').replace(/\D/g, '');
+        if (phoneDigits.length >= 8) {
+          conds.push(`phone.ilike.%${phoneDigits.slice(-8)}%`);
+          conds.push(`whatsapp.ilike.%${phoneDigits.slice(-8)}%`);
+        }
+        if (conds.length) {
+          const { data: dup } = await supabase.from('property_leads')
+            .select('id, name, funnel_stage, status, source, created_at, client_id, email, phone, whatsapp')
+            .or(conds.join(','))
+            .neq('id', leadData.id)
+            .order('created_at', { ascending: false }).limit(10);
+          setDuplicates(dup || []);
+        } else {
+          setDuplicates([]);
+        }
+      } else {
+        setDuplicates([]);
+      }
+    }
+
     setLoading(false);
   }
 
