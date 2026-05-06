@@ -67,6 +67,19 @@ export default function AdminPermissions() {
     setSaving(false);
   }
 
+  if (!isSuperadmin) {
+    return (
+      <div>
+        <InternalPageHeader title="Permissões" subtitle="Acesso restrito" />
+        <EmptyState
+          icon={ShieldOff}
+          title="Acesso restrito"
+          description="Apenas superadministradores podem visualizar e editar permissões."
+        />
+      </div>
+    );
+  }
+
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   const grouped: Record<string, Permission[]> = {};
