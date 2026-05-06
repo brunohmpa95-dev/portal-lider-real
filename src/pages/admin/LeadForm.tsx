@@ -68,12 +68,22 @@ export default function LeadForm() {
       interest_bedrooms: form.interest_bedrooms ? Number(form.interest_bedrooms) : null,
       next_followup_at: form.next_followup_at ? new Date(form.next_followup_at).toISOString() : null,
     };
-    const { error } = await supabase.from('property_leads').insert(payload);
+    const { data: inserted, error } = await supabase
+      .from('property_leads')
+      .insert(payload)
+      .select('id')
+      .single();
     setSaving(false);
     if (error) {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Lead criado com sucesso' });
+      // Dispara distribuição automática (não bloqueia navegação)
+      if (inserted?.id) {
+        supabase.functions.invoke('lead-distributor', {
+          body: { action: 'distribute', lead_id: inserted.id },
+        }).catch(() => {});
+      }
       navigate('/admin/leads');
     }
   }
