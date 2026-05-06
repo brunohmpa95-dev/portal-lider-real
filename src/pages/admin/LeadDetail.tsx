@@ -306,6 +306,8 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
+          <SlaTimelineCard leadId={lead.id} lead={lead} />
+
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">Ações Rápidas</CardTitle></CardHeader>
             <CardContent className="space-y-2">
