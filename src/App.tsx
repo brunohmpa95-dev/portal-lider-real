@@ -74,6 +74,7 @@ import AdminPermissions from "@/pages/admin/AdminPermissions";
 import AdminGestao from "@/pages/admin/AdminGestao";
 import AdminEsteira from "@/pages/admin/AdminEsteira";
 import AdminDistributionRules from "@/pages/admin/AdminDistributionRules";
+import CrmReports from "@/pages/admin/CrmReports";
 
 const queryClient = new QueryClient();
 
