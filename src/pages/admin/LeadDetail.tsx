@@ -422,6 +422,11 @@ export default function LeadDetail() {
             <Button size="sm" variant="outline" onClick={forceRedistribute}>
               <ArrowRightLeft className="h-4 w-4 mr-1" /> Redistribuir
             </Button>
+            {!lead.client_id && (
+              <Button size="sm" variant="default" onClick={convertToClient}>
+                <UserCheck className="h-4 w-4 mr-1" /> Converter em cliente
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
