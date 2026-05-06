@@ -45,6 +45,9 @@ export default function LeadDetail() {
   const [agents, setAgents] = useState<{ user_id: string; full_name: string | null }[]>([]);
   const [property, setProperty] = useState<any>(null);
   const [visits, setVisits] = useState<any[]>([]);
+  const [client, setClient] = useState<any>(null);
+  const [relatedLeads, setRelatedLeads] = useState<any[]>([]);
+  const [duplicates, setDuplicates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingLost, setPendingLost] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
@@ -82,6 +85,57 @@ export default function LeadDetail() {
     setSlaEvents((slaRes as any).data || []);
     setAgents((agentsRes.data as any) || []);
     setVisits(((visitsRes as any).data) || []);
+
+    // Cliente vinculado e leads relacionados (mesmo cliente OU mesmo email/telefone)
+    const leadData: any = leadRes.data;
+    if (leadData) {
+      let clientRow: any = null;
+      if (leadData.client_id) {
+        const { data: c } = await supabase.from('clients' as any)
+          .select('id, full_name, email, phone, cpf_cnpj, profile_id, profiles(full_name, phone)')
+          .eq('id', leadData.client_id).maybeSingle();
+        clientRow = c;
+      }
+      setClient(clientRow);
+
+      // Leads do mesmo cliente (histórico de oportunidades)
+      if (leadData.client_id) {
+        const { data: rel } = await supabase.from('property_leads')
+          .select('id, name, funnel_stage, status, source, created_at, property_id')
+          .eq('client_id', leadData.client_id)
+          .neq('id', leadData.id)
+          .order('created_at', { ascending: false }).limit(20);
+        setRelatedLeads(rel || []);
+      } else {
+        setRelatedLeads([]);
+      }
+
+      // Duplicatas potenciais por email/telefone (lead ainda sem cliente)
+      if (!leadData.client_id) {
+        const conds: string[] = [];
+        if (leadData.email && !leadData.email.endsWith('@anon.lider.local')) {
+          conds.push(`email.ilike.${leadData.email}`);
+        }
+        const phoneDigits = (leadData.whatsapp || leadData.phone || '').replace(/\D/g, '');
+        if (phoneDigits.length >= 8) {
+          conds.push(`phone.ilike.%${phoneDigits.slice(-8)}%`);
+          conds.push(`whatsapp.ilike.%${phoneDigits.slice(-8)}%`);
+        }
+        if (conds.length) {
+          const { data: dup } = await supabase.from('property_leads')
+            .select('id, name, funnel_stage, status, source, created_at, client_id, email, phone, whatsapp')
+            .or(conds.join(','))
+            .neq('id', leadData.id)
+            .order('created_at', { ascending: false }).limit(10);
+          setDuplicates(dup || []);
+        } else {
+          setDuplicates([]);
+        }
+      } else {
+        setDuplicates([]);
+      }
+    }
+
     setLoading(false);
   }
 
@@ -113,6 +167,14 @@ export default function LeadDetail() {
     const { error } = await supabase.from('property_leads').update(patch as any).eq('id', id!);
     if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
     else { setLead((p: any) => ({ ...p, ...patch })); setEditInterest(false); toast({ title: 'Interesse atualizado' }); }
+  }
+
+  async function convertToClient() {
+    if (!confirm('Converter este lead em cliente?\n\nSe já existir um cliente com mesmo e-mail/telefone, o lead será vinculado a ele.')) return;
+    const { data, error } = await supabase.rpc('convert_lead_to_client' as any, { _lead_id: id });
+    if (error) { toast({ title: 'Erro ao converter', description: error.message, variant: 'destructive' }); return; }
+    toast({ title: 'Lead convertido', description: 'Cliente vinculado com sucesso' });
+    loadLead();
   }
 
   async function forceRedistribute() {
@@ -360,6 +422,11 @@ export default function LeadDetail() {
             <Button size="sm" variant="outline" onClick={forceRedistribute}>
               <ArrowRightLeft className="h-4 w-4 mr-1" /> Redistribuir
             </Button>
+            {!lead.client_id && (
+              <Button size="sm" variant="default" onClick={convertToClient}>
+                <UserCheck className="h-4 w-4 mr-1" /> Converter em cliente
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -657,6 +724,93 @@ export default function LeadDetail() {
               ))}
             </CardContent>
           </Card>
+
+          {/* Cliente vinculado */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <UserCheck className="h-4 w-4" /> Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {client ? (
+                <>
+                  <p className="font-medium">{client.full_name || client.profiles?.full_name || '—'}</p>
+                  {(client.email || client.phone || client.profiles?.phone) && (
+                    <p className="text-xs text-muted-foreground">
+                      {client.email || ''}{client.email && (client.phone || client.profiles?.phone) ? ' · ' : ''}
+                      {client.phone || client.profiles?.phone || ''}
+                    </p>
+                  )}
+                  {client.cpf_cnpj && <p className="text-xs text-muted-foreground font-mono">{client.cpf_cnpj}</p>}
+                  <Button asChild variant="outline" size="sm" className="w-full mt-2">
+                    <Link to="/admin/clientes">Ver clientes</Link>
+                  </Button>
+                  {relatedLeads.length > 0 && (
+                    <div className="pt-3 border-t mt-3">
+                      <p className="text-xs font-medium mb-2">Histórico de oportunidades ({relatedLeads.length})</p>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {relatedLeads.map((r) => (
+                          <Link key={r.id} to={`/admin/leads/${r.id}`}
+                                className="block text-xs p-2 rounded hover:bg-muted/50 border">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="truncate">{r.name}</span>
+                              <Badge variant="outline" className="text-[10px]">
+                                {LEAD_FUNNEL_STAGES.find((s) => s.value === r.funnel_stage)?.label || r.funnel_stage}
+                              </Badge>
+                            </div>
+                            <p className="text-muted-foreground mt-0.5">
+                              {sourceLabel(r.source)} · {new Date(r.created_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Este lead ainda não está vinculado a um cliente.
+                  </p>
+                  <Button onClick={convertToClient} size="sm" className="w-full">
+                    <UserCheck className="h-4 w-4 mr-1" /> Converter em cliente
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Possíveis duplicatas */}
+          {duplicates.length > 0 && (
+            <Card className="border-amber-500/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <AlertCircle className="h-4 w-4" /> Possíveis duplicatas ({duplicates.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Outros leads com mesmo e-mail ou telefone. Verifique antes de converter.
+                </p>
+                {duplicates.map((d) => (
+                  <Link key={d.id} to={`/admin/leads/${d.id}`}
+                        className="block text-xs p-2 rounded hover:bg-muted/50 border">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-medium">{d.name}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {LEAD_FUNNEL_STAGES.find((s) => s.value === d.funnel_stage)?.label || d.funnel_stage}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground mt-0.5">
+                      {sourceLabel(d.source)} · {new Date(d.created_at).toLocaleDateString('pt-BR')}
+                      {d.client_id && ' · já é cliente'}
+                    </p>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
