@@ -243,6 +243,7 @@ function getBreadcrumbs(pathname: string) {
     '/admin/tarefas': [{ label: 'Tarefas' }],
     '/admin/bairros': [{ label: 'Bairros' }],
     '/admin/gestao': [{ label: 'Dashboard Gerencial' }],
+    '/admin/esteira': [{ label: 'Esteira de Leads' }],
     '/admin/properties/import': [{ label: 'Imóveis', path: '/admin/properties' }, { label: 'Importar' }],
   };
 

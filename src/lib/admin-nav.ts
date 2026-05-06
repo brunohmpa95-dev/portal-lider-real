@@ -17,6 +17,7 @@ import {
   MapPin,
   KeyRound,
   TrendingUp,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth-types';
@@ -41,6 +42,7 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
     items: [
       { title: 'Dashboard', path: '/admin', icon: LayoutDashboard },
       { title: 'Leads', path: '/admin/leads', icon: Users },
+      { title: 'Esteira', path: '/admin/esteira', icon: Workflow, requiredRoles: ['administrativo', 'superadmin', 'vendas', 'locacao'] },
       { title: 'Imóveis', path: '/admin/properties', icon: Building2 },
       { title: 'Clientes', path: '/admin/clientes', icon: Users, requiredRoles: ['administrativo', 'superadmin'] },
       { title: 'Bairros', path: '/admin/bairros', icon: MapPin, requiredRoles: ['administrativo', 'superadmin'] },
