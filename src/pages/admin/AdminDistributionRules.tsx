@@ -11,8 +11,13 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Plus, Trash2, Pencil, Users } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, Users, Settings2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { EmptyState, ErrorState, ListSkeleton } from '@/components/admin/StateViews';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const MODE_LABEL: Record<string, string> = {
   round_robin: 'Rodízio simples',
@@ -49,6 +54,7 @@ export default function AdminDistributionRules() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<DistributionRule>>(empty);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<DistributionRule | null>(null);
 
   useEffect(() => {
     supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name')
@@ -83,10 +89,11 @@ export default function AdminDistributionRules() {
     reload();
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Excluir esta regra?')) return;
-    const { error } = await remove(id);
-    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+  async function confirmDelete() {
+    if (!deleting) return;
+    const { error } = await remove(deleting.id);
+    setDeleting(null);
+    if (error) toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
     else toast({ title: 'Regra excluída' });
   }
 
@@ -105,10 +112,15 @@ export default function AdminDistributionRules() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        <ListSkeleton rows={4} />
       ) : rules.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">
-          Nenhuma regra cadastrada. Sem regras, leads ficam sem atribuição automática.
+        <Card><CardContent className="p-0">
+          <EmptyState
+            icon={<Settings2 className="h-6 w-6" />}
+            title="Nenhuma regra cadastrada"
+            description="Sem regras, leads ficam sem atribuição automática. Crie a primeira regra de distribuição."
+            action={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Nova regra</Button>}
+          />
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
@@ -136,7 +148,7 @@ export default function AdminDistributionRules() {
                   <div className="flex items-center gap-1">
                     <Switch checked={r.is_active} onCheckedChange={(v) => toggle(r.id, v)} />
                     <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleting(r)} aria-label="Excluir">
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -287,6 +299,23 @@ export default function AdminDistributionRules() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir regra?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A regra <span className="font-medium">"{deleting?.name}"</span> deixará de ser aplicada a novos leads. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -26,6 +26,8 @@ import {
   CheckCircle2, XCircle, UserCheck, ArrowRightLeft,
 } from 'lucide-react';
 import { SlaBadge } from '@/components/admin/SlaBadge';
+import { EmptyState } from '@/components/admin/StateViews';
+import { Skeleton } from '@/components/ui/skeleton';
 import { temperatureColor, funnelStageColor, channelLabel, sourceLabel } from '@/lib/leads';
 
 const NONE = '__none__';
@@ -326,8 +328,29 @@ export default function LeadDetail() {
   }, [timeline, historyTypeFilter, historyPeriodFilter]);
 
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  if (!lead) return <div className="text-center py-12 text-muted-foreground">Lead não encontrado</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4 max-w-6xl">
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-64 rounded-lg lg:col-span-2" />
+          <Skeleton className="h-64 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+  if (!lead) {
+    return (
+      <Card><CardContent className="p-0">
+        <EmptyState
+          icon={<AlertCircle className="h-6 w-6" />}
+          title="Lead não encontrado"
+          description="Verifique se o link está correto ou retorne para a lista."
+          action={<Button asChild size="sm" variant="outline"><Link to="/admin/leads"><ArrowLeft className="h-4 w-4 mr-1" /> Voltar para leads</Link></Button>}
+        />
+      </CardContent></Card>
+    );
+  }
 
   const followupOverdue = lead.next_followup_at && new Date(lead.next_followup_at) < new Date();
   const interestNbName = neighborhoods.find((n) => n.id === lead.interest_neighborhood_id)?.name;
@@ -533,7 +556,7 @@ export default function LeadDetail() {
             </CardHeader>
             <CardContent>
               {tasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma tarefa</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma tarefa pendente — clique em <strong>Nova</strong> para criar.</p>
               ) : (
                 <ul className="space-y-2">
                   {tasks.map((t) => (
@@ -616,7 +639,9 @@ export default function LeadDetail() {
                 </span>
               </div>
               {filteredTimeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {timeline.length === 0 ? 'Nenhuma interação registrada ainda.' : 'Nenhum evento para os filtros selecionados.'}
+                </p>
               ) : (
                 <ol className="relative border-l border-border ml-2 space-y-4">
                   {filteredTimeline.map((e) => (

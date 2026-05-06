@@ -12,6 +12,8 @@ import {
   PieChart, Pie, Cell, LineChart, Line, Legend,
 } from 'recharts';
 import { toast } from '@/hooks/use-toast';
+import { ErrorState, CardsSkeleton } from '@/components/admin/StateViews';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['hsl(var(--primary))', '#60a5fa', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#8b5cf6', '#14b8a6'];
 
@@ -49,6 +51,7 @@ export default function CrmReports() {
   const [filterSource, setFilterSource] = useState<string>('all');
   const [filterStage, setFilterStage] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [leads, setLeads] = useState<any[]>([]);
   const [interactions, setInteractions] = useState<any[]>([]);
   const [stageEvents, setStageEvents] = useState<any[]>([]);
@@ -58,29 +61,39 @@ export default function CrmReports() {
 
   async function load() {
     setLoading(true);
-    const since = new Date();
-    since.setDate(since.getDate() - period);
-    const sinceStr = since.toISOString();
+    setLoadError(null);
+    try {
+      const since = new Date();
+      since.setDate(since.getDate() - period);
+      const sinceStr = since.toISOString();
 
-    const [leadsRes, intRes, agentsRes, stageRes] = await Promise.all([
-      supabase.from('property_leads')
-        .select('id, name, source, funnel_stage, assigned_to, created_at, updated_at, lost_at')
-        .gte('created_at', sinceStr),
-      supabase.from('lead_interactions')
-        .select('id, lead_id, interaction_type, user_id, created_at, funnel_stage_at_time')
-        .gte('created_at', sinceStr),
-      supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
-      supabase.from('lead_interactions')
-        .select('lead_id, interaction_type, content, created_at, funnel_stage_at_time')
-        .eq('interaction_type', 'stage_change')
-        .gte('created_at', sinceStr),
-    ]);
+      const [leadsRes, intRes, agentsRes, stageRes] = await Promise.all([
+        supabase.from('property_leads')
+          .select('id, name, source, funnel_stage, assigned_to, created_at, updated_at, lost_at')
+          .gte('created_at', sinceStr),
+        supabase.from('lead_interactions')
+          .select('id, lead_id, interaction_type, user_id, created_at, funnel_stage_at_time')
+          .gte('created_at', sinceStr),
+        supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
+        supabase.from('lead_interactions')
+          .select('lead_id, interaction_type, content, created_at, funnel_stage_at_time')
+          .eq('interaction_type', 'stage_change')
+          .gte('created_at', sinceStr),
+      ]);
 
-    setLeads(leadsRes.data || []);
-    setInteractions(intRes.data || []);
-    setAgents((agentsRes.data as any) || []);
-    setStageEvents(stageRes.data || []);
-    setLoading(false);
+      if (leadsRes.error || intRes.error || agentsRes.error || stageRes.error) {
+        throw new Error(leadsRes.error?.message || intRes.error?.message || agentsRes.error?.message || stageRes.error?.message);
+      }
+
+      setLeads(leadsRes.data || []);
+      setInteractions(intRes.data || []);
+      setAgents((agentsRes.data as any) || []);
+      setStageEvents(stageRes.data || []);
+    } catch (e: any) {
+      setLoadError(e?.message || 'Erro ao carregar relatórios');
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Apply filters
@@ -210,7 +223,25 @@ export default function CrmReports() {
   }
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    return (
+      <div className="space-y-4">
+        <InternalPageHeader title="Relatórios CRM" subtitle="Carregando..." />
+        <CardsSkeleton cards={6} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[320px] rounded-lg" />
+          <Skeleton className="h-[320px] rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-4">
+        <InternalPageHeader title="Relatórios CRM" />
+        <Card><CardContent className="p-0"><ErrorState description={loadError} onRetry={load} /></CardContent></Card>
+      </div>
+    );
   }
 
   return (

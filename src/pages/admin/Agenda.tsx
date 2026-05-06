@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { APPOINTMENT_TYPE_LABEL } from '@/hooks/useTasks';
 import { Plus, Loader2, CalendarDays, Clock, ExternalLink, Phone, MessageSquare, Users, RefreshCw, Calendar as CalIcon } from 'lucide-react';
+import { EmptyState, ErrorState, ListSkeleton } from '@/components/admin/StateViews';
 
 type AgendaItem = {
   id: string;
@@ -48,6 +49,7 @@ export default function Agenda() {
   const { user } = useAuth();
   const [items, setItems] = useState<AgendaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -62,46 +64,53 @@ export default function Agenda() {
 
   async function loadAll() {
     setLoading(true);
-    const [{ data: visits }, { data: tasks }] = await Promise.all([
-      supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes, lead_id, property_id, agent_id').order('scheduled_at', { ascending: true }),
-      supabase
-        .from('tasks' as any)
-        .select('id, title, due_at, status, description, lead_id, property_id, assigned_to, appointment_type')
-        .not('appointment_type', 'is', null)
-        .not('due_at', 'is', null)
-        .order('due_at', { ascending: true }),
-    ]);
+    setLoadError(null);
+    try {
+      const [{ data: visits, error: vErr }, { data: tasks, error: tErr }] = await Promise.all([
+        supabase.from('visits' as any).select('id, scheduled_at, duration_minutes, status, notes, lead_id, property_id, agent_id').order('scheduled_at', { ascending: true }),
+        supabase
+          .from('tasks' as any)
+          .select('id, title, due_at, status, description, lead_id, property_id, assigned_to, appointment_type')
+          .not('appointment_type', 'is', null)
+          .not('due_at', 'is', null)
+          .order('due_at', { ascending: true }),
+      ]);
+      if (vErr || tErr) throw new Error(vErr?.message || tErr?.message);
 
-    const visitItems: AgendaItem[] = ((visits as any[]) || []).map((v) => ({
-      id: v.id,
-      source: 'visit',
-      type: 'visit',
-      scheduled_at: v.scheduled_at,
-      duration_minutes: v.duration_minutes,
-      title: 'Visita ao imóvel',
-      notes: v.notes,
-      status: v.status,
-      lead_id: v.lead_id,
-      property_id: v.property_id,
-      agent_id: v.agent_id,
-    }));
+      const visitItems: AgendaItem[] = ((visits as any[]) || []).map((v) => ({
+        id: v.id,
+        source: 'visit',
+        type: 'visit',
+        scheduled_at: v.scheduled_at,
+        duration_minutes: v.duration_minutes,
+        title: 'Visita ao imóvel',
+        notes: v.notes,
+        status: v.status,
+        lead_id: v.lead_id,
+        property_id: v.property_id,
+        agent_id: v.agent_id,
+      }));
 
-    const taskItems: AgendaItem[] = ((tasks as any[]) || []).map((t) => ({
-      id: t.id,
-      source: 'task',
-      type: t.appointment_type,
-      scheduled_at: t.due_at,
-      duration_minutes: null,
-      title: t.title,
-      notes: t.description,
-      status: t.status === 'done' ? 'completed' : t.status === 'cancelled' ? 'cancelled' : 'scheduled',
-      lead_id: t.lead_id,
-      property_id: t.property_id,
-      agent_id: t.assigned_to,
-    }));
+      const taskItems: AgendaItem[] = ((tasks as any[]) || []).map((t) => ({
+        id: t.id,
+        source: 'task',
+        type: t.appointment_type,
+        scheduled_at: t.due_at,
+        duration_minutes: null,
+        title: t.title,
+        notes: t.description,
+        status: t.status === 'done' ? 'completed' : t.status === 'cancelled' ? 'cancelled' : 'scheduled',
+        lead_id: t.lead_id,
+        property_id: t.property_id,
+        agent_id: t.assigned_to,
+      }));
 
-    setItems([...visitItems, ...taskItems].sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at)));
-    setLoading(false);
+      setItems([...visitItems, ...taskItems].sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at)));
+    } catch (e: any) {
+      setLoadError(e?.message || 'Erro ao carregar agenda');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function createVisit(e: React.FormEvent) {
@@ -129,12 +138,15 @@ export default function Agenda() {
   async function updateStatus(item: AgendaItem, status: string) {
     if (item.source === 'visit') {
       const { error } = await supabase.from('visits' as any).update({ status }).eq('id', item.id);
-      if (!error) setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'visit' ? { ...x, status } : x));
+      if (error) { toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' }); return; }
+      setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'visit' ? { ...x, status } : x));
     } else {
       const taskStatus = status === 'completed' ? 'done' : status === 'cancelled' ? 'cancelled' : 'pending';
       const { error } = await supabase.from('tasks' as any).update({ status: taskStatus }).eq('id', item.id);
-      if (!error) setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'task' ? { ...x, status } : x));
+      if (error) { toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' }); return; }
+      setItems((arr) => arr.map((x) => x.id === item.id && x.source === 'task' ? { ...x, status } : x));
     }
+    toast({ title: status === 'completed' ? 'Compromisso concluído' : status === 'cancelled' ? 'Compromisso cancelado' : 'Atualizado' });
   }
 
   const filtered = useMemo(
@@ -198,13 +210,21 @@ export default function Agenda() {
       </p>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+        <Card><CardContent className="p-4"><ListSkeleton rows={4} /></CardContent></Card>
+      ) : loadError ? (
+        <Card><CardContent className="p-0"><ErrorState description={loadError} onRetry={loadAll} /></CardContent></Card>
       ) : (
         <>
           <div>
             <h2 className="text-lg font-semibold mb-3">Próximos compromissos ({upcoming.length})</h2>
             {upcoming.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Nenhum compromisso agendado</CardContent></Card>
+              <Card><CardContent className="p-0">
+                <EmptyState
+                  icon={<CalendarDays className="h-6 w-6" />}
+                  title="Nenhum compromisso agendado"
+                  description="Crie uma visita ou agende um follow-up no detalhe do lead."
+                />
+              </CardContent></Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcoming.map((v) => {
