@@ -115,8 +115,13 @@ export default function LeadDetail() {
     else { setLead((p: any) => ({ ...p, ...patch })); setEditInterest(false); toast({ title: 'Interesse atualizado' }); }
   }
 
-  async function forceRedistribute() {
-    if (!confirm('Forçar redistribuição deste lead?')) return;
+  async function convertToClient() {
+    if (!confirm('Converter este lead em cliente?\n\nSe já existir um cliente com mesmo e-mail/telefone, o lead será vinculado a ele.')) return;
+    const { data, error } = await supabase.rpc('convert_lead_to_client' as any, { _lead_id: id });
+    if (error) { toast({ title: 'Erro ao converter', description: error.message, variant: 'destructive' }); return; }
+    toast({ title: 'Lead convertido', description: 'Cliente vinculado com sucesso' });
+    loadLead();
+  }
     const { error } = await supabase.functions.invoke('lead-distributor', {
       body: { action: 'redistribute', lead_id: id, reason: 'manual_force' },
     });
