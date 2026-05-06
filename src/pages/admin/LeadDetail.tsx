@@ -81,6 +81,7 @@ export default function LeadDetail() {
     setDistLogs((distRes as any).data || []);
     setSlaEvents((slaRes as any).data || []);
     setAgents((agentsRes.data as any) || []);
+    setVisits(((visitsRes as any).data) || []);
     setLoading(false);
   }
 
