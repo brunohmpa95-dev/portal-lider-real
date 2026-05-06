@@ -9,7 +9,7 @@ import { useTaskMutations, type Task } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Phone, MessageSquare, Calendar, FileText, RefreshCw, Plus } from 'lucide-react';
+import { Loader2, Phone, MessageSquare, Calendar, FileText, RefreshCw, Plus, Users } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -31,15 +31,16 @@ const STATUSES: { value: Task['status']; label: string }[] = [
   { value: 'cancelled', label: 'Cancelada' },
 ];
 
-type TemplateKey = 'call' | 'whatsapp' | 'visit' | 'proposal' | 'followup' | 'custom';
+type TemplateKey = 'call' | 'whatsapp' | 'visit' | 'meeting' | 'proposal' | 'followup' | 'custom';
 
-const TEMPLATES: { key: TemplateKey; label: string; icon: any; title: string; description: string; priority: Task['priority']; offsetHours: number }[] = [
-  { key: 'call',     label: 'Ligar',           icon: Phone,        title: 'Ligar para o lead',          description: '',                                            priority: 'high',   offsetHours: 2 },
-  { key: 'whatsapp', label: 'Responder WhatsApp', icon: MessageSquare, title: 'Responder no WhatsApp',  description: '',                                            priority: 'high',   offsetHours: 1 },
-  { key: 'visit',    label: 'Agendar visita',  icon: Calendar,     title: 'Agendar visita ao imóvel',   description: 'Confirmar data/horário e enviar confirmação.', priority: 'high',   offsetHours: 24 },
-  { key: 'proposal', label: 'Enviar proposta', icon: FileText,     title: 'Enviar proposta',            description: 'Preparar e enviar proposta personalizada.',    priority: 'urgent', offsetHours: 24 },
-  { key: 'followup', label: 'Cobrar retorno', icon: RefreshCw,     title: 'Cobrar retorno do lead',     description: 'Lead sem resposta — fazer follow-up.',         priority: 'normal', offsetHours: 48 },
-  { key: 'custom',   label: 'Personalizada',  icon: Plus,          title: '',                            description: '',                                            priority: 'normal', offsetHours: 0 },
+const TEMPLATES: { key: TemplateKey; label: string; icon: any; title: string; description: string; priority: Task['priority']; offsetHours: number; appointmentType: Task['appointment_type'] }[] = [
+  { key: 'call',     label: 'Ligar',             icon: Phone,         title: 'Ligar para o lead',          description: '',                                            priority: 'high',   offsetHours: 2,  appointmentType: 'call' },
+  { key: 'whatsapp', label: 'Responder WhatsApp', icon: MessageSquare, title: 'Responder no WhatsApp',     description: '',                                            priority: 'high',   offsetHours: 1,  appointmentType: 'whatsapp' },
+  { key: 'visit',    label: 'Agendar visita',    icon: Calendar,      title: 'Agendar visita ao imóvel',   description: 'Confirmar data/horário e enviar confirmação.', priority: 'high',   offsetHours: 24, appointmentType: 'visit' },
+  { key: 'meeting',  label: 'Reunião',           icon: Users,         title: 'Reunião com o lead',         description: '',                                            priority: 'high',   offsetHours: 24, appointmentType: 'meeting' },
+  { key: 'proposal', label: 'Enviar proposta',   icon: FileText,      title: 'Enviar proposta',            description: 'Preparar e enviar proposta personalizada.',    priority: 'urgent', offsetHours: 24, appointmentType: null },
+  { key: 'followup', label: 'Cobrar retorno',    icon: RefreshCw,     title: 'Cobrar retorno do lead',     description: 'Lead sem resposta — fazer follow-up.',         priority: 'normal', offsetHours: 48, appointmentType: 'followup' },
+  { key: 'custom',   label: 'Personalizada',    icon: Plus,           title: '',                            description: '',                                            priority: 'normal', offsetHours: 0,  appointmentType: null },
 ];
 
 function formatLocalDateTime(d: Date) {
