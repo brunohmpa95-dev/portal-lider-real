@@ -49,6 +49,7 @@ export default function CrmReports() {
   const [filterSource, setFilterSource] = useState<string>('all');
   const [filterStage, setFilterStage] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [leads, setLeads] = useState<any[]>([]);
   const [interactions, setInteractions] = useState<any[]>([]);
   const [stageEvents, setStageEvents] = useState<any[]>([]);
@@ -58,29 +59,39 @@ export default function CrmReports() {
 
   async function load() {
     setLoading(true);
-    const since = new Date();
-    since.setDate(since.getDate() - period);
-    const sinceStr = since.toISOString();
+    setLoadError(null);
+    try {
+      const since = new Date();
+      since.setDate(since.getDate() - period);
+      const sinceStr = since.toISOString();
 
-    const [leadsRes, intRes, agentsRes, stageRes] = await Promise.all([
-      supabase.from('property_leads')
-        .select('id, name, source, funnel_stage, assigned_to, created_at, updated_at, lost_at')
-        .gte('created_at', sinceStr),
-      supabase.from('lead_interactions')
-        .select('id, lead_id, interaction_type, user_id, created_at, funnel_stage_at_time')
-        .gte('created_at', sinceStr),
-      supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
-      supabase.from('lead_interactions')
-        .select('lead_id, interaction_type, content, created_at, funnel_stage_at_time')
-        .eq('interaction_type', 'stage_change')
-        .gte('created_at', sinceStr),
-    ]);
+      const [leadsRes, intRes, agentsRes, stageRes] = await Promise.all([
+        supabase.from('property_leads')
+          .select('id, name, source, funnel_stage, assigned_to, created_at, updated_at, lost_at')
+          .gte('created_at', sinceStr),
+        supabase.from('lead_interactions')
+          .select('id, lead_id, interaction_type, user_id, created_at, funnel_stage_at_time')
+          .gte('created_at', sinceStr),
+        supabase.from('profiles').select('user_id, full_name').eq('is_active', true).order('full_name'),
+        supabase.from('lead_interactions')
+          .select('lead_id, interaction_type, content, created_at, funnel_stage_at_time')
+          .eq('interaction_type', 'stage_change')
+          .gte('created_at', sinceStr),
+      ]);
 
-    setLeads(leadsRes.data || []);
-    setInteractions(intRes.data || []);
-    setAgents((agentsRes.data as any) || []);
-    setStageEvents(stageRes.data || []);
-    setLoading(false);
+      if (leadsRes.error || intRes.error || agentsRes.error || stageRes.error) {
+        throw new Error(leadsRes.error?.message || intRes.error?.message || agentsRes.error?.message || stageRes.error?.message);
+      }
+
+      setLeads(leadsRes.data || []);
+      setInteractions(intRes.data || []);
+      setAgents((agentsRes.data as any) || []);
+      setStageEvents(stageRes.data || []);
+    } catch (e: any) {
+      setLoadError(e?.message || 'Erro ao carregar relatórios');
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Apply filters
