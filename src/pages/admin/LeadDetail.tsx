@@ -20,7 +20,8 @@ import LostReasonDialog from '@/components/admin/LostReasonDialog';
 import TaskFormDialog from '@/components/admin/TaskFormDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, Loader2, Phone, Mail, MessageSquare, AlertCircle, Calendar, RefreshCw } from 'lucide-react';
+import { SlaBadge } from '@/components/admin/SlaBadge';
 
 export default function LeadDetail() {
   const { id } = useParams<{ id: string }>();
