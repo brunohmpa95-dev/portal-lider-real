@@ -73,6 +73,7 @@ import AdminTasks from "@/pages/admin/AdminTasks";
 import AdminPermissions from "@/pages/admin/AdminPermissions";
 import AdminGestao from "@/pages/admin/AdminGestao";
 import AdminEsteira from "@/pages/admin/AdminEsteira";
+import AdminDistributionRules from "@/pages/admin/AdminDistributionRules";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +176,7 @@ const App = () => (
                 <Route path="reports" element={<Reports />} />
                 <Route path="gestao" element={<AdminGestao />} />
                 <Route path="esteira" element={<AdminEsteira />} />
+                <Route path="distribuicao" element={<AdminDistributionRules />} />
                 <Route path="permissoes" element={<AdminPermissions />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<AdminProfile />} />
