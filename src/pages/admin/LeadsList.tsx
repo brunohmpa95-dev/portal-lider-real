@@ -33,6 +33,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import LostReasonDialog from '@/components/admin/LostReasonDialog';
 import QuickInteractionDialog from '@/components/admin/QuickInteractionDialog';
 import { MobileTableCard, MobileTableRow } from '@/components/admin/MobileTableCard';
+import { EmptyState, ErrorState, ListSkeleton } from '@/components/admin/StateViews';
 import { temperatureColor, funnelStageColor, channelLabel, sourceLabel } from '@/lib/leads';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; dot: string }> = {
