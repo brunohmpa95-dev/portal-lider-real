@@ -236,6 +236,7 @@ function getBreadcrumbs(pathname: string) {
     '/admin/team': [{ label: 'Equipe' }],
     '/admin/partners': [{ label: 'Parceiros' }],
     '/admin/reports': [{ label: 'Relatórios' }],
+    '/admin/reports/crm': [{ label: 'Relatórios', path: '/admin/reports' }, { label: 'CRM' }],
     '/admin/settings': [{ label: 'Configurações' }],
     '/admin/profile': [{ label: 'Meu Perfil' }],
     '/admin/notifications': [{ label: 'Notificações' }],
