@@ -35,15 +35,38 @@ export interface AdminLead {
   name: string;
   email: string;
   phone: string | null;
+  whatsapp: string | null;
   message: string | null;
   property_id: string | null;
+  client_id: string | null;
   assigned_to: string | null;
   source: string | null;
+  channel: string | null;
   status: string;
   priority: string;
+  temperature: string;
   funnel_stage: string;
   tags: string[];
   internal_notes: string | null;
+  // Interesse
+  interest_purpose: string | null;
+  interest_property_type: string | null;
+  interest_neighborhood_id: string | null;
+  interest_min_price: number | null;
+  interest_max_price: number | null;
+  interest_bedrooms: number | null;
+  // Funil / SLA
+  next_followup_at: string | null;
+  distributed_at: string | null;
+  first_response_at: string | null;
+  last_interaction_at: string | null;
+  sla_status: string;
+  distribution_rule_id: string | null;
+  redistribution_count: number;
+  // Perda
+  lost_reason_id: string | null;
+  lost_notes: string | null;
+  lost_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -118,6 +141,24 @@ export const LEAD_PRIORITY_OPTIONS = [
   { value: 'normal', label: 'Normal' },
   { value: 'high', label: 'Alta' },
   { value: 'urgent', label: 'Urgente' },
+];
+
+export const LEAD_TEMPERATURE_OPTIONS = [
+  { value: 'cold', label: 'Frio' },
+  { value: 'warm', label: 'Morno' },
+  { value: 'hot', label: 'Quente' },
+];
+
+export const LEAD_CHANNEL_OPTIONS = [
+  { value: 'form_site', label: 'Formulário do site' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'dm_instagram', label: 'DM Instagram' },
+  { value: 'dm_facebook', label: 'DM Facebook' },
+  { value: 'ligacao', label: 'Ligação' },
+  { value: 'presencial', label: 'Presencial' },
+  { value: 'indicacao', label: 'Indicação' },
+  { value: 'portal', label: 'Portal imobiliário' },
+  { value: 'outro', label: 'Outro' },
 ];
 
 export const LEAD_SOURCE_OPTIONS = [
