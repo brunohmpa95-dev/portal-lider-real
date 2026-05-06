@@ -409,6 +409,53 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
+          {/* Próximos compromissos (agenda) */}
+          {(() => {
+            const now = Date.now();
+            const upcomingVisits = visits
+              .filter((v) => v.status === 'scheduled' && new Date(v.scheduled_at).getTime() >= now)
+              .map((v) => ({ id: v.id, kind: 'Visita', when: v.scheduled_at, note: v.notes as string | null }));
+            const upcomingTasks = (tasks as any[])
+              .filter((t) => t.appointment_type && t.due_at && t.status === 'pending' && new Date(t.due_at).getTime() >= now)
+              .map((t) => ({
+                id: t.id,
+                kind:
+                  t.appointment_type === 'visit' ? 'Visita' :
+                  t.appointment_type === 'meeting' ? 'Reunião' :
+                  t.appointment_type === 'call' ? 'Ligação' :
+                  t.appointment_type === 'whatsapp' ? 'WhatsApp' : 'Retorno',
+                when: t.due_at,
+                note: t.title as string,
+              }));
+            const all = [...upcomingVisits, ...upcomingTasks].sort((a, b) => +new Date(a.when) - +new Date(b.when)).slice(0, 6);
+            if (all.length === 0) return null;
+            return (
+              <Card>
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">Próximos compromissos</CardTitle>
+                  <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+                    <Link to="/admin/agenda">Ver agenda</Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {all.map((c) => (
+                      <li key={`${c.kind}-${c.id}`} className="flex items-start gap-2 p-2 rounded border">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{c.kind}</Badge>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{c.note || c.kind}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {new Date(c.when).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           {/* Tarefas */}
           <Card>
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
