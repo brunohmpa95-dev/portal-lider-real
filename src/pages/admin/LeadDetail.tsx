@@ -467,18 +467,42 @@ export default function LeadDetail() {
 
           {/* TIMELINE UNIFICADA */}
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 flex-wrap">
               <CardTitle className="text-base">Histórico</CardTitle>
               <Button size="sm" variant="outline" onClick={() => setInteractionDefaultType('note')}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar
               </Button>
             </CardHeader>
             <CardContent>
-              {timeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento ainda</p>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Select value={historyTypeFilter} onValueChange={setHistoryTypeFilter}>
+                  <SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os eventos</SelectItem>
+                    <SelectItem value="system">Apenas sistema</SelectItem>
+                    {INTERACTION_TYPE_OPTIONS.filter((o) => o.value !== 'stage_change').map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={historyPeriodFilter} onValueChange={setHistoryPeriodFilter}>
+                  <SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Qualquer data</SelectItem>
+                    <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                    <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                    <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-[11px] text-muted-foreground ml-auto">
+                  {filteredTimeline.length} de {timeline.length}
+                </span>
+              </div>
+              {filteredTimeline.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento</p>
               ) : (
                 <ol className="relative border-l border-border ml-2 space-y-4">
-                  {timeline.map((e) => (
+                  {filteredTimeline.map((e) => (
                     <li key={e.id} className="ml-4">
                       <span className={`absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full ring-4 ring-background ${e.color}`}>
                         {e.icon}
