@@ -170,8 +170,8 @@ export default function AdminPermissions() {
           </thead>
           <tbody>
             {Object.entries(grouped).map(([module, list]) => (
-              <>
-                <tr key={module} className="bg-muted/30"><td colSpan={ROLES.length + 1} className="px-3 py-1.5 font-semibold uppercase text-muted-foreground">{module}</td></tr>
+              <Fragment key={module}>
+                <tr className="bg-muted/30"><td colSpan={ROLES.length + 1} className="px-3 py-1.5 font-semibold uppercase text-muted-foreground">{module}</td></tr>
                 {list.map((p) => (
                   <tr key={p.code} className="border-b border-border hover:bg-muted/20">
                     <td className="px-3 py-2"><div className="font-mono text-xs">{p.code}</div>{p.description && <div className="text-muted-foreground text-xs">{p.description}</div>}</td>
@@ -182,7 +182,7 @@ export default function AdminPermissions() {
                     ))}
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
