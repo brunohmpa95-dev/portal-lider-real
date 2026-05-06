@@ -176,6 +176,7 @@ const App = () => (
                 <Route path="reports" element={<Reports />} />
                 <Route path="gestao" element={<AdminGestao />} />
                 <Route path="esteira" element={<AdminEsteira />} />
+                <Route path="distribuicao" element={<AdminDistributionRules />} />
                 <Route path="permissoes" element={<AdminPermissions />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<AdminProfile />} />
