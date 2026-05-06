@@ -118,11 +118,33 @@ export default function LeadForm() {
                   <Input value={form.phone} onChange={(e) => set('phone', e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
+                  <Label>WhatsApp</Label>
+                  <Input value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)} placeholder="Se diferente do telefone" />
+                </div>
+                <div className="space-y-1.5">
                   <Label>Origem</Label>
                   <Select value={form.source} onValueChange={(v) => set('source', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {LEAD_SOURCE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Canal</Label>
+                  <Select value={form.channel} onValueChange={(v) => set('channel', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_CHANNEL_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Temperatura</Label>
+                  <Select value={form.temperature} onValueChange={(v) => set('temperature', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LEAD_TEMPERATURE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
