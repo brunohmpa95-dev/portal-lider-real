@@ -540,6 +540,7 @@ export default function LeadsList() {
                   <TableHead className="hidden lg:table-cell">Imóvel</TableHead>
                   <TableHead className="hidden xl:table-cell">Corretor</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                   <TableHead className="hidden lg:table-cell">Atualizado</TableHead>
                   <TableHead className="w-12 text-right">Ações</TableHead>
                 </TableRow>
