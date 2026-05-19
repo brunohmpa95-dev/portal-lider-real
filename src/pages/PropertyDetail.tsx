@@ -123,7 +123,6 @@ const PropertyDetail = () => {
   const shareTitle = `${property.title} — ${formatPrice(property.price, property.purpose)}`;
   const shareDesc = `${property.neighborhood}, ${property.city}/${property.state} · ${property.bedrooms ? `${property.bedrooms} quarto(s) · ` : ''}${property.area}m²`;
   const ogImage = property.images?.[0];
-  const ogImage = property.images?.[0];
 
   return (
     <Layout>
