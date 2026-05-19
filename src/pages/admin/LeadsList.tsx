@@ -726,16 +726,19 @@ export default function LeadsList() {
       </div>
 
       {isAdmin && selectedIds.size > 0 && (
-        <div className="sticky top-2 z-20 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 shadow-sm">
+        <div className="sticky top-2 z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 shadow-sm">
           <span className="text-sm font-medium">
             {selectedIds.size} lead{selectedIds.size > 1 ? 's selecionados' : ' selecionado'}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-              Limpar seleção
+              Limpar
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setBulkStageOpen(true)}>
+              <MoveRight className="h-4 w-4 mr-1.5" /> Mudar etapa
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
-              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir selecionados
+              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir
             </Button>
           </div>
         </div>
