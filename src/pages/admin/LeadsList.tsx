@@ -614,15 +614,36 @@ export default function LeadsList() {
   // ---------- Tabela mobile (cards) ----------
   const renderTableMobile = () => (
     <div className="md:hidden space-y-2">
+      {isAdmin && paged.length > 0 && (
+        <div className="flex items-center gap-2 px-1 py-1">
+          <Checkbox
+            checked={paged.every((l) => selectedIds.has(l.id))}
+            onCheckedChange={(c) => togglePageSelection(paged.map((l) => l.id), !!c)}
+            aria-label="Selecionar todos"
+          />
+          <span className="text-xs text-muted-foreground">Selecionar todos desta página</span>
+        </div>
+      )}
       {paged.map((lead) => {
         const prop = lead.property_id ? properties[lead.property_id] : null;
         const agent = lead.assigned_to ? agents[lead.assigned_to] : null;
         return (
           <MobileTableCard key={lead.id} onClick={() => navigate(`/admin/leads/${lead.id}`)}>
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="font-medium truncate">{lead.name}</div>
-                <div className="text-xs text-muted-foreground truncate">{lead.email}</div>
+              <div className="flex items-start gap-2 min-w-0 flex-1">
+                {isAdmin && (
+                  <div onClick={(e) => e.stopPropagation()} className="pt-0.5">
+                    <Checkbox
+                      checked={selectedIds.has(lead.id)}
+                      onCheckedChange={() => toggleSelect(lead.id)}
+                      aria-label={`Selecionar ${lead.name}`}
+                    />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium truncate">{lead.name}</div>
+                  <div className="text-xs text-muted-foreground truncate">{lead.email}</div>
+                </div>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <StageMover lead={lead} />
