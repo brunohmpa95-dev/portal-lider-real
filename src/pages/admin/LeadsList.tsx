@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { logAudit } from '@/lib/audit';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,6 +103,9 @@ export default function LeadsList() {
   const [pendingLost, setPendingLost] = useState<{ leadId: string; leadName: string } | null>(null);
   const [interactionFor, setInteractionFor] = useState<{ id: string; name: string } | null>(null);
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const isAdmin = roles.some((r) => ['administrativo', 'superadmin'].includes(r));
 
@@ -141,6 +150,40 @@ export default function LeadsList() {
       toast({ title: 'Lead excluído' });
       setLeads((prev) => prev.filter((l) => l.id !== id));
     }
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function togglePageSelection(ids: string[], checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) ids.forEach((i) => next.add(i));
+      else ids.forEach((i) => next.delete(i));
+      return next;
+    });
+  }
+
+  async function bulkDelete() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkDeleting(true);
+    const { error } = await supabase.from('property_leads').delete().in('id', ids);
+    setBulkDeleting(false);
+    if (error) {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await logAudit('leads.bulk_delete', 'property_leads', 'property_leads', undefined, { count: ids.length, ids });
+    setLeads((prev) => prev.filter((l) => !selectedIds.has(l.id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    toast({ title: `${ids.length} lead${ids.length > 1 ? 's excluídos' : ' excluído'}` });
   }
 
   async function updateLeadStage(id: string, newStage: string, extra: Record<string, any> = {}) {
@@ -455,6 +498,15 @@ export default function LeadsList() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {isAdmin && (
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={paged.length > 0 && paged.every((l) => selectedIds.has(l.id))}
+                        onCheckedChange={(c) => togglePageSelection(paged.map((l) => l.id), !!c)}
+                        aria-label="Selecionar todos"
+                      />
+                    </TableHead>
+                  )}
                   <TableHead>Lead</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>Origem</TableHead>
@@ -472,6 +524,15 @@ export default function LeadsList() {
                   const agent = lead.assigned_to ? agents[lead.assigned_to] : null;
                   return (
                     <TableRow key={lead.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/leads/${lead.id}`)}>
+                      {isAdmin && (
+                        <TableCell onClick={(e) => e.stopPropagation()} className="w-10">
+                          <Checkbox
+                            checked={selectedIds.has(lead.id)}
+                            onCheckedChange={() => toggleSelect(lead.id)}
+                            aria-label={`Selecionar ${lead.name}`}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell>
                         <div className="font-medium">{lead.name}</div>
                         <div className="flex items-center gap-1 mt-0.5">
@@ -639,7 +700,25 @@ export default function LeadsList() {
         </Button>
       </div>
 
+      {isAdmin && selectedIds.size > 0 && (
+        <div className="sticky top-2 z-20 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 shadow-sm">
+          <span className="text-sm font-medium">
+            {selectedIds.size} lead{selectedIds.size > 1 ? 's selecionados' : ' selecionado'}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              Limpar seleção
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
+              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir selecionados
+            </Button>
+          </div>
+        </div>
+      )}
+
       {!loading && !error && renderMetrics()}
+
+
 
       <Card>
         <CardContent className="p-3 sm:p-4 space-y-3">
@@ -721,6 +800,28 @@ export default function LeadsList() {
         open={!!interactionFor}
         onOpenChange={(o) => { if (!o) setInteractionFor(null); }}
       />
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir {selectedIds.size} lead{selectedIds.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Todos os dados, interações e histórico dos leads selecionados serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); bulkDelete(); }}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Trash2 className="h-4 w-4 mr-1.5" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

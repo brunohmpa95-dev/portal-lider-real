@@ -172,6 +172,31 @@ Deno.serve(async (req) => {
       }
 
       await auditLog(serviceClient, { userId, action: "form_submit", resource: "contact_messages", targetId: data.id, result: "success", metadata: { form_type: "contact" }, ipAddress, userAgent });
+
+      // Auto-cria lead no CRM com prioridade máxima
+      try {
+        const leadInsert = await serviceClient.from("property_leads").insert({
+          name, email, phone: phone || null, whatsapp: phone || null,
+          message: subject ? `[${subject}] ${message}` : message,
+          source: "website_contact",
+          channel: "website",
+          funnel_stage: "new",
+          status: "new",
+          temperature: "hot",
+          priority: "urgent",
+        }).select("id").single();
+
+        if (leadInsert.error) {
+          await auditLog(serviceClient, { userId, action: "lead.auto_create_failed", resource: "property_leads", result: "partial", metadata: { error: leadInsert.error.message, contact_id: data.id }, ipAddress, userAgent });
+        } else if (leadInsert.data?.id) {
+          await auditLog(serviceClient, { userId, action: "lead.auto_created_from_contact", resource: "property_leads", targetId: leadInsert.data.id, result: "success", metadata: { contact_id: data.id }, ipAddress, userAgent });
+          // dispara distribuição (não bloqueia resposta)
+          serviceClient.functions.invoke("lead-distributor", { body: { action: "distribute", lead_id: leadInsert.data.id } }).catch(() => {});
+        }
+      } catch (e) {
+        await auditLog(serviceClient, { userId, action: "lead.auto_create_failed", resource: "property_leads", result: "partial", metadata: { error: String(e), contact_id: data.id }, ipAddress, userAgent });
+      }
+
       return jsonResponse({ success: true, message: "Mensagem enviada com sucesso!" });
     }
 
@@ -287,7 +312,9 @@ Deno.serve(async (req) => {
       if (!validateEmail(email)) return jsonResponse({ error: "E-mail inválido" }, 400);
 
       const insertData: Record<string, unknown> = {
-        name, email, phone: phone || null, message: message || null, source: "website",
+        name, email, phone: phone || null, whatsapp: phone || null,
+        message: message || null, source: "website", channel: "website",
+        funnel_stage: "new", status: "new", temperature: "hot", priority: "urgent",
       };
       // Only add property_id if it looks like a valid UUID
       if (property_id && /^[0-9a-f-]{36}$/i.test(property_id)) {
