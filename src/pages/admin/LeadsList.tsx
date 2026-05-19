@@ -700,7 +700,25 @@ export default function LeadsList() {
         </Button>
       </div>
 
+      {isAdmin && selectedIds.size > 0 && (
+        <div className="sticky top-2 z-20 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 shadow-sm">
+          <span className="text-sm font-medium">
+            {selectedIds.size} lead{selectedIds.size > 1 ? 's selecionados' : ' selecionado'}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              Limpar seleção
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
+              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir selecionados
+            </Button>
+          </div>
+        </div>
+      )}
+
       {!loading && !error && renderMetrics()}
+
+
 
       <Card>
         <CardContent className="p-3 sm:p-4 space-y-3">
