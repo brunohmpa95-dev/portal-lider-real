@@ -21,7 +21,10 @@ import { formatPrice } from '@/data/properties';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
 import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
+import ShareButton from '@/components/shared/ShareButton';
 import { FormattedDescription } from '@/lib/format-description';
+
+const SITE_URL = 'https://portal-lider-real.lovable.app';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
