@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
 
       const insertData: Record<string, unknown> = {
         name, email, phone: phone || null, whatsapp: phone || null,
-        message: message || null, source: "website", channel: "website",
+        message: message || null, source: "website", channel: "form_site",
         funnel_stage: "new", status: "new", temperature: "hot", priority: "urgent",
       };
       // Only add property_id if it looks like a valid UUID
