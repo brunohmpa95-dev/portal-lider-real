@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const validRoles = ["cliente", "corretor", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
+      const validRoles = ["cliente", "corretor", "corretor_parceiro", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
       if (!validRoles.includes(targetRole)) {
         return new Response(
           JSON.stringify({ error: "Perfil inválido" }),
@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const validRoles = ["cliente", "corretor", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
+      const validRoles = ["cliente", "corretor", "corretor_parceiro", "locacao", "vendas", "financeiro", "administrativo", "superadmin"];
       if (!validRoles.includes(targetRole)) {
         return new Response(
           JSON.stringify({ error: "Perfil inválido" }),
