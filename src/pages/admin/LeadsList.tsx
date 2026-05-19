@@ -106,6 +106,9 @@ export default function LeadsList() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkStageOpen, setBulkStageOpen] = useState(false);
+  const [bulkStageValue, setBulkStageValue] = useState<string>('contact');
+  const [bulkStageSaving, setBulkStageSaving] = useState(false);
 
   const isAdmin = roles.some((r) => ['administrativo', 'superadmin'].includes(r));
 
@@ -184,6 +187,28 @@ export default function LeadsList() {
     setSelectedIds(new Set());
     setBulkDeleteOpen(false);
     toast({ title: `${ids.length} lead${ids.length > 1 ? 's excluídos' : ' excluído'}` });
+  }
+
+  async function bulkUpdateStage() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0 || !bulkStageValue) return;
+    setBulkStageSaving(true);
+    const { error } = await supabase
+      .from('property_leads')
+      .update({ funnel_stage: bulkStageValue } as any)
+      .in('id', ids);
+    setBulkStageSaving(false);
+    if (error) {
+      toast({ title: 'Erro ao atualizar etapa', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await logAudit('leads.bulk_stage_update', 'property_leads', 'property_leads', undefined, {
+      count: ids.length, ids, funnel_stage: bulkStageValue,
+    });
+    setLeads((prev) => prev.map((l) => (selectedIds.has(l.id) ? { ...l, funnel_stage: bulkStageValue } : l)));
+    setSelectedIds(new Set());
+    setBulkStageOpen(false);
+    toast({ title: `${ids.length} lead${ids.length > 1 ? 's atualizados' : ' atualizado'}` });
   }
 
   async function updateLeadStage(id: string, newStage: string, extra: Record<string, any> = {}) {
@@ -589,15 +614,36 @@ export default function LeadsList() {
   // ---------- Tabela mobile (cards) ----------
   const renderTableMobile = () => (
     <div className="md:hidden space-y-2">
+      {isAdmin && paged.length > 0 && (
+        <div className="flex items-center gap-2 px-1 py-1">
+          <Checkbox
+            checked={paged.every((l) => selectedIds.has(l.id))}
+            onCheckedChange={(c) => togglePageSelection(paged.map((l) => l.id), !!c)}
+            aria-label="Selecionar todos"
+          />
+          <span className="text-xs text-muted-foreground">Selecionar todos desta página</span>
+        </div>
+      )}
       {paged.map((lead) => {
         const prop = lead.property_id ? properties[lead.property_id] : null;
         const agent = lead.assigned_to ? agents[lead.assigned_to] : null;
         return (
           <MobileTableCard key={lead.id} onClick={() => navigate(`/admin/leads/${lead.id}`)}>
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="font-medium truncate">{lead.name}</div>
-                <div className="text-xs text-muted-foreground truncate">{lead.email}</div>
+              <div className="flex items-start gap-2 min-w-0 flex-1">
+                {isAdmin && (
+                  <div onClick={(e) => e.stopPropagation()} className="pt-0.5">
+                    <Checkbox
+                      checked={selectedIds.has(lead.id)}
+                      onCheckedChange={() => toggleSelect(lead.id)}
+                      aria-label={`Selecionar ${lead.name}`}
+                    />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium truncate">{lead.name}</div>
+                  <div className="text-xs text-muted-foreground truncate">{lead.email}</div>
+                </div>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <StageMover lead={lead} />
@@ -701,16 +747,19 @@ export default function LeadsList() {
       </div>
 
       {isAdmin && selectedIds.size > 0 && (
-        <div className="sticky top-2 z-20 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 shadow-sm">
+        <div className="sticky top-2 z-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 shadow-sm">
           <span className="text-sm font-medium">
             {selectedIds.size} lead{selectedIds.size > 1 ? 's selecionados' : ' selecionado'}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-              Limpar seleção
+              Limpar
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setBulkStageOpen(true)}>
+              <MoveRight className="h-4 w-4 mr-1.5" /> Mudar etapa
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
-              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir selecionados
+              <Trash2 className="h-4 w-4 mr-1.5" /> Excluir
             </Button>
           </div>
         </div>
@@ -800,6 +849,37 @@ export default function LeadsList() {
         open={!!interactionFor}
         onOpenChange={(o) => { if (!o) setInteractionFor(null); }}
       />
+
+      <AlertDialog open={bulkStageOpen} onOpenChange={setBulkStageOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mover {selectedIds.size} lead{selectedIds.size > 1 ? 's' : ''} de etapa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Escolha a nova etapa do funil. Etapas "Fechado (ganho)" e "Fechado (perdido)" precisam do fluxo individual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Select value={bulkStageValue} onValueChange={setBulkStageValue}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LEAD_FUNNEL_STAGES.filter((s) => s.value !== 'lost' && s.value !== 'closed').map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkStageSaving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); bulkUpdateStage(); }}
+              disabled={bulkStageSaving}
+            >
+              {bulkStageSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <MoveRight className="h-4 w-4 mr-1.5" />}
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
         <AlertDialogContent>

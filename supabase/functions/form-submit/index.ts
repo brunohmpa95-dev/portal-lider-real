@@ -178,8 +178,8 @@ Deno.serve(async (req) => {
         const leadInsert = await serviceClient.from("property_leads").insert({
           name, email, phone: phone || null, whatsapp: phone || null,
           message: subject ? `[${subject}] ${message}` : message,
-          source: "website_contact",
-          channel: "website",
+          source: "website",
+          channel: "form_site",
           funnel_stage: "new",
           status: "new",
           temperature: "hot",
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
 
       const insertData: Record<string, unknown> = {
         name, email, phone: phone || null, whatsapp: phone || null,
-        message: message || null, source: "website", channel: "website",
+        message: message || null, source: "website", channel: "form_site",
         funnel_stage: "new", status: "new", temperature: "hot", priority: "urgent",
       };
       // Only add property_id if it looks like a valid UUID
