@@ -152,6 +152,40 @@ export default function LeadsList() {
     }
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function togglePageSelection(ids: string[], checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) ids.forEach((i) => next.add(i));
+      else ids.forEach((i) => next.delete(i));
+      return next;
+    });
+  }
+
+  async function bulkDelete() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkDeleting(true);
+    const { error } = await supabase.from('property_leads').delete().in('id', ids);
+    setBulkDeleting(false);
+    if (error) {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await logAudit('leads.bulk_delete', 'property_leads', 'property_leads', undefined, { count: ids.length, ids });
+    setLeads((prev) => prev.filter((l) => !selectedIds.has(l.id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    toast({ title: `${ids.length} lead${ids.length > 1 ? 's excluídos' : ' excluído'}` });
+  }
+
   async function updateLeadStage(id: string, newStage: string, extra: Record<string, any> = {}) {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, funnel_stage: newStage, ...extra } : l)));
     const { error } = await supabase.from('property_leads').update({ funnel_stage: newStage, ...extra } as any).eq('id', id);
