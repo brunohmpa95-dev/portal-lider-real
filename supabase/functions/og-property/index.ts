@@ -82,13 +82,10 @@ ${image ? `<meta property="og:image" content="${escapeHtml(image)}" />
 </body>
 </html>`;
 
-    return new Response(html, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, s-maxage=600',
-      },
-    });
+    const headers = new Headers();
+    headers.set('content-type', 'text/html; charset=utf-8');
+    headers.set('cache-control', 'public, max-age=300, s-maxage=600');
+    return new Response(html, { status: 200, headers });
   } catch (err) {
     return new Response(`Error: ${(err as Error).message}`, { status: 500 });
   }
