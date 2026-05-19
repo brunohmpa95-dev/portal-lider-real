@@ -65,7 +65,7 @@ export default function Team() {
 
   async function addRole() {
     if (!selectedMember) return;
-    const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/manage-roles`;
+    const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/manage-roles?action=assign-role`;
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(url, {
       method: 'POST',
@@ -73,9 +73,9 @@ export default function Team() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session?.access_token}`,
       },
-      body: JSON.stringify({ action: 'assign-role', user_id: selectedMember.user_id, role: newRole }),
+      body: JSON.stringify({ user_id: selectedMember.user_id, role: newRole }),
     });
-    const result = await res.json();
+    const result = await res.json().catch(() => ({}));
     if (res.ok) {
       toast({ title: 'Perfil atribuído' });
       setDialogOpen(false);
@@ -87,18 +87,21 @@ export default function Team() {
 
   async function removeRole(member: TeamMember, role: AppRole) {
     if (!confirm(`Remover perfil "${ROLE_LABELS[role]}" deste usuário?`)) return;
-    const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/manage-roles`;
+    const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/manage-roles?action=remove-role`;
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(url, {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session?.access_token}`,
       },
-      body: JSON.stringify({ action: 'remove-role', user_id: member.user_id, role }),
+      body: JSON.stringify({ user_id: member.user_id, role }),
     });
     if (res.ok) { toast({ title: 'Perfil removido' }); loadTeam(); }
-    else toast({ title: 'Erro ao remover', variant: 'destructive' });
+    else {
+      const result = await res.json().catch(() => ({}));
+      toast({ title: 'Erro ao remover', description: result.error || undefined, variant: 'destructive' });
+    }
   }
 
   return (
