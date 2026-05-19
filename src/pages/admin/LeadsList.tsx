@@ -141,6 +141,7 @@ export default function LeadsList() {
     const agentMap: Record<string, any> = {};
     (profilesRes.data || []).forEach((p: any) => { agentMap[p.user_id] = p; });
     setAgents(agentMap);
+    setPage(1); // sempre volta à página 1 (mais recentes) após recarregar
     setLoading(false);
   }
 
