@@ -116,9 +116,13 @@ const PropertyDetail = () => {
   };
 
   const intent = property.purpose === 'sale' ? 'buy' : 'rent';
-  const shareUrl = `${SITE_URL}/imovel/${property.id}`;
+  const canonicalUrl = `${SITE_URL}/imovel/${property.id}`;
+  // URL compartilhada aponta para a edge function que entrega Open Graph rico
+  // a crawlers (WhatsApp/Facebook/etc.) e redireciona humanos para o imóvel.
+  const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-property?id=${property.id}`;
   const shareTitle = `${property.title} — ${formatPrice(property.price, property.purpose)}`;
   const shareDesc = `${property.neighborhood}, ${property.city}/${property.state} · ${property.bedrooms ? `${property.bedrooms} quarto(s) · ` : ''}${property.area}m²`;
+  const ogImage = property.images?.[0];
   const ogImage = property.images?.[0];
 
   return (
