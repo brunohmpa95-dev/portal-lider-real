@@ -189,6 +189,28 @@ export default function LeadsList() {
     toast({ title: `${ids.length} lead${ids.length > 1 ? 's excluídos' : ' excluído'}` });
   }
 
+  async function bulkUpdateStage() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0 || !bulkStageValue) return;
+    setBulkStageSaving(true);
+    const { error } = await supabase
+      .from('property_leads')
+      .update({ funnel_stage: bulkStageValue } as any)
+      .in('id', ids);
+    setBulkStageSaving(false);
+    if (error) {
+      toast({ title: 'Erro ao atualizar etapa', description: error.message, variant: 'destructive' });
+      return;
+    }
+    await logAudit('leads.bulk_stage_update', 'property_leads', 'property_leads', undefined, {
+      count: ids.length, ids, funnel_stage: bulkStageValue,
+    });
+    setLeads((prev) => prev.map((l) => (selectedIds.has(l.id) ? { ...l, funnel_stage: bulkStageValue } : l)));
+    setSelectedIds(new Set());
+    setBulkStageOpen(false);
+    toast({ title: `${ids.length} lead${ids.length > 1 ? 's atualizados' : ' atualizado'}` });
+  }
+
   async function updateLeadStage(id: string, newStage: string, extra: Record<string, any> = {}) {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, funnel_stage: newStage, ...extra } : l)));
     const { error } = await supabase.from('property_leads').update({ funnel_stage: newStage, ...extra } as any).eq('id', id);
