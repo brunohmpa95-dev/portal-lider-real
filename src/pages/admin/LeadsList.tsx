@@ -103,6 +103,9 @@ export default function LeadsList() {
   const [pendingLost, setPendingLost] = useState<{ leadId: string; leadName: string } | null>(null);
   const [interactionFor, setInteractionFor] = useState<{ id: string; name: string } | null>(null);
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const isAdmin = roles.some((r) => ['administrativo', 'superadmin'].includes(r));
 
