@@ -498,6 +498,15 @@ export default function LeadsList() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {isAdmin && (
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={paged.length > 0 && paged.every((l) => selectedIds.has(l.id))}
+                        onCheckedChange={(c) => togglePageSelection(paged.map((l) => l.id), !!c)}
+                        aria-label="Selecionar todos"
+                      />
+                    </TableHead>
+                  )}
                   <TableHead>Lead</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>Origem</TableHead>
@@ -515,6 +524,15 @@ export default function LeadsList() {
                   const agent = lead.assigned_to ? agents[lead.assigned_to] : null;
                   return (
                     <TableRow key={lead.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/leads/${lead.id}`)}>
+                      {isAdmin && (
+                        <TableCell onClick={(e) => e.stopPropagation()} className="w-10">
+                          <Checkbox
+                            checked={selectedIds.has(lead.id)}
+                            onCheckedChange={() => toggleSelect(lead.id)}
+                            aria-label={`Selecionar ${lead.name}`}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell>
                         <div className="font-medium">{lead.name}</div>
                         <div className="flex items-center gap-1 mt-0.5">
