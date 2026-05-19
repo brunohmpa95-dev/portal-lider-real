@@ -231,9 +231,17 @@ const PropertyDetail = () => {
 
             {/* ─── Price + title block ─── */}
             <div className="mb-5">
-              <p className="text-primary font-bold text-2xl sm:text-3xl mb-1.5">
-                {formatPrice(property.price, property.purpose)}
-              </p>
+              <div className="flex items-start justify-between gap-3 mb-1.5">
+                <p className="text-primary font-bold text-2xl sm:text-3xl">
+                  {formatPrice(property.price, property.purpose)}
+                </p>
+                <ShareButton
+                  url={shareUrl}
+                  title={shareTitle}
+                  description={shareDesc}
+                  className="shrink-0"
+                />
+              </div>
               {(property.condominiumFee || property.iptu) && (
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-2">
                   {property.condominiumFee ? <span>Cond. {property.condominiumFee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span> : null}
