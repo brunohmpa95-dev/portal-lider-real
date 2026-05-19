@@ -312,7 +312,9 @@ Deno.serve(async (req) => {
       if (!validateEmail(email)) return jsonResponse({ error: "E-mail inválido" }, 400);
 
       const insertData: Record<string, unknown> = {
-        name, email, phone: phone || null, message: message || null, source: "website",
+        name, email, phone: phone || null, whatsapp: phone || null,
+        message: message || null, source: "website", channel: "website",
+        funnel_stage: "new", status: "new", temperature: "hot", priority: "urgent",
       };
       // Only add property_id if it looks like a valid UUID
       if (property_id && /^[0-9a-f-]{36}$/i.test(property_id)) {
