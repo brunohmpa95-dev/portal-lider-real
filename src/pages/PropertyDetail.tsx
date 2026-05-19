@@ -116,7 +116,10 @@ const PropertyDetail = () => {
   };
 
   const intent = property.purpose === 'sale' ? 'buy' : 'rent';
-
+  const shareUrl = `${SITE_URL}/imovel/${property.id}`;
+  const shareTitle = `${property.title} — ${formatPrice(property.price, property.purpose)}`;
+  const shareDesc = `${property.neighborhood}, ${property.city}/${property.state} · ${property.bedrooms ? `${property.bedrooms} quarto(s) · ` : ''}${property.area}m²`;
+  const ogImage = property.images?.[0];
 
   return (
     <Layout>
@@ -130,6 +133,15 @@ const PropertyDetail = () => {
         { name: property.title, path: `/imovel/${property.id}` },
       ]} />
       <Helmet>
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={shareTitle} />
+        <meta property="og:description" content={shareDesc} />
+        <meta property="og:url" content={shareUrl} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+        <meta name="twitter:title" content={shareTitle} />
+        <meta name="twitter:description" content={shareDesc} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "RealEstateListing",
