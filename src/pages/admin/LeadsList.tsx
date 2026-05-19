@@ -141,6 +141,7 @@ export default function LeadsList() {
     const agentMap: Record<string, any> = {};
     (profilesRes.data || []).forEach((p: any) => { agentMap[p.user_id] = p; });
     setAgents(agentMap);
+    setPage(1); // sempre volta à página 1 (mais recentes) após recarregar
     setLoading(false);
   }
 
@@ -539,6 +540,7 @@ export default function LeadsList() {
                   <TableHead className="hidden lg:table-cell">Imóvel</TableHead>
                   <TableHead className="hidden xl:table-cell">Corretor</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                   <TableHead className="hidden lg:table-cell">Atualizado</TableHead>
                   <TableHead className="w-12 text-right">Ações</TableHead>
                 </TableRow>
@@ -593,6 +595,9 @@ export default function LeadsList() {
                         <Badge variant="outline" className={`text-xs ${funnelStageColor(lead.funnel_stage)}`}>
                           {stageLabel(lead.funnel_stage)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                        {formatDateTime(lead.created_at)}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
                         {formatDateTime(lead.updated_at)}

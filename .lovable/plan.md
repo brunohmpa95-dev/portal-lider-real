@@ -1,51 +1,37 @@
-## 1. Validação dos leads auto-criados pelo site
+## Problema
 
-Comparei o `insert` atual em `supabase/functions/form-submit/index.ts` com o schema real de `public.property_leads` e com os enums do frontend (`src/types/admin.ts`).
+O CRM em `/admin/leads` já carrega leads ordenados por `created_at DESC` e o select "Ordenar" tem default `created_desc` ("Mais recentes"). Mesmo assim, os leads recém-criados estão aparecendo apenas na 3ª página.
 
-**OK (campos válidos):**
-- `name`, `email`, `phone`, `whatsapp`, `message` → colunas existem, tipos batem.
-- `status: 'new'` → coluna NOT NULL, default `'new'`. ✔
-- `funnel_stage: 'new'` → coluna NOT NULL, default `'new'`. ✔
-- `temperature: 'hot'` → coluna NOT NULL, valor presente em `LEAD_TEMPERATURE_OPTIONS`. ✔
-- `priority: 'urgent'` → coluna NOT NULL, valor presente em `LEAD_PRIORITY_OPTIONS`. ✔
-- `property_id` (somente quando UUID válido). ✔
+Verifiquei o banco: existem 69 leads e os 3 mais recentes (cliques de WhatsApp de hoje) têm `created_at` correto. Ou seja, a query é correta — o que provavelmente está acontecendo é que a ordenação é refeita no front-end com `Array.sort` em cima de um array que pode ter sido mutado, ou o usuário está vendo cache de uma ordenação anterior (`sortBy` resetado entre sessões mas o estado de página não).
 
-**Inconsistências a corrigir:**
-- `source: 'website_contact'` **não existe** em `LEAD_SOURCE_OPTIONS` (valores válidos: `website`, `whatsapp`, `phone`, `referral`, `social`, `portal`, `walk_in`, `other`). O filtro "Origem" da listagem nunca vai pegar esses leads.
-  → trocar para `source: 'website'` e diferenciar via `channel`.
-- `channel: 'website'` **não existe** em `LEAD_CHANNEL_OPTIONS` (válidos: `form_site`, `whatsapp`, `dm_instagram`, ...). Filtro "Canal" também ignora.
-  → usar `channel: 'form_site'` nos dois blocos (contact e property_lead).
+## Plano
 
-Após o ajuste, os leads aparecem corretamente nos filtros do Kanban/Tabela e nos relatórios.
+### 1. Garantir ordenação "mais recentes primeiro" como padrão estável (`src/pages/admin/LeadsList.tsx`)
 
-## 2. Ação em massa: alterar etapa/status
+- Manter `sortBy` default = `created_desc`.
+- Quando `loadAll()` terminar, **resetar `page` para 1** automaticamente — assim, após qualquer recarga (inclusive após criar/excluir leads ou mudar etapa em massa), o usuário sempre vê os mais recentes no topo da página 1.
+- Resetar `page` para 1 também ao trocar `sortBy` (já existe, manter).
 
-Em `src/pages/admin/LeadsList.tsx`:
+### 2. Tornar a ordenação visível e confiável
 
-- Adicionar um segundo botão na barra de ações em massa (ao lado de "Excluir selecionados"): **"Mudar etapa"**.
-- Botão abre um `AlertDialog` único com:
-  - `Select` listando `LEAD_FUNNEL_STAGES` **exceto** `lost` (perda exige motivo via `LostReasonDialog`, fluxo individual já existente) e `closed` (ganho costuma exigir vínculo a proposta).
-  - Texto: "Mover N leads para a etapa X?"
-  - Botões "Cancelar" / "Confirmar".
-- Ao confirmar: `supabase.from('property_leads').update({ funnel_stage: X, updated_at: now() }).in('id', ids)`.
-  - Status derivado: se mover para `new`/`contact`/`qualification`/`visit`/`proposal`/`negotiation` → manter `status='new'` (status só vira `converted`/`lost` em fluxos específicos).
-  - O trigger existente `log_lead_stage_change` registra a mudança em `lead_interactions` automaticamente.
-- Após sucesso: `logAudit('leads.bulk_stage_update', ...)`, atualizar `leads` local, limpar seleção, toast.
-- Permissão: mesmo gate de admin já usado para a barra (`administrativo`/`superadmin`).
+- Adicionar a coluna **"Criado em"** na tabela desktop (hoje só mostra "Atualizado"), exibindo `formatDateTime(lead.created_at)` — assim fica visualmente óbvio que os leads estão em ordem decrescente por data de criação.
+- No card mobile, já mostra `created_at` no rodapé — manter.
 
-## 3. Checkboxes na versão mobile
+### 3. Aplicar a mesma ordenação no Kanban
 
-A barra de ação em massa já está fora de `renderTable()`, então **já aparece no mobile** assim que houver seleção. Falta apenas o controle de marcar/desmarcar nos cards.
+- `leadsForStage(stage)` usa `filtered`, que respeita `sortBy`. Confirmar que cada coluna do Kanban também lista do mais novo para o mais antigo (já acontece via `filtered`, mas adicionar comentário/teste rápido para garantir).
 
-Em `src/pages/admin/LeadsList.tsx`, função `renderTableMobile()`:
+### 4. Outras telas que listam leads (verificação)
 
-- Acima da lista de cards, adicionar uma linha com `Checkbox` "Selecionar todos da página" + contador, visível apenas para admin.
-- Dentro de cada `MobileTableCard`, adicionar um `Checkbox` no canto superior esquerdo com `onClick={(e)=>e.stopPropagation()}` para não disparar o `navigate` do card.
-- Reusar `selectedIds`, `toggleSelect`, `togglePageSelection` já criados.
+Já estão corretas (`order('created_at', { ascending: false })`):
+- `src/hooks/useLeads.ts`
+- `src/pages/admin/Dashboard.tsx` (recentes)
+- `src/pages/broker/BrokerDashboard.tsx`
 
-Nenhuma mudança de schema; nenhum migration. Apenas frontend + ajustes na edge function `form-submit`.
+Nenhuma alteração necessária nessas.
 
 ## Arquivos afetados
 
-- `supabase/functions/form-submit/index.ts` — corrigir `source`/`channel` nos dois blocos (contact e property_lead).
-- `src/pages/admin/LeadsList.tsx` — botão "Mudar etapa" + dialog, checkboxes na versão mobile, header de seleção mobile.
+- `src/pages/admin/LeadsList.tsx` (reset de página após `loadAll`, coluna "Criado em" na tabela desktop)
+
+Sem mudanças de schema, sem migrações.
