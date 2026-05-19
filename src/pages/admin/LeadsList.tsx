@@ -106,6 +106,9 @@ export default function LeadsList() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkStageOpen, setBulkStageOpen] = useState(false);
+  const [bulkStageValue, setBulkStageValue] = useState<string>('contact');
+  const [bulkStageSaving, setBulkStageSaving] = useState(false);
 
   const isAdmin = roles.some((r) => ['administrativo', 'superadmin'].includes(r));
 
