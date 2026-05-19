@@ -829,6 +829,37 @@ export default function LeadsList() {
         onOpenChange={(o) => { if (!o) setInteractionFor(null); }}
       />
 
+      <AlertDialog open={bulkStageOpen} onOpenChange={setBulkStageOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mover {selectedIds.size} lead{selectedIds.size > 1 ? 's' : ''} de etapa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Escolha a nova etapa do funil. Etapas "Fechado (ganho)" e "Fechado (perdido)" precisam do fluxo individual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Select value={bulkStageValue} onValueChange={setBulkStageValue}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LEAD_FUNNEL_STAGES.filter((s) => s.value !== 'lost' && s.value !== 'closed').map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkStageSaving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); bulkUpdateStage(); }}
+              disabled={bulkStageSaving}
+            >
+              {bulkStageSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <MoveRight className="h-4 w-4 mr-1.5" />}
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
