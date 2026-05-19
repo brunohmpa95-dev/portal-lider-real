@@ -597,6 +597,9 @@ export default function LeadsList() {
                         </Badge>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                        {formatDateTime(lead.created_at)}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
                         {formatDateTime(lead.updated_at)}
                       </TableCell>
                       <TableCell className="text-right">
