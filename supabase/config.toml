@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.lead-automation-runner]
 verify_jwt = false
+
+[functions.og-property]
+verify_jwt = false
