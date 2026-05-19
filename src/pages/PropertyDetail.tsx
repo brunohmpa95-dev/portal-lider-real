@@ -21,7 +21,10 @@ import { formatPrice } from '@/data/properties';
 import { submitForm } from '@/lib/form-submit';
 import { useToast } from '@/hooks/use-toast';
 import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
+import ShareButton from '@/components/shared/ShareButton';
 import { FormattedDescription } from '@/lib/format-description';
+
+const SITE_URL = 'https://portal-lider-real.lovable.app';
 
 /* ─── Attribute pill ─── */
 const AttrCard = ({ icon: Icon, value, label }: { icon: any; value: string | number; label: string }) => (
@@ -113,7 +116,13 @@ const PropertyDetail = () => {
   };
 
   const intent = property.purpose === 'sale' ? 'buy' : 'rent';
-
+  const canonicalUrl = `${SITE_URL}/imovel/${property.id}`;
+  // URL compartilhada aponta para a edge function que entrega Open Graph rico
+  // a crawlers (WhatsApp/Facebook/etc.) e redireciona humanos para o imóvel.
+  const shareUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-property?id=${property.id}`;
+  const shareTitle = `${property.title} — ${formatPrice(property.price, property.purpose)}`;
+  const shareDesc = `${property.neighborhood}, ${property.city}/${property.state} · ${property.bedrooms ? `${property.bedrooms} quarto(s) · ` : ''}${property.area}m²`;
+  const ogImage = property.images?.[0];
 
   return (
     <Layout>
@@ -127,6 +136,15 @@ const PropertyDetail = () => {
         { name: property.title, path: `/imovel/${property.id}` },
       ]} />
       <Helmet>
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={shareTitle} />
+        <meta property="og:description" content={shareDesc} />
+        <meta property="og:url" content={shareUrl} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+        <meta name="twitter:title" content={shareTitle} />
+        <meta name="twitter:description" content={shareDesc} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "RealEstateListing",
@@ -216,9 +234,17 @@ const PropertyDetail = () => {
 
             {/* ─── Price + title block ─── */}
             <div className="mb-5">
-              <p className="text-primary font-bold text-2xl sm:text-3xl mb-1.5">
-                {formatPrice(property.price, property.purpose)}
-              </p>
+              <div className="flex items-start justify-between gap-3 mb-1.5">
+                <p className="text-primary font-bold text-2xl sm:text-3xl">
+                  {formatPrice(property.price, property.purpose)}
+                </p>
+                <ShareButton
+                  url={shareUrl}
+                  title={shareTitle}
+                  description={shareDesc}
+                  className="shrink-0"
+                />
+              </div>
               {(property.condominiumFee || property.iptu) && (
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mb-2">
                   {property.condominiumFee ? <span>Cond. {property.condominiumFee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span> : null}

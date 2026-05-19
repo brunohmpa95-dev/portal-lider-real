@@ -1,84 +1,66 @@
-## Diagnóstico da modelagem atual
+## Objetivo
 
-A tabela `property_leads` **já está madura** e cobre quase 100% dos campos pedidos. O que existe hoje:
+Permitir que visitantes copiem o link de um imóvel específico para compartilhar onde quiserem (WhatsApp, redes, e-mail), com **pré-visualização rica** (título, foto, descrição) quando o link for colado.
 
-| Pedido | Status atual |
-|---|---|
-| id, nome, email, phone | ✅ existe |
-| origem (source) | ✅ existe (com 8 opções) |
-| interesse (purpose, type, neighborhood, faixa preço, quartos) | ✅ existe (`interest_*`) |
-| imóvel vinculado (`property_id`) | ✅ existe |
-| corretor responsável (`assigned_to`) | ✅ existe |
-| status / funnel_stage / priority | ✅ existe |
-| observações (`internal_notes`, `message`) | ✅ existe |
-| created_at / updated_at | ✅ existe |
-| tags, SLA, distribuição, lost_reason, follow-up | ✅ existe (Fase Esteira) |
-| **whatsapp (separado de phone)** | ❌ falta |
-| **temperatura (cold/warm/hot)** | ❌ falta (existe só `priority`) |
-| **canal vs origem** | ⚠️ hoje fundidos em `source` |
-| Tipo `AdminLead` no front | ⚠️ desatualizado (não tem campos novos da Fase Esteira) |
-| Hook reutilizável `useLeads` | ❌ não existe (cada página faz query própria) |
+---
 
-## Plano (baixo risco, aditivo)
+## Sobre a pré-visualização rica
 
-### 1. Migration — apenas colunas opcionais novas
-```sql
-ALTER TABLE public.property_leads
-  ADD COLUMN IF NOT EXISTS whatsapp text,
-  ADD COLUMN IF NOT EXISTS channel text,           -- canal de captação (ex: form_site, dm_instagram, ligacao)
-  ADD COLUMN IF NOT EXISTS temperature text NOT NULL DEFAULT 'cold',
-  ADD COLUMN IF NOT EXISTS client_id uuid;         -- vínculo opcional com clients
+Recomendo **sim, gerar preview rico**. Sem isso, o link aparece como uma URL "pelada" e converte muito menos. Como o projeto é Vite (SPA) sem SSR, os crawlers de WhatsApp/Facebook/LinkedIn **não executam JavaScript** — então `react-helmet-async` sozinho não resolve para esses casos.
 
-CREATE INDEX IF NOT EXISTS idx_leads_temperature ON public.property_leads(temperature);
-CREATE INDEX IF NOT EXISTS idx_leads_assigned    ON public.property_leads(assigned_to);
-CREATE INDEX IF NOT EXISTS idx_leads_property    ON public.property_leads(property_id);
-```
-Tudo nullable / com default → **não quebra inserts existentes**.
+**Solução prática e leve:** uma Edge Function que detecta bots de redes sociais e devolve um HTML mínimo só com as meta tags Open Graph do imóvel; usuários humanos continuam recebendo o app normal. Sem alterar SSR nem rotas públicas.
 
-### 2. Atualizar `src/types/admin.ts`
-- Estender `AdminLead` com os novos campos + os campos da Fase Esteira que faltam (`distributed_at`, `first_response_at`, `last_interaction_at`, `sla_status`, `redistribution_count`, `lost_reason_id`, `lost_at`, `next_followup_at`, `interest_*`).
-- Adicionar constantes:
-  - `LEAD_TEMPERATURE_OPTIONS` → cold / warm / hot
-  - `LEAD_CHANNEL_OPTIONS` → form_site, whatsapp, dm_instagram, dm_facebook, ligacao, presencial, indicacao, portal, outro
-- Manter `LEAD_SOURCE_OPTIONS`, `LEAD_FUNNEL_STAGES`, `LEAD_PRIORITY_OPTIONS` já existentes.
+---
 
-### 3. Novo arquivo `src/lib/leads.ts` (helpers puros)
-- `temperatureLabel(t)`, `temperatureColor(t)`
-- `funnelStageLabel(s)`, `funnelStageColor(s)`
-- `sourceLabel(s)`, `channelLabel(c)`
-- `formatLeadContact(lead)` — devolve melhor telefone/whatsapp formatado
-- `isLeadStale(lead)` — utilitário simples para painel
+## Escopo
 
-### 4. Novo hook `src/hooks/useLeads.ts`
-- `useLeads(filters?)` — lista com filtros (stage, assigned, temperatura, source, busca por nome/email)
-- `useLead(id)` — detalhe único
-- `useUpdateLead()` — mutação central (toast + invalidate)
-- `useCreateLead()` — chama insert + dispara `lead-distributor`
-- Apenas **adiciona** opção. Páginas existentes continuam funcionando com suas queries diretas; podem migrar incrementalmente.
+### 1. Botão "Compartilhar" na página do imóvel
+- Adicionar botão discreto em `src/pages/PropertyDetail.tsx` (próximo ao título/preço).
+- Usa Web Share API nativa no mobile (abre seletor do sistema → WhatsApp, etc.).
+- No desktop, abre um popover com:
+  - Copiar link
+  - Compartilhar no WhatsApp (link `wa.me/?text=...`)
+  - Compartilhar no Facebook / X / Telegram (links de share)
+  - E-mail (`mailto:`)
+- Toast de confirmação ao copiar.
 
-### 5. Atualizar `LeadForm.tsx` minimamente
-- Adicionar campos: WhatsApp, Canal, Temperatura.
-- Manter resto intacto.
-- Continuar usando query direta (não obriga migração para o hook agora).
+### 2. Componente reutilizável
+- Criar `src/components/shared/ShareButton.tsx` recebendo `url`, `title`, `description`, `image`.
+- Pode ser reaproveitado em cards (futuro) sem mexer agora.
 
-### 6. NÃO mexer em
-- `LeadsList.tsx`, `LeadDetail.tsx`, `BrokerLeads.tsx`, `AdminEsteira.tsx`, `Reports.tsx`, `Dashboard.tsx`, edge functions, RLS, triggers, `apply_distribution_rules`. Tudo continua compatível porque novas colunas têm default/nullable.
+### 3. Open Graph dinâmico por imóvel
+- Adicionar `<Helmet>` em `PropertyDetail.tsx` com `og:title`, `og:description`, `og:image`, `og:url`, `twitter:card` — cobre crawlers que executam JS (Googlebot, alguns previews).
+- Para WhatsApp/Facebook/LinkedIn (que NÃO executam JS), criar Edge Function `og-property`:
+  - Detecta User-Agent de bots sociais.
+  - Busca o imóvel no banco e devolve HTML mínimo com as meta tags + redirect via `<meta refresh>` para humanos que caírem ali.
+  - Configurar rewrite para que `/imovel/:id` passe primeiro pela função quando o UA for bot.
 
-## Arquivos que serão alterados
-- `supabase/migrations/<novo>.sql` — adicionar colunas + índices
-- `src/types/admin.ts` — estender `AdminLead` + 2 novas constantes
-- `src/lib/leads.ts` — **novo** helper
-- `src/hooks/useLeads.ts` — **novo** hook
-- `src/pages/admin/LeadForm.tsx` — 3 campos novos no formulário
+### 4. Registro de compartilhamento (opcional, leve)
+- Não criar tabela nova nesta fase. Se quiser tracking depois, fica para uma fase 2.
 
-## Critérios de aceite
-- Páginas existentes continuam abrindo sem erro (tipo é superset).
-- Inserir lead sem WhatsApp/Canal/Temperatura ainda funciona (defaults aplicados).
-- `useLeads()` disponível para próximas etapas (histórico, funil drag-and-drop).
-- Nenhuma RLS, trigger ou edge function tocada.
+---
 
-## Fora de escopo (próximas fases)
-- Funil Kanban com drag-and-drop
-- Histórico unificado (timeline) — já há `lead_interactions` + `lead_sla_events`; só falta um componente de timeline
-- Migração de queries diretas das páginas para o `useLeads`
-- WhatsApp/Z-API
+## Arquivos a criar/alterar
+
+**Criar:**
+- `src/components/shared/ShareButton.tsx` — componente de share (popover + Web Share API + copiar link).
+- `supabase/functions/og-property/index.ts` — devolve HTML com OG tags para crawlers.
+- `supabase/config.toml` — registrar a função com `verify_jwt = false`.
+
+**Editar:**
+- `src/pages/PropertyDetail.tsx` — adicionar `<ShareButton>` e `<Helmet>` com OG tags do imóvel.
+
+---
+
+## Detalhes técnicos
+
+- **Web Share API**: `if (navigator.share) navigator.share({title, text, url})` — fallback para popover quando não suportado.
+- **URL de share**: usar `https://portal-lider-real.lovable.app/imovel/{id}` (domínio publicado, garante preview consistente).
+- **OG image**: primeira foto do imóvel (`property.images[0]`); se não houver, omite (sem placeholder genérico).
+- **Edge function detecta bots por UA**: `facebookexternalhit`, `WhatsApp`, `Twitterbot`, `LinkedInBot`, `TelegramBot`, `Slackbot`, `Discordbot`.
+
+## Regras respeitadas
+
+- Não altera layout além de um botão pequeno.
+- Não mexe em busca, listagem, rotas ou CTAs de WhatsApp existentes.
+- Mudança isolada, reversível, sem refatoração.
