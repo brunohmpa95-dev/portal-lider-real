@@ -307,10 +307,17 @@ export default function LeadsList() {
   }, [leads, properties, search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Mantém a página válida quando o total muda (ex.: após bulk delete)
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
   const paged = useMemo(
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filtered, page],
   );
+
 
   const stageLabel = (val: string) => LEAD_FUNNEL_STAGES.find((s) => s.value === val)?.label || val;
   const priorityColor = (p: string) => {
