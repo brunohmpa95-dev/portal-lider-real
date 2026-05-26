@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bed, Bath, Car, Maximize2 } from 'lucide-react';
 import { Property } from '@/data/types';
+import CardImageCarousel from './CardImageCarousel';
 import { formatPrice } from '@/data/properties';
 import { Badge } from '@/components/ui/badge';
 
