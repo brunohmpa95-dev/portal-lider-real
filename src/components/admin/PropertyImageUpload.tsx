@@ -86,25 +86,26 @@ export default function PropertyImageUpload({ images, onChange, propertyCode }: 
                 )}
               >
                 <img src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                <div className="absolute inset-x-0 bottom-0 sm:inset-0 bg-gradient-to-t from-black/70 to-black/0 sm:bg-black/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 p-1 sm:p-0">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-white"
+                    className="h-9 w-9 sm:h-8 sm:w-8 text-white hover:bg-white/20"
                     onClick={() => setCover(i)}
                     disabled={i === 0}
+                    aria-label="Definir como capa"
                     title="Definir como capa"
                   >
                     <Star className={cn('h-4 w-4', i === 0 && 'fill-current')} />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-white" onClick={() => move(i, -1)} disabled={i === 0}>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-white hover:bg-white/20" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Mover para trás">
                     <ArrowUp className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-white" onClick={() => move(i, 1)} disabled={i === images.length - 1}>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-white hover:bg-white/20" onClick={() => move(i, 1)} disabled={i === images.length - 1} aria-label="Mover para frente">
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-white" onClick={() => remove(i)}>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-white hover:bg-white/20" onClick={() => remove(i)} aria-label="Remover foto">
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
