@@ -40,7 +40,7 @@ const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: property, isLoading, isError } = useProperty(id || '');
   const { data: similar = [] } = useSimilarProperties(property ?? null);
-  const [imgIdx, setImgIdx] = useState(0);
+  // (galeria agora usa CardImageCarousel; lightbox controla seu próprio índice)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [consent, setConsent] = useState(false);
