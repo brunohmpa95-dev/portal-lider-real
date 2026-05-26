@@ -80,6 +80,9 @@ export default function LeadsList() {
   const { roles } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const sp = (key: string, fallback: string) => searchParams.get(key) ?? fallback;
 
   // Dados
   const [leads, setLeads] = useState<any[]>([]);
@@ -88,21 +91,21 @@ export default function LeadsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtros
-  const [search, setSearch] = useState('');
-  const [filterStage, setFilterStage] = useState('all');
-  const [filterSource, setFilterSource] = useState('all');
-  const [filterChannel, setFilterChannel] = useState('all');
-  const [filterAgent, setFilterAgent] = useState('all');
-  const [filterPeriod, setFilterPeriod] = useState('all');
-  const [sortBy, setSortBy] = useState('created_desc');
+  // Filtros (inicializados a partir da URL para persistir entre reloads/navegação)
+  const [search, setSearch] = useState(() => sp('q', ''));
+  const [filterStage, setFilterStage] = useState(() => sp('stage', 'all'));
+  const [filterSource, setFilterSource] = useState(() => sp('source', 'all'));
+  const [filterChannel, setFilterChannel] = useState(() => sp('channel', 'all'));
+  const [filterAgent, setFilterAgent] = useState(() => sp('agent', 'all'));
+  const [filterPeriod, setFilterPeriod] = useState(() => sp('period', 'all'));
+  const [sortBy, setSortBy] = useState(() => sp('sort', 'created_desc'));
 
   // UI
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'kanban' | 'table'>(() => (sp('view', 'table') === 'kanban' ? 'kanban' : 'table'));
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [pendingLost, setPendingLost] = useState<{ leadId: string; leadName: string } | null>(null);
   const [interactionFor, setInteractionFor] = useState<{ id: string; name: string } | null>(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => Math.max(1, parseInt(sp('page', '1'), 10) || 1));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -116,10 +119,26 @@ export default function LeadsList() {
     loadAll();
   }, []);
 
-  // Reset paginação quando filtros mudam
+  // Reset paginação quando filtros mudam (não em reload nem em update de lead)
   useEffect(() => {
     setPage(1);
   }, [search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy]);
+
+  // Sincroniza estado -> URL para persistir página, filtros, ordem e view
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (search) next.set('q', search);
+    if (filterStage !== 'all') next.set('stage', filterStage);
+    if (filterSource !== 'all') next.set('source', filterSource);
+    if (filterChannel !== 'all') next.set('channel', filterChannel);
+    if (filterAgent !== 'all') next.set('agent', filterAgent);
+    if (filterPeriod !== 'all') next.set('period', filterPeriod);
+    if (sortBy !== 'created_desc') next.set('sort', sortBy);
+    if (viewMode !== 'table') next.set('view', viewMode);
+    if (page !== 1) next.set('page', String(page));
+    setSearchParams(next, { replace: true });
+  }, [search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy, viewMode, page, setSearchParams]);
+
 
   async function loadAll() {
     setLoading(true);
