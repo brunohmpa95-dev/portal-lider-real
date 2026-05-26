@@ -1,37 +1,54 @@
-## Problema
+## Bug 1 — Persist form state across tabs
 
-O CRM em `/admin/leads` já carrega leads ordenados por `created_at DESC` e o select "Ordenar" tem default `created_desc` ("Mais recentes"). Mesmo assim, os leads recém-criados estão aparecendo apenas na 3ª página.
+Today `PropertyForm.tsx` renders all sections (Informações, Valores, Localização, Detalhes, Fotos) as stacked Cards. Wrap them in `Tabs` from `@/components/ui/tabs` with 4 triggers: **Informações**, **Valores**, **Localização**, **Detalhes**, **Fotos**.
 
-Verifiquei o banco: existem 69 leads e os 3 mais recentes (cliques de WhatsApp de hoje) têm `created_at` correto. Ou seja, a query é correta — o que provavelmente está acontecendo é que a ordenação é refeita no front-end com `Array.sort` em cima de um array que pode ter sido mutado, ou o usuário está vendo cache de uma ordenação anterior (`sortBy` resetado entre sessões mas o estado de página não).
+- Keep the single `useState(form)` lifted in `PropertyForm` (parent). Because all tab contents are mounted as children of the same component and only their visibility changes, the `form` state survives tab switches automatically — no remount, no data loss.
+- Use `forceMount` on each `<TabsContent>` and toggle visibility via CSS (`hidden`) so unmounted inputs do not lose focus/typing state.
+- Form only resets on successful save (existing `navigate` away) or Cancel button (existing behavior).
 
-## Plano
+## Bug 2 — Cover photo selector
 
-### 1. Garantir ordenação "mais recentes primeiro" como padrão estável (`src/pages/admin/LeadsList.tsx`)
+In `PropertyImageUpload.tsx`:
 
-- Manter `sortBy` default = `created_desc`.
-- Quando `loadAll()` terminar, **resetar `page` para 1** automaticamente — assim, após qualquer recarga (inclusive após criar/excluir leads ou mudar etapa em massa), o usuário sempre vê os mais recentes no topo da página 1.
-- Resetar `page` para 1 também ao trocar `sortBy` (já existe, manter).
+- Add a Star icon button (lucide `Star`) in the hover overlay → "Definir como capa". Clicking it moves the selected image to index `0` of the `images` array.
+- Keep the existing **Capa** badge on `images[0]`; also add a primary-colored border ring on the cover thumbnail.
+- No schema change: cover = `images[0]`. Property cards already use `images[0]` as thumbnail (verified in `PropertyCard.tsx` pattern).
 
-### 2. Tornar a ordenação visível e confiável
+## Bug 3 — Watermark with agency logo
 
-- Adicionar a coluna **"Criado em"** na tabela desktop (hoje só mostra "Atualizado"), exibindo `formatDateTime(lead.created_at)` — assim fica visualmente óbvio que os leads estão em ordem decrescente por data de criação.
-- No card mobile, já mostra `created_at` no rodapé — manter.
+Apply client-side via Canvas before upload (no edge function needed).
 
-### 3. Aplicar a mesma ordenação no Kanban
+- Create `src/lib/watermark.ts` exporting `applyWatermark(file: File, logoUrl: string): Promise<File>`:
+  - Load image into an offscreen `<canvas>` at original dimensions.
+  - Load logo (`@/assets/logo-transparent.png`) sized to 20% of image width (preserving aspect ratio).
+  - Draw logo bottom-right with 24px padding, `globalAlpha = 0.6`.
+  - Export as JPEG (`canvas.toBlob`, quality 0.9) and return a new `File` preserving the original name with `.jpg` extension.
+- In `PropertyImageUpload.handleFiles`: pipe each file through `applyWatermark()` before `supabase.storage.upload`. Skip watermark for files already > 20MB after processing (safety).
+- Applies to every image including the cover (cover is just `images[0]`, no special path).
 
-- `leadsForStage(stage)` usa `filtered`, que respeita `sortBy`. Confirmar que cada coluna do Kanban também lista do mais novo para o mais antigo (já acontece via `filtered`, mas adicionar comentário/teste rápido para garantir).
+## Bug 4 — Status constraint mismatch
 
-### 4. Outras telas que listam leads (verificação)
+Current DB constraint allows only: `draft`, `published`, `archived`, `sold`, `rented`.
+Current UI `PROPERTY_STATUS_OPTIONS` saves: `captacao`, `aguardando_documentacao`, `published`, `reserved`, `em_proposta`, `sold`, `rented`, `paused`.
 
-Já estão corretas (`order('created_at', { ascending: false })`):
-- `src/hooks/useLeads.ts`
-- `src/pages/admin/Dashboard.tsx` (recentes)
-- `src/pages/broker/BrokerDashboard.tsx`
+Fix by **extending the DB constraint** (the richer workflow is intentional) via migration:
 
-Nenhuma alteração necessária nessas.
+```sql
+ALTER TABLE public.properties DROP CONSTRAINT properties_status_check;
+ALTER TABLE public.properties ADD CONSTRAINT properties_status_check
+  CHECK (status = ANY (ARRAY[
+    'draft','published','archived','sold','rented',
+    'captacao','aguardando_documentacao','reserved','em_proposta','paused'
+  ]));
+```
 
-## Arquivos afetados
+No UI value changes — labels remain in Portuguese, saved values stay as the DB-allowed strings.
 
-- `src/pages/admin/LeadsList.tsx` (reset de página após `loadAll`, coluna "Criado em" na tabela desktop)
+## Files touched
 
-Sem mudanças de schema, sem migrações.
+- `src/pages/admin/PropertyForm.tsx` — wrap sections in Tabs
+- `src/components/admin/PropertyImageUpload.tsx` — cover button + watermark integration
+- `src/lib/watermark.ts` — new helper
+- Migration — extend `properties_status_check`
+
+No visual redesign; no changes to unrelated features.  
