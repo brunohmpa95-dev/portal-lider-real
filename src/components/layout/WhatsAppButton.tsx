@@ -15,7 +15,8 @@ const WhatsAppButton = () => {
       intent="speak"
       source="floating-button"
       aria-label="Fale conosco pelo WhatsApp"
-      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 bg-[#25D366] text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+      style={{ bottom: 'max(5rem, calc(env(safe-area-inset-bottom) + 1rem))' }}
+      className="fixed right-4 sm:!bottom-6 sm:right-6 z-50 bg-[#25D366] text-white p-3.5 sm:p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all min-h-12 min-w-12 flex items-center justify-center"
     >
       <MessageCircle className="h-6 w-6" />
     </WhatsAppCTA>

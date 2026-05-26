@@ -140,9 +140,9 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
 
           {(!isMobile || showAdvanced) && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <Input placeholder="Valor mínimo" type="number" value={priceMin} onChange={e => { setPriceMin(e.target.value); setPage(0); }} />
-              <Input placeholder="Valor máximo" type="number" value={priceMax} onChange={e => { setPriceMax(e.target.value); setPage(0); }} />
-              <Input placeholder="Código (ex: LDR001)" value={code} onChange={e => { setCode(e.target.value); setPage(0); }} />
+              <Input placeholder="Valor mínimo" type="number" inputMode="numeric" value={priceMin} onChange={e => { setPriceMin(e.target.value); setPage(0); }} className="h-11 text-base sm:h-10 sm:text-sm" />
+              <Input placeholder="Valor máximo" type="number" inputMode="numeric" value={priceMax} onChange={e => { setPriceMax(e.target.value); setPage(0); }} className="h-11 text-base sm:h-10 sm:text-sm" />
+              <Input placeholder="Código (ex: LDR001)" value={code} onChange={e => { setCode(e.target.value); setPage(0); }} className="h-11 text-base sm:h-10 sm:text-sm" />
             </div>
           )}
         </div>
@@ -201,13 +201,15 @@ const PropertyListingPage = ({ purpose }: PropertyListingPageProps) => {
 
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mb-8">
-                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)} aria-label="Página anterior" className="h-10 min-w-10 gap-1">
                   <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">Anterior</span>
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground px-2">
                   {page + 1} / {totalPages}
                 </span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} aria-label="Próxima página" className="h-10 min-w-10 gap-1">
+                  <span className="hidden sm:inline">Próxima</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

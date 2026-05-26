@@ -1,13 +1,14 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useCallback, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Bed, Bath, Car, Maximize2, MapPin, MessageCircle, ArrowLeft, Loader2, Expand } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PageHead from '@/components/shared/PageHead';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import BreadcrumbsJsonLd from '@/components/shared/BreadcrumbsJsonLd';
 import PropertyCard from '@/components/property/PropertyCard';
+import CardImageCarousel from '@/components/property/CardImageCarousel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,7 +40,7 @@ const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: property, isLoading, isError } = useProperty(id || '');
   const { data: similar = [] } = useSimilarProperties(property ?? null);
-  const [imgIdx, setImgIdx] = useState(0);
+  // (galeria agora usa CardImageCarousel; lightbox controla seu próprio índice)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -181,50 +182,61 @@ const PropertyDetail = () => {
           {/* ─── Main column ─── */}
           <div className="lg:col-span-2 min-w-0 w-full">
             {/* Gallery */}
-            <div className="relative rounded-lg overflow-hidden mb-3 aspect-[4/3] sm:aspect-[16/10] w-full">
+            <div className="relative rounded-lg overflow-hidden mb-3 aspect-[4/3] sm:aspect-[16/10] w-full bg-muted">
               {property.images.length > 0 ? (
-                <img
-                  src={property.images[imgIdx]}
+                <CardImageCarousel
+                  images={property.images}
                   alt={property.title}
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={() => openLightbox(imgIdx)}
-                />
+                  className="w-full h-full"
+                  arrowSize="md"
+                  showIndicators={false}
+                >
+                  {/* Click overlay to open lightbox */}
+                  <button
+                    type="button"
+                    aria-label="Ampliar fotos"
+                    onClick={() => openLightbox(0)}
+                    className="absolute inset-0 z-0"
+                  />
+                  {/* Badges */}
+                  <div className="absolute top-3 left-3 flex gap-1.5 z-10 pointer-events-none">
+                    {property.isNew && <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">Novo</Badge>}
+                  </div>
+                  <span className="absolute top-3 right-3 text-[10px] font-mono text-white/90 bg-black/40 backdrop-blur-sm rounded px-1.5 py-0.5 z-10 pointer-events-none">
+                    {property.code}
+                  </span>
+                  {/* Expand button — visible on touch */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); openLightbox(0); }}
+                    aria-label="Ver fotos em tela cheia"
+                    className="absolute bottom-3 right-3 z-20 h-10 w-10 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  >
+                    <Expand className="h-4 w-4" />
+                  </button>
+                  {property.images.length > 1 && (
+                    <span className="absolute bottom-3 left-3 z-20 text-xs text-white/90 bg-black/50 backdrop-blur-sm rounded px-2 py-1 font-mono pointer-events-none">
+                      {property.images.length} fotos
+                    </span>
+                  )}
+                </CardImageCarousel>
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">
                   <p className="text-muted-foreground">Sem fotos disponíveis</p>
                 </div>
               )}
-              {property.images.length > 1 && (
-                <>
-                  <button onClick={() => setImgIdx(i => i > 0 ? i - 1 : property.images.length - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-sm p-2 rounded-full text-white hover:bg-black/60 transition-colors" aria-label="Anterior">
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button onClick={() => setImgIdx(i => i < property.images.length - 1 ? i + 1 : 0)} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-sm p-2 rounded-full text-white hover:bg-black/60 transition-colors" aria-label="Próxima">
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                  <span className="absolute bottom-2 right-2 text-xs text-white/90 bg-black/50 backdrop-blur-sm rounded px-2 py-1 font-mono">
-                    {imgIdx + 1}/{property.images.length}
-                  </span>
-                </>
-              )}
-              {/* Badges */}
-              <div className="absolute top-3 left-3 flex gap-1.5">
-                {property.isNew && <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold">Novo</Badge>}
-              </div>
-              <span className="absolute top-3 right-3 text-[10px] font-mono text-white/80 bg-black/40 backdrop-blur-sm rounded px-1.5 py-0.5">
-                {property.code}
-              </span>
             </div>
 
-            {/* Thumbnails */}
+            {/* Thumbnails — tap opens lightbox at that index */}
             {property.images.length > 1 && (
               <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1 scrollbar-thin">
                 {property.images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setImgIdx(i)}
-                    onDoubleClick={() => openLightbox(i)}
-                    className={`shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded overflow-hidden border-2 transition-colors ${i === imgIdx ? 'border-primary' : 'border-transparent hover:border-border'}`}
+                    type="button"
+                    onClick={() => openLightbox(i)}
+                    aria-label={`Abrir foto ${i + 1}`}
+                    className="shrink-0 w-20 h-16 sm:w-24 sm:h-16 rounded overflow-hidden border-2 border-transparent hover:border-primary/60 transition-colors"
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </button>
@@ -266,20 +278,7 @@ const PropertyDetail = () => {
               <AttrCard icon={Maximize2} value={`${property.area}m²`} label="Área" />
             </div>
 
-            {/* ─── Mobile WhatsApp CTA ─── */}
-            {isMobile && (
-              <WhatsAppCTA
-                intent={intent}
-                propertyId={property.id}
-                propertyCode={property.code}
-                propertyTitle={property.title}
-                neighborhood={property.neighborhood}
-                source="property-detail-mobile"
-                className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors mb-6"
-              >
-                <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — chamar no WhatsApp' : 'Quero alugar — chamar no WhatsApp'}
-              </WhatsAppCTA>
-            )}
+            {/* Mobile inline CTA removed — substituído pela sticky bottom bar */}
 
             {/* ─── Description ─── */}
             {property.description && (
@@ -381,6 +380,34 @@ const PropertyDetail = () => {
           </section>
         )}
       </div>
+
+      {/* ─── Sticky bottom bar (mobile) — Preço + WhatsApp ─── */}
+      {isMobile && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border px-3 py-2 flex items-center gap-2 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]"
+          style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+              {property.purpose === 'sale' ? 'Venda' : 'Aluguel'}
+            </p>
+            <p className="text-primary font-bold text-base leading-tight truncate">
+              {formatPrice(property.price, property.purpose)}
+            </p>
+          </div>
+          <WhatsAppCTA
+            intent={intent}
+            propertyId={property.id}
+            propertyCode={property.code}
+            propertyTitle={property.title}
+            neighborhood={property.neighborhood}
+            source="property-detail-sticky"
+            className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 h-11 rounded-lg font-medium text-sm hover:bg-[#20BD5A] transition-colors shrink-0"
+          >
+            <MessageCircle className="h-4 w-4" /> WhatsApp
+          </WhatsAppCTA>
+        </div>
+      )}
 
       {/* ─── Lightbox ─── */}
       {property.images.length > 0 && (
