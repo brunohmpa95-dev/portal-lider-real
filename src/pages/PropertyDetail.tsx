@@ -381,6 +381,34 @@ const PropertyDetail = () => {
         )}
       </div>
 
+      {/* ─── Sticky bottom bar (mobile) — Preço + WhatsApp ─── */}
+      {isMobile && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border px-3 py-2 flex items-center gap-2 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]"
+          style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted-foreground leading-none mb-0.5">
+              {property.purpose === 'sale' ? 'Venda' : 'Aluguel'}
+            </p>
+            <p className="text-primary font-bold text-base leading-tight truncate">
+              {formatPrice(property.price, property.purpose)}
+            </p>
+          </div>
+          <WhatsAppCTA
+            intent={intent}
+            propertyId={property.id}
+            propertyCode={property.code}
+            propertyTitle={property.title}
+            neighborhood={property.neighborhood}
+            source="property-detail-sticky"
+            className="flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 h-11 rounded-lg font-medium text-sm hover:bg-[#20BD5A] transition-colors shrink-0"
+          >
+            <MessageCircle className="h-4 w-4" /> WhatsApp
+          </WhatsAppCTA>
+        </div>
+      )}
+
       {/* ─── Lightbox ─── */}
       {property.images.length > 0 && (
         <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
