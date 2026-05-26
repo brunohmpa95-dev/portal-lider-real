@@ -1,4 +1,4 @@
-import logoUrl from '@/assets/logo-transparent.png';
+import logoUrl from '@/assets/watermark-house.png';
 
 let cachedLogo: HTMLImageElement | null = null;
 
