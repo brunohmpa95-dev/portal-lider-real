@@ -1,54 +1,64 @@
-## Bug 1 — Persist form state across tabs
+## Navegação rápida de fotos nos cards de imóveis
 
-Today `PropertyForm.tsx` renders all sections (Informações, Valores, Localização, Detalhes, Fotos) as stacked Cards. Wrap them in `Tabs` from `@/components/ui/tabs` with 4 triggers: **Informações**, **Valores**, **Localização**, **Detalhes**, **Fotos**.
+Adicionar setas laterais com glassmorphism sobre a imagem principal dos cards, permitindo navegar entre as fotos sem abrir o anúncio. Em mobile, também suporte swipe horizontal.
 
-- Keep the single `useState(form)` lifted in `PropertyForm` (parent). Because all tab contents are mounted as children of the same component and only their visibility changes, the `form` state survives tab switches automatically — no remount, no data loss.
-- Use `forceMount` on each `<TabsContent>` and toggle visibility via CSS (`hidden`) so unmounted inputs do not lose focus/typing state.
-- Form only resets on successful save (existing `navigate` away) or Cancel button (existing behavior).
+### Escopo
 
-## Bug 2 — Cover photo selector
+Componentes afetados (todos onde há imagem de card de imóvel):
+- `src/components/property/PropertyCard.tsx` — card padrão usado em vitrines/listagens.
+- `src/components/property/PremiumPropertyCard.tsx` — card de super destaque.
 
-In `PropertyImageUpload.tsx`:
+Não toca em `PropertyDetail`, galerias internas, nem no admin.
 
-- Add a Star icon button (lucide `Star`) in the hover overlay → "Definir como capa". Clicking it moves the selected image to index `0` of the `images` array.
-- Keep the existing **Capa** badge on `images[0]`; also add a primary-colored border ring on the cover thumbnail.
-- No schema change: cover = `images[0]`. Property cards already use `images[0]` as thumbnail (verified in `PropertyCard.tsx` pattern).
+### Solução
 
-## Bug 3 — Watermark with agency logo
+Criar um componente reutilizável `src/components/property/CardImageCarousel.tsx` que encapsula:
+- imagem com `loading="lazy"` (preservando comportamento atual);
+- estado local `currentIndex` por instância (isolado por card);
+- setas esquerda/direita com glassmorphism, só renderizadas quando `images.length > 1`;
+- swipe horizontal em touch (touchstart/touchend, threshold ~40px);
+- indicadores discretos (bolinhas) só se `images.length <= 6`; acima disso, contador `2 / 12`;
+- navegação em loop (mais fluida que travar nas pontas);
+- `stopPropagation` + `preventDefault` no clique das setas/swipe para não disparar o `<Link>` do card;
+- `aria-label` "Foto anterior" / "Próxima foto", `type="button"`, foco visível.
 
-Apply client-side via Canvas before upload (no edge function needed).
+Em `PropertyCard` e `PremiumPropertyCard`, substituir o `<img>` atual pelo novo componente, mantendo overlays existentes (badges, código, preço) por cima.
 
-- Create `src/lib/watermark.ts` exporting `applyWatermark(file: File, logoUrl: string): Promise<File>`:
-  - Load image into an offscreen `<canvas>` at original dimensions.
-  - Load logo (`@/assets/logo-transparent.png`) sized to 20% of image width (preserving aspect ratio).
-  - Draw logo bottom-right with 24px padding, `globalAlpha = 0.6`.
-  - Export as JPEG (`canvas.toBlob`, quality 0.9) and return a new `File` preserving the original name with `.jpg` extension.
-- In `PropertyImageUpload.handleFiles`: pipe each file through `applyWatermark()` before `supabase.storage.upload`. Skip watermark for files already > 20MB after processing (safety).
-- Applies to every image including the cover (cover is just `images[0]`, no special path).
+### Visual (glassmorphism)
 
-## Bug 4 — Status constraint mismatch
+- Botão circular 32px (desktop) / 36px (mobile, área de toque), `bg-white/15 backdrop-blur-md border border-white/25`, ícone `ChevronLeft/Right` em branco.
+- Posição: `absolute top-1/2 -translate-y-1/2 left-2 / right-2`.
+- Desktop: `opacity-0 group-hover:opacity-100 transition-opacity`; mobile (`md:` breakpoint): `opacity-70` sempre visível.
+- Indicadores: pontinhos `1.5px` brancos com `bg-white/50` e ativo `bg-white`, centralizados embaixo, acima do gradiente de preço (com z-index correto para não conflitar).
 
-Current DB constraint allows only: `draft`, `published`, `archived`, `sold`, `rented`.
-Current UI `PROPERTY_STATUS_OPTIONS` saves: `captacao`, `aguardando_documentacao`, `published`, `reserved`, `em_proposta`, `sold`, `rented`, `paused`.
+### Detalhes técnicos
 
-Fix by **extending the DB constraint** (the richer workflow is intentional) via migration:
-
-```sql
-ALTER TABLE public.properties DROP CONSTRAINT properties_status_check;
-ALTER TABLE public.properties ADD CONSTRAINT properties_status_check
-  CHECK (status = ANY (ARRAY[
-    'draft','published','archived','sold','rented',
-    'captacao','aguardando_documentacao','reserved','em_proposta','paused'
-  ]));
+```text
+CardImageCarousel
+├── div.group.relative.overflow-hidden  ← wrapper (recebe className do parent p/ aspect ratio)
+│   ├── img (src = images[currentIndex], lazy, transition opacity suave entre trocas)
+│   ├── children (overlays existentes: gradient, badges, código, preço)
+│   ├── button.prev  (hidden se length<=1, stopPropagation)
+│   ├── button.next  (hidden se length<=1, stopPropagation)
+│   └── indicators   (hidden se length<=1)
+└── handlers: onTouchStart/Move/End para swipe
 ```
 
-No UI value changes — labels remain in Portuguese, saved values stay as the DB-allowed strings.
+- Como o `<Link>` envolve o card em `PropertyCard`, as setas precisam ser `<button>` com `onClick={(e) => { e.preventDefault(); e.stopPropagation(); ... }}`. Isso impede o Link de navegar.
+- Para swipe, usar listeners passivos; se `deltaX > 40` chama next/prev, e `e.stopPropagation()` para não interferir com scroll vertical da página (só intercepta quando o gesto é claramente horizontal).
+- `useState` por instância garante isolamento; sem context global, performance ok com muitos cards.
+- Pré-carregar próxima imagem opcional via `<link rel="prefetch">` — pulado para manter simples e leve.
 
-## Files touched
+### Acabamento
 
-- `src/pages/admin/PropertyForm.tsx` — wrap sections in Tabs
-- `src/components/admin/PropertyImageUpload.tsx` — cover button + watermark integration
-- `src/lib/watermark.ts` — new helper
-- Migration — extend `properties_status_check`
+- Transição `opacity 200ms` ao trocar foto (sem reflow, mesma `<img>` mudando `src`).
+- Bolinhas indicadoras pequenas (`h-1.5 w-1.5`), gap-1, posicionadas em `bottom-12` para ficar acima do preço sem poluir.
+- Em `PremiumPropertyCard` (imagem maior), setas um pouco maiores (`h-9 w-9`) para escala correta.
 
-No visual redesign; no changes to unrelated features.  
+### Verificação pós-implementação
+
+- Clicar nas setas não navega para `/imovel/:id`.
+- Clicar fora das setas (na imagem ou no conteúdo) navega normalmente.
+- Cards com 1 foto não mostram setas/indicadores.
+- Swipe em mobile funciona e não dispara o Link.
+- Lazy loading preservado.
