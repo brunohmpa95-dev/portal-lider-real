@@ -23,17 +23,16 @@ const PropertyCard = ({ property, index = 0 }: PropertyCardProps) => (
       className="group flex flex-col bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full"
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={property.images[0]}
-          alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      <CardImageCarousel
+        images={property.images}
+        alt={property.title}
+        className="aspect-[16/10]"
+        imgClassName="group-hover:scale-105 transition-transform duration-500 ease-out"
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
         {/* Badges — top left */}
-        <div className="absolute top-2.5 left-2.5 flex gap-1.5">
+        <div className="absolute top-2.5 left-2.5 flex gap-1.5 z-10">
           {property.isNew && (
             <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 font-semibold">Novo</Badge>
           )}
@@ -43,17 +42,17 @@ const PropertyCard = ({ property, index = 0 }: PropertyCardProps) => (
         </div>
 
         {/* Code — top right */}
-        <span className="absolute top-2.5 right-2.5 text-[10px] font-mono text-white/80 bg-black/40 backdrop-blur-sm rounded px-1.5 py-0.5">
+        <span className="absolute top-2.5 right-2.5 text-[10px] font-mono text-white/80 bg-black/40 backdrop-blur-sm rounded px-1.5 py-0.5 z-10">
           {property.code}
         </span>
 
         {/* Price overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6">
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6 z-10 pointer-events-none">
           <p className="text-white font-bold text-lg leading-tight">
             {formatPrice(property.price, property.purpose)}
           </p>
         </div>
-      </div>
+      </CardImageCarousel>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-3.5">
