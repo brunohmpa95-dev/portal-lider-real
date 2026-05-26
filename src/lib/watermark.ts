@@ -1,4 +1,10 @@
-import logoUrl from '@/assets/watermark-house.png';
+import logoUrl from '@/assets/watermark-center.png';
+
+// Ajustes finos da marca d'água — fácil de calibrar depois.
+const WATERMARK_OPACITY = 0.16;      // entre 0.12 e 0.20
+const WATERMARK_WIDTH_RATIO = 0.26;  // entre 0.22 e 0.30 da largura da foto
+const SMALL_IMAGE_THRESHOLD = 600;   // px — abaixo disso, marca proporcionalmente menor
+const SMALL_IMAGE_RATIO = 0.40;      // ocupa 40% da menor dimensão em fotos pequenas
 
 let cachedLogo: HTMLImageElement | null = null;
 
@@ -19,9 +25,9 @@ async function getLogo(): Promise<HTMLImageElement> {
 }
 
 /**
- * Applies an agency logo watermark (bottom-right, ~20% width, 60% opacity)
- * to an image file using the Canvas API. Returns a new File (JPEG, q=0.9).
- * If the source is not an image or processing fails, returns the original file.
+ * Aplica a marca d'água da imobiliária centralizada na imagem
+ * (branca, translúcida, ~26% da largura). Retorna um novo File JPEG q=0.9.
+ * Em caso de falha, devolve o arquivo original.
  */
 export async function applyWatermark(file: File): Promise<File> {
   if (!file.type.startsWith('image/')) return file;
@@ -45,14 +51,25 @@ export async function applyWatermark(file: File): Promise<File> {
 
     ctx.drawImage(baseImg, 0, 0);
 
-    const targetW = canvas.width * 0.2;
-    const ratio = logo.naturalHeight / logo.naturalWidth;
-    const targetH = targetW * ratio;
-    const padding = Math.max(16, canvas.width * 0.015);
-    const x = canvas.width - targetW - padding;
-    const y = canvas.height - targetH - padding;
+    // Calcula tamanho proporcional, com fallback para imagens pequenas.
+    const logoRatio = logo.naturalHeight / logo.naturalWidth;
+    const minSide = Math.min(canvas.width, canvas.height);
 
-    ctx.globalAlpha = 0.6;
+    let targetW: number;
+    if (canvas.width < SMALL_IMAGE_THRESHOLD) {
+      targetW = minSide * SMALL_IMAGE_RATIO;
+    } else {
+      targetW = canvas.width * WATERMARK_WIDTH_RATIO;
+    }
+    const targetH = targetW * logoRatio;
+
+    // Centraliza horizontal e verticalmente.
+    const x = (canvas.width - targetW) / 2;
+    const y = (canvas.height - targetH) / 2;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.globalAlpha = WATERMARK_OPACITY;
     ctx.drawImage(logo, x, y, targetW, targetH);
     ctx.globalAlpha = 1;
 
