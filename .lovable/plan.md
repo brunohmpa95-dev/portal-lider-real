@@ -1,42 +1,34 @@
-# Carrossel de fotos mais fluido nos cards
+# Marca d'água com a logo (apenas a casa)
 
-## Problema
+## Situação atual
 
-Hoje o `CardImageCarousel` troca o `src` de uma única `<img>` a cada clique/swipe. A próxima foto só começa a baixar nesse momento, então o usuário vê um "flash" / espera enquanto carrega. Em 4G/mobile o efeito é bem perceptível.
+Já existe um sistema de marca d'água em `src/lib/watermark.ts` que é aplicado em todo upload de foto de imóvel (via `PropertyImageUpload`). Hoje ele usa `src/assets/logo-transparent.png` — que também é usado no Header/Footer/Login/Register como logo completo (casa + texto "Líder Imóveis Itaúna"). Aplicar o logo completo como marca d'água fica pesado e ilegível em fotos.
 
-## Solução
+O usuário quer usar **só a parte circulada** (o ícone da casa estilizado), sem o texto.
 
-Reescrever o `CardImageCarousel` (`src/components/property/CardImageCarousel.tsx`) para:
+## Plano
 
-1. **Renderizar todas as fotos em um trilho** (`flex` com `translateX(-index * 100%)`), em vez de trocar `src`. Assim a foto seguinte já está no DOM e a transição é só um CSS transform — instantânea.
-2. **Pré-carregar imagens vizinhas**: a foto atual usa `loading="eager"` + `fetchpriority="high"`; as 2 vizinhas (anterior/próxima) usam `loading="eager"`; as demais ficam `loading="lazy"` para não pesar a listagem.
-3. **Swipe com arrasto em tempo real** (mobile): durante o `touchmove`, aplicar `translateX` proporcional ao dedo (efeito "seguindo o dedo"). No `touchend`, se passou de ~25% da largura ou velocidade suficiente, vai para a próxima; senão volta com transição suave. Mantém o threshold/`onClickCapture` atual para não disparar o link do card.
-4. **Transição CSS** (`transition-transform duration-300 ease-out`) só quando NÃO está arrastando, para o arrasto ser 1:1 com o dedo.
-5. **Manter** a API atual do componente (`images`, `alt`, `className`, `imgClassName`, `children`, `arrowSize`, `showIndicators`), as setas, os indicadores, o overlay (`children` continua sobreposto via `absolute inset-0`), badges e o `group-hover:scale-105` do `PropertyCard` (aplicado em cada `<img>` do trilho).
+1. **Salvar a logo original enviada** em `src/assets/lider-logo-source.png` (referência futura).
 
-## Detalhes técnicos
+2. **Gerar a marca d'água** `src/assets/watermark-house.png`:
+   - Recortar apenas o ícone da casa (área circulada) da imagem enviada.
+   - Remover o fundo verde-escuro deixando **fundo transparente** (alpha real, PNG).
+   - Manter o verde claro original da casa — fica natural sobre fotos.
+   - Adicionar um leve "halo" branco bem suave atrás da casa para garantir contraste em fotos claras e escuras.
+   - Tamanho final ~800x800px (qualidade suficiente para imóveis em alta resolução).
+   - Faremos isso com Python/Pillow (já disponível no sandbox) detectando o fundo verde-escuro (cor uniforme) e convertendo em alpha.
 
-```text
-<div class="relative overflow-hidden">
-  <div class="flex h-full w-full transition-transform"
-       style="transform: translateX(calc(-index * 100% + dragX))">
-    {images.map(src => (
-      <img class="h-full w-full shrink-0 object-cover" src=... />
-    ))}
-  </div>
-  {children}            // overlays/badges absolutos
-  {setas + indicadores} // como hoje
-</div>
-```
+3. **Apontar o watermark para a nova arte**:
+   - Editar `src/lib/watermark.ts` linha 1 → `import logoUrl from '@/assets/watermark-house.png';`
+   - Não mexer no resto da lógica (posição canto inferior direito, ~20% da largura, 60% de opacidade — já está bom). 
+   - Os arquivos `Header.tsx`, `Footer.tsx`, `Login.tsx`, `Register.tsx` continuam usando `logo-transparent.png` (logo completo com texto) — sem alteração.
 
-- `children` precisa ficar fora do trilho (overlay absoluto sobre o container), o que já é o caso visualmente; só garantir z-index.
-- Eager nas vizinhas: `eager` se `Math.abs(i - index) <= 1`, caso contrário `lazy`.
-- `decoding="async"` em todas para não bloquear.
-- `draggable={false}` nas `<img>` para evitar ghost-drag no desktop.
-- Setas e swipe continuam com loop (módulo) como hoje.
+4. **Conferir o resultado**: após criar o PNG, abrir o arquivo para validar que (a) o fundo está realmente transparente, (b) só a casa aparece, (c) bordas limpas sem halo verde residual.
 
 ## Arquivos afetados
 
-- `src/components/property/CardImageCarousel.tsx` — reescrita interna, API pública intacta.
+- `src/assets/lider-logo-source.png` (novo — referência)
+- `src/assets/watermark-house.png` (novo — usado pela marca d'água)
+- `src/lib/watermark.ts` (1 linha alterada)
 
-Nada muda em `PropertyCard.tsx`, `PremiumPropertyCard.tsx`, design system, dados, RLS ou backend.
+Nada muda em backend, RLS, schema, ou nas fotos já enviadas (a marca d'água é aplicada no momento do upload — fotos antigas permanecem como estão).
