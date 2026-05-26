@@ -22,17 +22,16 @@ const PremiumPropertyCard = ({ property }: PremiumPropertyCardProps) => (
   >
     <div className="grid md:grid-cols-2 gap-0">
       {/* Image */}
-      <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[320px] overflow-hidden">
-        <img
-          src={property.images[0]}
-          alt={property.title}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-        <Badge className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-semibold">
+      <CardImageCarousel
+        images={property.images}
+        alt={property.title}
+        className="aspect-[4/3] md:aspect-auto md:min-h-[320px]"
+        arrowSize="md"
+      >
+        <Badge className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-semibold z-10">
           Super Destaque
         </Badge>
-      </div>
+      </CardImageCarousel>
 
       {/* Info */}
       <div className="p-5 sm:p-6 md:p-8 flex flex-col justify-center">
