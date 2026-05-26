@@ -22,15 +22,19 @@ const CardImageCarousel = ({
   showIndicators = true,
 }: CardImageCarouselProps) => {
   const [index, setIndex] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const swipedRef = useRef(false);
+  const axisLockedRef = useRef<'h' | 'v' | null>(null);
 
   const safeImages = images && images.length > 0 ? images : ['/placeholder.svg'];
   const hasMany = safeImages.length > 1;
+  const total = safeImages.length;
 
   const goTo = (next: number) => {
-    const total = safeImages.length;
     setIndex(((next % total) + total) % total);
   };
 
@@ -41,34 +45,55 @@ const CardImageCarousel = ({
   };
 
   const onTouchStart = (e: TouchEvent) => {
+    if (!hasMany) return;
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     swipedRef.current = false;
+    axisLockedRef.current = null;
+    setDragging(true);
   };
 
   const onTouchMove = (e: TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
+    if (!hasMany || touchStartX.current === null || touchStartY.current === null) return;
     const dx = e.touches[0].clientX - touchStartX.current;
     const dy = e.touches[0].clientY - touchStartY.current;
-    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
-      // horizontal gesture — prevent card link
+
+    if (axisLockedRef.current === null) {
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+        axisLockedRef.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+    }
+
+    if (axisLockedRef.current === 'h') {
       swipedRef.current = true;
+      setDragX(dx);
     }
   };
 
   const onTouchEnd = (e: TouchEvent) => {
-    if (touchStartX.current === null) return;
+    if (!hasMany || touchStartX.current === null) {
+      setDragging(false);
+      setDragX(0);
+      return;
+    }
     const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const width = containerRef.current?.clientWidth ?? 1;
+    const threshold = Math.max(40, width * 0.18);
+
     touchStartX.current = null;
     touchStartY.current = null;
-    if (Math.abs(dx) > 40 && hasMany) {
+
+    if (axisLockedRef.current === 'h' && Math.abs(dx) > threshold) {
       e.stopPropagation();
       goTo(index + (dx < 0 ? 1 : -1));
     }
+
+    axisLockedRef.current = null;
+    setDragging(false);
+    setDragX(0);
   };
 
   const onClickCapture = (e: React.MouseEvent) => {
-    // If a swipe just happened, block the upcoming click from triggering the card link
     if (swipedRef.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -79,21 +104,37 @@ const CardImageCarousel = ({
   const btnSize = arrowSize === 'md' ? 'h-9 w-9' : 'h-8 w-8';
   const iconSize = arrowSize === 'md' ? 'h-5 w-5' : 'h-4 w-4';
 
+  const trackStyle: React.CSSProperties = {
+    transform: `translate3d(calc(${-index * 100}% + ${dragX}px), 0, 0)`,
+    transition: dragging ? 'none' : 'transform 300ms ease-out',
+  };
+
   return (
     <div
+      ref={containerRef}
       className={cn('group/carousel relative overflow-hidden', className)}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       onClickCapture={onClickCapture}
     >
-      <img
-        src={safeImages[index]}
-        alt={alt}
-        loading="lazy"
-        className={cn('w-full h-full object-cover transition-opacity duration-200', imgClassName)}
-        key={index}
-      />
+      <div className="flex h-full w-full will-change-transform" style={trackStyle}>
+        {safeImages.map((src, i) => {
+          const eager = Math.abs(i - index) <= 1;
+          return (
+            <img
+              key={i}
+              src={src}
+              alt={i === index ? alt : ''}
+              draggable={false}
+              loading={eager ? 'eager' : 'lazy'}
+              decoding="async"
+              {...(i === index ? { fetchPriority: 'high' as const } : {})}
+              className={cn('h-full w-full shrink-0 object-cover select-none', imgClassName)}
+            />
+          );
+        })}
+      </div>
 
       {children}
 
