@@ -227,15 +227,16 @@ const PropertyDetail = () => {
               )}
             </div>
 
-            {/* Thumbnails */}
+            {/* Thumbnails — tap opens lightbox at that index */}
             {property.images.length > 1 && (
               <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1 scrollbar-thin">
                 {property.images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setImgIdx(i)}
-                    onDoubleClick={() => openLightbox(i)}
-                    className={`shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded overflow-hidden border-2 transition-colors ${i === imgIdx ? 'border-primary' : 'border-transparent hover:border-border'}`}
+                    type="button"
+                    onClick={() => openLightbox(i)}
+                    aria-label={`Abrir foto ${i + 1}`}
+                    className="shrink-0 w-20 h-16 sm:w-24 sm:h-16 rounded overflow-hidden border-2 border-transparent hover:border-primary/60 transition-colors"
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </button>
@@ -277,20 +278,7 @@ const PropertyDetail = () => {
               <AttrCard icon={Maximize2} value={`${property.area}m²`} label="Área" />
             </div>
 
-            {/* ─── Mobile WhatsApp CTA ─── */}
-            {isMobile && (
-              <WhatsAppCTA
-                intent={intent}
-                propertyId={property.id}
-                propertyCode={property.code}
-                propertyTitle={property.title}
-                neighborhood={property.neighborhood}
-                source="property-detail-mobile"
-                className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-lg font-medium hover:bg-[#20BD5A] transition-colors mb-6"
-              >
-                <MessageCircle className="h-5 w-5" /> {intent === 'buy' ? 'Quero comprar — chamar no WhatsApp' : 'Quero alugar — chamar no WhatsApp'}
-              </WhatsAppCTA>
-            )}
+            {/* Mobile inline CTA removed — substituído pela sticky bottom bar */}
 
             {/* ─── Description ─── */}
             {property.description && (
