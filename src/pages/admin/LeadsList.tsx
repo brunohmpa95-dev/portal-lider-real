@@ -350,7 +350,13 @@ export default function LeadsList() {
     }
     updateLeadStage(leadId, newStage);
   }
-  const leadsForStage = (stage: string) => filtered.filter((l) => l.funnel_stage === stage);
+  // Kanban sempre por created_at desc (mais recentes no topo de cada coluna), independente do sortBy
+  const leadsForStage = (stage: string) =>
+    filtered
+      .filter((l) => l.funnel_stage === stage)
+      .slice()
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
   const handleMobileMove = (lead: any, newStage: string) => {
     if (newStage === lead.funnel_stage) return;
     if (newStage === 'lost') { setPendingLost({ leadId: lead.id, leadName: lead.name }); return; }
