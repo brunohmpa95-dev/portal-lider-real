@@ -1,35 +1,42 @@
-## Persistência de estado e ordenação consistente nos leads
+# Carrossel de fotos mais fluido nos cards
 
-### 1. Persistir página + filtros/ordenação (LeadsList)
+## Problema
 
-Hoje `loadAll()` chama `setPage(1)` no fim, e atualizações de lead (etapa, bulk) não preservam a página. Filtros/sort também se perdem ao recarregar a página (F5) porque são estado local.
+Hoje o `CardImageCarousel` troca o `src` de uma única `<img>` a cada clique/swipe. A próxima foto só começa a baixar nesse momento, então o usuário vê um "flash" / espera enquanto carrega. Em 4G/mobile o efeito é bem perceptível.
 
-Sincronizar todos os controles com a **URL** via `useSearchParams`:
-- `page`, `sort`, `view` (kanban/table), `q`, `stage`, `source`, `channel`, `agent`, `period`.
-- Inicializar `useState` a partir dos params; em cada mudança, atualizar a URL (`setSearchParams`, `replace: true`).
-- Remover o `setPage(1)` dentro de `loadAll()` — só resetar página quando filtros mudam (já existe esse `useEffect`).
-- Atualizações otimistas de lead (drag, bulk stage, bulk delete) já alteram apenas o array `leads`, sem chamar `loadAll`, então a página atual será mantida. Garantir que após `bulkDelete` a página atual ainda seja válida (clamp: se `page > totalPages`, ajustar para `totalPages`).
+## Solução
 
-Resultado: ao dar F5, voltar de `LeadDetail`, ou atualizar uma etapa, o usuário continua na mesma página/filtro/ordem.
+Reescrever o `CardImageCarousel` (`src/components/property/CardImageCarousel.tsx`) para:
 
-### 2. Seletor de ordenação
+1. **Renderizar todas as fotos em um trilho** (`flex` com `translateX(-index * 100%)`), em vez de trocar `src`. Assim a foto seguinte já está no DOM e a transição é só um CSS transform — instantânea.
+2. **Pré-carregar imagens vizinhas**: a foto atual usa `loading="eager"` + `fetchpriority="high"`; as 2 vizinhas (anterior/próxima) usam `loading="eager"`; as demais ficam `loading="lazy"` para não pesar a listagem.
+3. **Swipe com arrasto em tempo real** (mobile): durante o `touchmove`, aplicar `translateX` proporcional ao dedo (efeito "seguindo o dedo"). No `touchend`, se passou de ~25% da largura ou velocidade suficiente, vai para a próxima; senão volta com transição suave. Mantém o threshold/`onClickCapture` atual para não disparar o link do card.
+4. **Transição CSS** (`transition-transform duration-300 ease-out`) só quando NÃO está arrastando, para o arrasto ser 1:1 com o dedo.
+5. **Manter** a API atual do componente (`images`, `alt`, `className`, `imgClassName`, `children`, `arrowSize`, `showIndicators`), as setas, os indicadores, o overlay (`children` continua sobreposto via `absolute inset-0`), badges e o `group-hover:scale-105` do `PropertyCard` (aplicado em cada `<img>` do trilho).
 
-Já existe (`SORT_OPTIONS` com Criado/Atualizado asc/desc) e funcional. Apenas:
-- Garantir que o valor venha/vá para a URL (`?sort=created_desc`).
-- Manter como default `created_desc`.
-- Pequeno ajuste visual: agrupar o seletor no topo com label "Ordenar por" para discoverability.
+## Detalhes técnicos
 
-### 3. Ordenação padrão created_at DESC em todas as telas
+```text
+<div class="relative overflow-hidden">
+  <div class="flex h-full w-full transition-transform"
+       style="transform: translateX(calc(-index * 100% + dragX))">
+    {images.map(src => (
+      <img class="h-full w-full shrink-0 object-cover" src=... />
+    ))}
+  </div>
+  {children}            // overlays/badges absolutos
+  {setas + indicadores} // como hoje
+</div>
+```
 
-- **LeadsList (Tabela)**: já ordena via `sortBy` (default `created_desc`). OK.
-- **LeadsList (Kanban)**: hoje usa o mesmo array `filtered` (respeita `sortBy`). Forçar ordenação **sempre** por `created_at desc` dentro de cada coluna do Kanban, independente do `sortBy` selecionado (Kanban é visualização por etapa, ordem cronológica reversa faz mais sentido). Criar um array `kanbanLeads` separado que parte de `filtered` mas reordena por `created_at desc`.
-- **Dashboard**: `recentLeads` já faz `.order('created_at', { ascending: false }).limit(5)`. OK — sem mudança.
-- **AdminEsteira**: verificar e aplicar `.order('created_at', { ascending: false })` se faltar.
-- **useLeads hook**: já ordena por `created_at desc`. OK.
+- `children` precisa ficar fora do trilho (overlay absoluto sobre o container), o que já é o caso visualmente; só garantir z-index.
+- Eager nas vizinhas: `eager` se `Math.abs(i - index) <= 1`, caso contrário `lazy`.
+- `decoding="async"` em todas para não bloquear.
+- `draggable={false}` nas `<img>` para evitar ghost-drag no desktop.
+- Setas e swipe continuam com loop (módulo) como hoje.
 
-### Arquivos afetados
+## Arquivos afetados
 
-- `src/pages/admin/LeadsList.tsx` — sincronização com URL, clamp de página pós bulk-delete, Kanban com ordenação fixa por `created_at desc`.
-- `src/pages/admin/AdminEsteira.tsx` — confirmar/aplicar ordenação `created_at desc` na query de leads (se ainda não estiver).
+- `src/components/property/CardImageCarousel.tsx` — reescrita interna, API pública intacta.
 
-Sem mudanças em schema/RLS/edge functions.
+Nada muda em `PropertyCard.tsx`, `PremiumPropertyCard.tsx`, design system, dados, RLS ou backend.
