@@ -6,6 +6,7 @@ import { formatPrice } from '@/data/properties';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import WhatsAppCTA from '@/components/shared/WhatsAppCTA';
+import CardImageCarousel from './CardImageCarousel';
 
 interface PremiumPropertyCardProps {
   property: Property;
