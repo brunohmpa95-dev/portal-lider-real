@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -80,6 +80,9 @@ export default function LeadsList() {
   const { roles } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const sp = (key: string, fallback: string) => searchParams.get(key) ?? fallback;
 
   // Dados
   const [leads, setLeads] = useState<any[]>([]);
@@ -88,21 +91,21 @@ export default function LeadsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtros
-  const [search, setSearch] = useState('');
-  const [filterStage, setFilterStage] = useState('all');
-  const [filterSource, setFilterSource] = useState('all');
-  const [filterChannel, setFilterChannel] = useState('all');
-  const [filterAgent, setFilterAgent] = useState('all');
-  const [filterPeriod, setFilterPeriod] = useState('all');
-  const [sortBy, setSortBy] = useState('created_desc');
+  // Filtros (inicializados a partir da URL para persistir entre reloads/navegação)
+  const [search, setSearch] = useState(() => sp('q', ''));
+  const [filterStage, setFilterStage] = useState(() => sp('stage', 'all'));
+  const [filterSource, setFilterSource] = useState(() => sp('source', 'all'));
+  const [filterChannel, setFilterChannel] = useState(() => sp('channel', 'all'));
+  const [filterAgent, setFilterAgent] = useState(() => sp('agent', 'all'));
+  const [filterPeriod, setFilterPeriod] = useState(() => sp('period', 'all'));
+  const [sortBy, setSortBy] = useState(() => sp('sort', 'created_desc'));
 
   // UI
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'kanban' | 'table'>(() => (sp('view', 'table') === 'kanban' ? 'kanban' : 'table'));
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [pendingLost, setPendingLost] = useState<{ leadId: string; leadName: string } | null>(null);
   const [interactionFor, setInteractionFor] = useState<{ id: string; name: string } | null>(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => Math.max(1, parseInt(sp('page', '1'), 10) || 1));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -116,10 +119,26 @@ export default function LeadsList() {
     loadAll();
   }, []);
 
-  // Reset paginação quando filtros mudam
+  // Reset paginação quando filtros mudam (não em reload nem em update de lead)
   useEffect(() => {
     setPage(1);
   }, [search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy]);
+
+  // Sincroniza estado -> URL para persistir página, filtros, ordem e view
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (search) next.set('q', search);
+    if (filterStage !== 'all') next.set('stage', filterStage);
+    if (filterSource !== 'all') next.set('source', filterSource);
+    if (filterChannel !== 'all') next.set('channel', filterChannel);
+    if (filterAgent !== 'all') next.set('agent', filterAgent);
+    if (filterPeriod !== 'all') next.set('period', filterPeriod);
+    if (sortBy !== 'created_desc') next.set('sort', sortBy);
+    if (viewMode !== 'table') next.set('view', viewMode);
+    if (page !== 1) next.set('page', String(page));
+    setSearchParams(next, { replace: true });
+  }, [search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy, viewMode, page, setSearchParams]);
+
 
   async function loadAll() {
     setLoading(true);
@@ -141,9 +160,9 @@ export default function LeadsList() {
     const agentMap: Record<string, any> = {};
     (profilesRes.data || []).forEach((p: any) => { agentMap[p.user_id] = p; });
     setAgents(agentMap);
-    setPage(1); // sempre volta à página 1 (mais recentes) após recarregar
     setLoading(false);
   }
+
 
   async function deleteLead(id: string) {
     if (!confirm('Tem certeza que deseja excluir este lead?')) return;
@@ -288,10 +307,17 @@ export default function LeadsList() {
   }, [leads, properties, search, filterStage, filterSource, filterChannel, filterAgent, filterPeriod, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Mantém a página válida quando o total muda (ex.: após bulk delete)
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
   const paged = useMemo(
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filtered, page],
   );
+
 
   const stageLabel = (val: string) => LEAD_FUNNEL_STAGES.find((s) => s.value === val)?.label || val;
   const priorityColor = (p: string) => {
@@ -324,7 +350,13 @@ export default function LeadsList() {
     }
     updateLeadStage(leadId, newStage);
   }
-  const leadsForStage = (stage: string) => filtered.filter((l) => l.funnel_stage === stage);
+  // Kanban sempre por created_at desc (mais recentes no topo de cada coluna), independente do sortBy
+  const leadsForStage = (stage: string) =>
+    filtered
+      .filter((l) => l.funnel_stage === stage)
+      .slice()
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
   const handleMobileMove = (lead: any, newStage: string) => {
     if (newStage === lead.funnel_stage) return;
     if (newStage === 'lost') { setPendingLost({ leadId: lead.id, leadName: lead.name }); return; }
