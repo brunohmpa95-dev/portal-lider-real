@@ -138,6 +138,7 @@ export default function Dashboard() {
   const { data: overdueTasks = [] } = useTasks({ filter: 'overdue' });
   const { data: todayTasks = [] } = useTasks({ filter: 'today' });
   const { data: leadStats } = useLeadStats(period);
+  const dailySummary = useDailySummary();
   const [stats, setStats] = useState<DashboardStats>({
     leads: 0, leadsMonth: 0, properties: 0, visits: 0,
     ticketsOpen: 0, ticketsProgress: 0, ticketsResolved: 0, applications: 0,
