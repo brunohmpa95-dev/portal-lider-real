@@ -1,6 +1,8 @@
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_NAV_SECTIONS, ADMIN_SECONDARY_NAV, filterNavByRoles, filterSectionsByRoles } from '@/lib/admin-nav';
+import { supabase } from '@/integrations/supabase/client';
 import {
   SidebarProvider,
   Sidebar,
