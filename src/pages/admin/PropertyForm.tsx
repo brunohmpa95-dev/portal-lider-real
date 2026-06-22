@@ -40,10 +40,29 @@ export default function PropertyForm() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
+  const [hasDraft, setHasDraft] = useState(false);
 
   useEffect(() => {
-    if (isEdit) loadProperty();
+    if (isEdit) {
+      loadProperty();
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setForm({ ...defaultForm, ...parsed });
+        setHasDraft(true);
+      }
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
   }, [id]);
+
+  useEffect(() => {
+    if (isEdit) return;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+  }, [form, isEdit]);
 
   async function loadProperty() {
     const { data } = await supabase.from('properties').select('*').eq('id', id!).single();
