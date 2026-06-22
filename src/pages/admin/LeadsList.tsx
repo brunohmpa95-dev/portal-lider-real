@@ -20,10 +20,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, Search, Eye, Trash2, Loader2, LayoutGrid, List, Phone, GripVertical,
   TrendingUp, TrendingDown, Users, MoreHorizontal, MessageSquarePlus, MoveRight, Pencil,
+  MessageCircle, CircleDot,
 } from 'lucide-react';
 import {
   LEAD_FUNNEL_STAGES,
