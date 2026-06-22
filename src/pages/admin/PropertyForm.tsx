@@ -98,6 +98,11 @@ export default function PropertyForm() {
     setLoading(false);
   }
 
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  };
+
   const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   async function handleSubmit(e: React.FormEvent) {
