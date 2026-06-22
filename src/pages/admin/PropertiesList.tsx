@@ -38,6 +38,7 @@ export default function PropertiesList() {
   const { roles, user } = useAuth();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<any[]>([]);
+  const [whatsappClicks, setWhatsappClicks] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
