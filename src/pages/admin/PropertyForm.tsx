@@ -11,12 +11,14 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PROPERTY_TYPE_OPTIONS, PROPERTY_PURPOSE_OPTIONS, PROPERTY_STATUS_OPTIONS } from '@/types/admin';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import PropertyImageUpload from '@/components/admin/PropertyImageUpload';
 import { useNeighborhoods } from '@/hooks/useNeighborhoods';
 import { FormattedDescription, type HeadingStyle } from '@/lib/format-description';
 import { cn } from '@/lib/utils';
+
+const DRAFT_KEY = 'property_form_draft';
 
 const defaultForm = {
   code: '', title: '', type: 'casa', purpose: 'sale', status: 'draft',
