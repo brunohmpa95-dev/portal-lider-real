@@ -932,3 +932,120 @@ function InterestEditor({ lead, neighborhoods, onSave }: { lead: any; neighborho
     </div>
   );
 }
+
+function SuggestedProperties({
+  lead,
+  neighborhoodName,
+  fmtPrice,
+  onLinked,
+}: {
+  lead: any;
+  neighborhoodName?: string;
+  fmtPrice: (v: number | null) => string;
+  onLinked: (prop: any) => void;
+}) {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [linkingId, setLinkingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      let q = supabase
+        .from('properties')
+        .select('id, code, title, price, neighborhood, purpose, type, images')
+        .eq('status', 'published')
+        .is('archived_at', null);
+
+      if (lead.interest_purpose) q = q.eq('purpose', lead.interest_purpose);
+      if (lead.interest_property_type) q = q.eq('type', lead.interest_property_type);
+      if (lead.interest_min_price) q = q.gte('price', lead.interest_min_price);
+      if (lead.interest_max_price) q = q.lte('price', lead.interest_max_price);
+      if (neighborhoodName) q = q.ilike('neighborhood', neighborhoodName);
+      if (lead.interest_bedrooms) q = q.gte('bedrooms', lead.interest_bedrooms);
+
+      const { data } = await q.order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(3);
+      if (!cancelled) {
+        setItems(data || []);
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [lead.id, lead.interest_purpose, lead.interest_property_type, lead.interest_min_price, lead.interest_max_price, lead.interest_bedrooms, neighborhoodName]);
+
+  async function linkProperty(prop: any) {
+    setLinkingId(prop.id);
+    const { error } = await supabase
+      .from('property_leads')
+      .update({ property_id: prop.id } as any)
+      .eq('id', lead.id);
+    setLinkingId(null);
+    if (error) {
+      toast({ title: 'Erro ao vincular', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Imóvel vinculado ao lead' });
+    onLinked(prop);
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" /> Imóveis sugeridos
+        </CardTitle>
+        <span className="text-xs text-muted-foreground">Baseado no interesse do lead</span>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        ) : items.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">
+            Nenhum imóvel ativo corresponde aos critérios de interesse.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {items.map((p) => {
+              const cover = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+              return (
+                <li key={p.id} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-muted/40 transition">
+                  <div className="h-16 w-20 shrink-0 rounded overflow-hidden bg-muted">
+                    {cover ? (
+                      <img src={cover} alt={p.title} className="h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/admin/properties/${p.id}`} className="block">
+                      <p className="text-sm font-medium truncate hover:underline">{p.title}</p>
+                    </Link>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {p.code}{p.neighborhood ? ` · ${p.neighborhood}` : ''}
+                    </p>
+                    <p className="text-xs font-semibold mt-0.5">{fmtPrice(p.price)}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => linkProperty(p)}
+                    disabled={linkingId === p.id}
+                  >
+                    {linkingId === p.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                    Vincular
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
