@@ -52,6 +52,10 @@ const PropertyDetail = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
     if (!carouselApi) return;
     setCurrentSlide(carouselApi.selectedScrollSnap());
     carouselApi.on('select', () => {
