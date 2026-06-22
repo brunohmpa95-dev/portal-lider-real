@@ -72,8 +72,8 @@ function useDailySummary() {
       const { count, error } = await supabase
         .from('whatsapp_clicks')
         .select('*', { count: 'exact', head: true })
-        .gte('created_at', todayStart)
-        .lt('created_at', todayEnd);
+        .gte('occurred_at', todayStart)
+        .lt('occurred_at', todayEnd);
       if (error) throw error;
       return count ?? 0;
     },
