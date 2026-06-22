@@ -240,6 +240,17 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Resumo do dia */}
+      <DailySummaryCard
+        metrics={[
+          { label: 'Novos leads hoje', value: dailySummary.newLeads, icon: Users },
+          { label: 'Follow-ups vencidos', value: dailySummary.overdueFollowups, icon: Clock },
+          { label: 'Cliques no WhatsApp hoje', value: dailySummary.whatsappClicks, icon: MessageSquare },
+          { label: 'Imóveis ativos', value: dailySummary.activeProperties, icon: Building2 },
+        ]}
+        isLoading={dailySummary.isLoading}
+      />
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {kpis.map((kpi) => (
