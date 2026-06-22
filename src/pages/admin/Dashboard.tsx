@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { startOfDay, endOfDay, formatISO } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import {
   Users, Building2, CalendarDays, TrendingUp, MessageSquare, Briefcase,
   ArrowUpRight, Plus, Shield, ClipboardList, DollarSign, UserCog,
-  FileText, AlertTriangle, Loader2,
+  FileText, AlertTriangle, Loader2, Clock,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
