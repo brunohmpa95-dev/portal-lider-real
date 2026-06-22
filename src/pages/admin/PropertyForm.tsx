@@ -152,6 +152,7 @@ export default function PropertyForm() {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: isEdit ? 'Imóvel atualizado' : 'Imóvel criado' });
+      clearDraft();
       navigate('/admin/properties');
     }
   }
@@ -160,11 +161,26 @@ export default function PropertyForm() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Button variant="ghost" size="icon" onClick={() => navigate('/admin/properties')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold">{isEdit ? 'Editar Imóvel' : 'Novo Imóvel'}</h1>
+        {!isEdit && hasDraft && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              clearDraft();
+              setForm(defaultForm);
+              toast({ title: 'Rascunho removido' });
+            }}
+            className="text-muted-foreground hover:text-destructive ml-auto"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Limpar rascunho
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
