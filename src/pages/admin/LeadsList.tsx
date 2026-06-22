@@ -82,7 +82,7 @@ function formatDateTime(d?: string | null) {
 }
 
 export default function LeadsList() {
-  const { roles } = useAuth();
+  const { roles, user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
