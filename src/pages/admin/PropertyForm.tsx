@@ -11,12 +11,14 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PROPERTY_TYPE_OPTIONS, PROPERTY_PURPOSE_OPTIONS, PROPERTY_STATUS_OPTIONS } from '@/types/admin';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import PropertyImageUpload from '@/components/admin/PropertyImageUpload';
 import { useNeighborhoods } from '@/hooks/useNeighborhoods';
 import { FormattedDescription, type HeadingStyle } from '@/lib/format-description';
 import { cn } from '@/lib/utils';
+
+const DRAFT_KEY = 'property_form_draft';
 
 const defaultForm = {
   code: '', title: '', type: 'casa', purpose: 'sale', status: 'draft',
@@ -38,10 +40,29 @@ export default function PropertyForm() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
+  const [hasDraft, setHasDraft] = useState(false);
 
   useEffect(() => {
-    if (isEdit) loadProperty();
+    if (isEdit) {
+      loadProperty();
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setForm({ ...defaultForm, ...parsed });
+        setHasDraft(true);
+      }
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
   }, [id]);
+
+  useEffect(() => {
+    if (isEdit) return;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+  }, [form, isEdit]);
 
   async function loadProperty() {
     const { data } = await supabase.from('properties').select('*').eq('id', id!).single();
@@ -76,6 +97,11 @@ export default function PropertyForm() {
     }
     setLoading(false);
   }
+
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  };
 
   const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -126,6 +152,7 @@ export default function PropertyForm() {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: isEdit ? 'Imóvel atualizado' : 'Imóvel criado' });
+      clearDraft();
       navigate('/admin/properties');
     }
   }
@@ -134,11 +161,26 @@ export default function PropertyForm() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Button variant="ghost" size="icon" onClick={() => navigate('/admin/properties')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold">{isEdit ? 'Editar Imóvel' : 'Novo Imóvel'}</h1>
+        {!isEdit && hasDraft && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              clearDraft();
+              setForm(defaultForm);
+              toast({ title: 'Rascunho removido' });
+            }}
+            className="text-muted-foreground hover:text-destructive ml-auto"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Limpar rascunho
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -336,7 +378,7 @@ export default function PropertyForm() {
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
             {isEdit ? 'Salvar Alterações' : 'Criar Imóvel'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/admin/properties')}>Cancelar</Button>
+          <Button type="button" variant="outline" onClick={() => { clearDraft(); navigate('/admin/properties'); }}>Cancelar</Button>
         </div>
       </form>
     </div>
