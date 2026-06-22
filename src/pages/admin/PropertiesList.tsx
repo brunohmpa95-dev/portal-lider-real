@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, Search, Eye, Edit, Trash2, Loader2, Star, X, Archive, ArchiveRestore,
-  CalendarIcon, MoreHorizontal, Upload, History,
+  CalendarIcon, MoreHorizontal, Upload, History, MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PROPERTY_STATUS_OPTIONS, PROPERTY_TYPE_OPTIONS, PROPERTY_PURPOSE_OPTIONS } from '@/types/admin';
