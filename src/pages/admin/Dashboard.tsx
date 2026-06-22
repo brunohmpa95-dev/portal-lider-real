@@ -35,6 +35,101 @@ interface DashboardStats {
   applications: number;
 }
 
+function useDailySummary() {
+  const todayStart = formatISO(startOfDay(new Date()));
+  const todayEnd = formatISO(endOfDay(new Date()));
+  const now = new Date().toISOString();
+
+  const { data: newLeads = 0, isLoading: loadingNewLeads } = useQuery({
+    queryKey: ['admin-daily-new-leads'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('property_leads')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', todayStart)
+        .lt('created_at', todayEnd);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const { data: overdueFollowups = 0, isLoading: loadingOverdue } = useQuery({
+    queryKey: ['admin-daily-overdue-followups'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('property_leads')
+        .select('*', { count: 'exact', head: true })
+        .lt('next_followup_at', now)
+        .not('status', 'in', '("won","lost")');
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const { data: whatsappClicks = 0, isLoading: loadingClicks } = useQuery({
+    queryKey: ['admin-daily-whatsapp-clicks'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('whatsapp_clicks')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', todayStart)
+        .lt('created_at', todayEnd);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const { data: activeProperties = 0, isLoading: loadingProperties } = useQuery({
+    queryKey: ['admin-active-properties-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('properties')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published');
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  return {
+    newLeads,
+    overdueFollowups,
+    whatsappClicks,
+    activeProperties,
+    isLoading: loadingNewLeads || loadingOverdue || loadingClicks || loadingProperties,
+  };
+}
+
+interface DailyMetric {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+function DailySummaryCard({ metrics, isLoading }: { metrics: DailyMetric[]; isLoading: boolean }) {
+  return (
+    <Card className="border-l-4 border-l-primary">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="flex items-center gap-3">
+              <div className="p-2 rounded-md bg-muted text-primary">
+                <metric.icon className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{metric.label}</p>
+                <p className="text-xl font-bold text-foreground">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : metric.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   const { roles, hasRole } = useAuth();
   const isSuperAdmin = hasRole('superadmin');
