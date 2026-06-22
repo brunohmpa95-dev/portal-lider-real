@@ -71,8 +71,20 @@ export default function PropertiesList() {
 
   async function loadProperties() {
     setLoading(true);
-    const { data } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+    const [{ data }, { data: clicksData }] = await Promise.all([
+      supabase.from('properties').select('*').order('created_at', { ascending: false }),
+      supabase.from('whatsapp_clicks').select('property_id').not('property_id', 'is', null),
+    ]);
+
+    const clicksMap = (clicksData || []).reduce<Record<string, number>>((acc, click) => {
+      if (click.property_id) {
+        acc[click.property_id] = (acc[click.property_id] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
     setProperties(data || []);
+    setWhatsappClicks(clicksMap);
     setLoading(false);
   }
 
