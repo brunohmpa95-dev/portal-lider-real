@@ -15,7 +15,7 @@ const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
   listing: { max: 2, windowMs: 600_000 },         // 2 per 10 min
   ombudsman: { max: 2, windowMs: 600_000 },       // 2 per 10 min
   career: { max: 2, windowMs: 600_000 },          // 2 per 10 min
-  property_lead: { max: 5, windowMs: 600_000 },   // 5 per 10 min
+  property_lead: { max: 2, windowMs: 600_000 },   // 2 per 10 min (antispam)
   support: { max: 5, windowMs: 600_000 },         // 5 per 10 min
 };
 
@@ -302,14 +302,29 @@ Deno.serve(async (req) => {
     // PROPERTY LEAD (Interesse no imóvel)
     // ============================================================
     if (formType === "property_lead") {
+      // Honeypot: bots costumam preencher campos ocultos
+      if (typeof body.website === "string" && body.website.trim() !== "") {
+        await auditLog(serviceClient, { action: "form_honeypot_triggered", resource: "property_leads", result: "blocked", metadata: { form_type: "property_lead", ip: ipAddress }, ipAddress, userAgent });
+        return jsonResponse({ success: true, message: "Interesse registrado com sucesso!" });
+      }
+
       const name = sanitizeShort(body.name, 100);
       const email = sanitizeShort(body.email, 255);
       const phone = sanitizeShort(body.phone, 20);
       const message = sanitize(body.message).slice(0, 1000);
       const property_id = sanitizeShort(body.property_id, 36);
 
-      if (!name || name.length < 2) return jsonResponse({ error: "Nome é obrigatório" }, 400);
+      // Validação antispam: nome com 2+ palavras ou 5+ caracteres
+      const wordCount = name.split(/\s+/).filter(Boolean).length;
+      if (!name || (wordCount < 2 && name.length < 5)) {
+        return jsonResponse({ error: "Informe seu nome completo" }, 400);
+      }
       if (!validateEmail(email)) return jsonResponse({ error: "E-mail inválido" }, 400);
+      // Telefone obrigatório com no mínimo 8 dígitos
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (!phone || phoneDigits.length < 8) {
+        return jsonResponse({ error: "Telefone válido é obrigatório" }, 400);
+      }
 
       const insertData: Record<string, unknown> = {
         name, email, phone: phone || null, whatsapp: phone || null,
