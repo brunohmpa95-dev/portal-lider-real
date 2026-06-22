@@ -499,6 +499,20 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
+          {/* Imóveis sugeridos (apenas se não houver imóvel vinculado) */}
+          {!lead.property_id && (
+            <SuggestedProperties
+              lead={lead}
+              neighborhoodName={interestNbName}
+              fmtPrice={fmtPrice}
+              onLinked={(prop) => {
+                setLead((p: any) => ({ ...p, property_id: prop.id }));
+                setProperty(prop);
+              }}
+            />
+          )}
+
+
           {/* Próximos compromissos (agenda) */}
           {(() => {
             const now = Date.now();
