@@ -1,6 +1,8 @@
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { ADMIN_NAV_SECTIONS, ADMIN_SECONDARY_NAV, filterNavByRoles, filterSectionsByRoles } from '@/lib/admin-nav';
+import { supabase } from '@/integrations/supabase/client';
 import {
   SidebarProvider,
   Sidebar,
@@ -36,9 +38,49 @@ function AdminSidebarContent() {
   const sections = filterSectionsByRoles(ADMIN_NAV_SECTIONS, roles);
   const secondaryItems = filterNavByRoles(ADMIN_SECONDARY_NAV, roles);
 
+  const { data: overdueLeadsCount = 0 } = useQuery({
+    queryKey: ['admin-overdue-leads-count'],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { count, error } = await supabase
+        .from('property_leads')
+        .select('*', { count: 'exact', head: true })
+        .lt('next_followup_at', now)
+        .not('status', 'in', '("won","lost")');
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
   const isActive = (path: string) => {
     if (path === '/admin') return location.pathname === '/admin';
     return location.pathname.startsWith(path);
+  };
+
+  const renderNavItem = (item: (typeof sections)[number]['items'][number]) => {
+    const isLeads = item.title === 'Leads';
+    const showBadge = isLeads && overdueLeadsCount > 0 && !collapsed;
+
+    return (
+      <SidebarMenuItem key={item.path}>
+        <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.title}>
+          <Link to={item.path} className="flex items-center justify-between w-full">
+            <span className="flex items-center gap-2">
+              <item.icon className="h-4 w-4" />
+              <span>{item.title}</span>
+            </span>
+            {showBadge && (
+              <Badge
+                variant="destructive"
+                className="ml-auto text-[10px] px-1.5 h-5 min-w-[1.25rem] flex items-center justify-center"
+              >
+                {overdueLeadsCount}
+              </Badge>
+            )}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
   };
 
   return (
@@ -65,20 +107,7 @@ function AdminSidebarContent() {
             <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive(item.path)}
-                      tooltip={item.title}
-                    >
-                      <Link to={item.path}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {section.items.map((item) => renderNavItem(item))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
