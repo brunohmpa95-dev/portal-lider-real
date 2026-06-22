@@ -513,6 +513,32 @@ export default function LeadsList() {
   );
 
   // ---------- Ações rápidas ----------
+  // Mapeia "status" simplificado solicitado para funnel_stage real
+  const QUICK_STATUS: { value: string; label: string }[] = [
+    { value: 'new', label: 'Novo' },
+    { value: 'contact', label: 'Em atendimento' },
+    { value: 'closed', label: 'Ganho' },
+    { value: 'lost', label: 'Perdido' },
+  ];
+
+  async function quickRegisterWhatsapp(lead: any) {
+    if (!user?.id) {
+      toast({ title: 'Sessão expirada', description: 'Faça login novamente.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('lead_interactions' as any).insert({
+      lead_id: lead.id,
+      user_id: user.id,
+      interaction_type: 'whatsapp',
+      content: 'Contato registrado via WhatsApp',
+    } as any);
+    if (error) {
+      toast({ title: 'Erro ao registrar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Contato WhatsApp registrado' });
+  }
+
   const StageMover = ({ lead }: { lead: any }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -526,6 +552,31 @@ export default function LeadsList() {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => navigate(`/admin/leads/${lead.id}?edit=1`)}>
           <Pencil className="h-4 w-4 mr-2" /> Editar
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <CircleDot className="h-4 w-4 mr-2" /> Alterar status
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              {QUICK_STATUS.map((s) => (
+                <DropdownMenuItem
+                  key={s.value}
+                  disabled={lead.funnel_stage === s.value}
+                  onSelect={() => {
+                    if (s.value === 'lost') { setPendingLost({ leadId: lead.id, leadName: lead.name }); return; }
+                    updateLeadStage(lead.id, s.value);
+                  }}
+                >
+                  {s.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+        <DropdownMenuItem onSelect={() => quickRegisterWhatsapp(lead)}>
+          <MessageCircle className="h-4 w-4 mr-2" /> Registrar contato WhatsApp
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setInteractionFor({ id: lead.id, name: lead.name })}>
           <MessageSquarePlus className="h-4 w-4 mr-2" /> Registrar interação
