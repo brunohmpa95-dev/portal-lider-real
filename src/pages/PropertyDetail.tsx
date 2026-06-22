@@ -326,6 +326,8 @@ const PropertyDetail = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-2.5 w-full min-w-0">
+                    {/* Honeypot antispam — invisível para usuários reais */}
+                    <input type="text" name="website" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} aria-hidden="true" />
                     <Input name="name" placeholder="Seu nome" required minLength={2} maxLength={100} className="h-11 text-base sm:h-10 sm:text-sm w-full min-w-0" />
                     <Input name="email" placeholder="E-mail" type="email" required maxLength={255} className="h-11 text-base sm:h-10 sm:text-sm w-full min-w-0" />
                     <Input name="phone" placeholder="Telefone / WhatsApp" maxLength={20} className="h-11 text-base sm:h-10 sm:text-sm w-full min-w-0" />
