@@ -378,7 +378,7 @@ export default function PropertyForm() {
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
             {isEdit ? 'Salvar Alterações' : 'Criar Imóvel'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/admin/properties')}>Cancelar</Button>
+          <Button type="button" variant="outline" onClick={() => { clearDraft(); navigate('/admin/properties'); }}>Cancelar</Button>
         </div>
       </form>
     </div>
