@@ -436,7 +436,16 @@ export default function PropertiesList() {
                         <TableCell className="font-mono text-xs">{p.code}</TableCell>
                         <TableCell className="font-medium max-w-[220px] truncate">
                           {p.is_featured && <Star className="h-3 w-3 inline mr-1 text-amber-500" />}
-                          {p.title}
+                          <span className="align-middle">{p.title}</span>
+                          {(whatsappClicks[p.id] || 0) > 0 && (
+                            <span
+                              className="ml-2 inline-flex items-center gap-0.5 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700"
+                              title={`${whatsappClicks[p.id]} clique(s) no WhatsApp`}
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              {whatsappClicks[p.id]}
+                            </span>
+                          )}
                           {archived && (
                             <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                               Arquivado
