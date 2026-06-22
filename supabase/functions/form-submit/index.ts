@@ -15,7 +15,7 @@ const RATE_LIMITS: Record<string, { max: number; windowMs: number }> = {
   listing: { max: 2, windowMs: 600_000 },         // 2 per 10 min
   ombudsman: { max: 2, windowMs: 600_000 },       // 2 per 10 min
   career: { max: 2, windowMs: 600_000 },          // 2 per 10 min
-  property_lead: { max: 5, windowMs: 600_000 },   // 5 per 10 min
+  property_lead: { max: 2, windowMs: 600_000 },   // 2 per 10 min (antispam)
   support: { max: 5, windowMs: 600_000 },         // 5 per 10 min
 };
 
