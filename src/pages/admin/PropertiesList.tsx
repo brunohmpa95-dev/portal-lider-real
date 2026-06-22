@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, Search, Eye, Edit, Trash2, Loader2, Star, X, Archive, ArchiveRestore,
-  CalendarIcon, MoreHorizontal, Upload, History,
+  CalendarIcon, MoreHorizontal, Upload, History, MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PROPERTY_STATUS_OPTIONS, PROPERTY_TYPE_OPTIONS, PROPERTY_PURPOSE_OPTIONS } from '@/types/admin';
@@ -38,6 +38,7 @@ export default function PropertiesList() {
   const { roles, user } = useAuth();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<any[]>([]);
+  const [whatsappClicks, setWhatsappClicks] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -70,8 +71,20 @@ export default function PropertiesList() {
 
   async function loadProperties() {
     setLoading(true);
-    const { data } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+    const [{ data }, { data: clicksData }] = await Promise.all([
+      supabase.from('properties').select('*').order('created_at', { ascending: false }),
+      supabase.from('whatsapp_clicks').select('property_id').not('property_id', 'is', null),
+    ]);
+
+    const clicksMap = (clicksData || []).reduce<Record<string, number>>((acc, click) => {
+      if (click.property_id) {
+        acc[click.property_id] = (acc[click.property_id] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
     setProperties(data || []);
+    setWhatsappClicks(clicksMap);
     setLoading(false);
   }
 
@@ -423,7 +436,16 @@ export default function PropertiesList() {
                         <TableCell className="font-mono text-xs">{p.code}</TableCell>
                         <TableCell className="font-medium max-w-[220px] truncate">
                           {p.is_featured && <Star className="h-3 w-3 inline mr-1 text-amber-500" />}
-                          {p.title}
+                          <span className="align-middle">{p.title}</span>
+                          {(whatsappClicks[p.id] || 0) > 0 && (
+                            <span
+                              className="ml-2 inline-flex items-center gap-0.5 align-middle text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700"
+                              title={`${whatsappClicks[p.id]} clique(s) no WhatsApp`}
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              {whatsappClicks[p.id]}
+                            </span>
+                          )}
                           {archived && (
                             <span className="ml-2 text-[10px] uppercase tracking-wide bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                               Arquivado
